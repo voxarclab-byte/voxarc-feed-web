@@ -23,7 +23,8 @@
      "publisher": "Federal Register",
      "date": "2026-10-29",
      "title": "Notice Regarding the Uyghur Forced Labor Prevention Act Entity List",
-     "url": "https://www.federalregister.gov/documents/2026/10/29/2026-22094/notice-regarding-the-uyghur-forced-labor-prevention-act-entity-list"
+     "url": "https://www.federalregister.gov/documents/2026/10/29/2026-22094/notice-regarding-the-uyghur-forced-labor-prevention-act-entity-list",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -100,7 +101,8 @@
      "publisher": "EUR-Lex (Official Journal of the EU)",
      "date": "2026-10-29",
      "title": "Council Decision (EU) 2026/2457 of 26 October 2026 on the signing of the Agreement in the form of an Exchange of Letters between the European Union and Canada pursuant to Article XXVIII of the General Agreement on Tariffs and Trade 1994 (‘GATT 1994’) relating to the modification of concessions on all the tariff-rate quotas included in the EU Schedule CLXXV as a consequence of the United Kingdom’s withdrawal from the European Union",
-     "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026D2457"
+     "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026D2457",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -177,7 +179,8 @@
      "publisher": "Natural Resources Canada",
      "date": "2026-10-28",
      "title": "Canada invests to unlock lithium potential and improve connectivity and industry in northern Quebec",
-     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/canada-invests-to-unlock-lithium-potential-and-improve-connectivity-and-industry-in-northern-quebec.html"
+     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/canada-invests-to-unlock-lithium-potential-and-improve-connectivity-and-industry-in-northern-quebec.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -279,31 +282,36 @@
      "publisher": "European Parliament",
      "date": "2026-10-20",
      "title": "Critical Raw Materials: securing Europe's supply and strategic autonomy (adopted 470 to 83, 108 abstentions)",
-     "url": "https://www.europarl.europa.eu/news/en/press-room/20261018IPR48253/"
+     "url": "https://www.europarl.europa.eu/news/en/press-room/20261018IPR48253/",
+     "kind": "official"
     },
     {
      "publisher": "European Parliamentary Research Service",
      "date": "2026-10",
      "title": "Amendments to the Critical Raw Materials Act (At a glance)",
-     "url": "https://eprs.europarl.europa.eu/contents/publications/EPRS/2026/10/EPRS_ATA(2026)791538.html"
+     "url": "https://eprs.europarl.europa.eu/contents/publications/EPRS/2026/10/EPRS_ATA(2026)791538.html",
+     "kind": "official"
     },
     {
      "publisher": "Miningmx (reporting the Financial Times)",
      "date": "2026-10-26",
-     "title": "EU looks to US model for critical minerals security",
-     "url": ""
+     "title": "News report",
+     "url": "",
+     "kind": "news"
     },
     {
      "publisher": "Dealroom News",
      "date": "2026-10-26",
-     "title": "EU weighs mirroring Donald Trump in securing critical minerals",
-     "url": "https://dealroom.co/news/other-7qv74s-eu-weighs-mirroring-donald-trump-in-securing-critical-minerals/"
+     "title": "News report",
+     "url": "https://dealroom.co/news/other-7qv74s-eu-weighs-mirroring-donald-trump-in-securing-critical-minerals/",
+     "kind": "news"
     },
     {
      "publisher": "Strategic Metals Invest",
      "date": "2026-10-25",
-     "title": "Weekly News Review October 19 - October 25 2026",
-     "url": "https://strategicmetalsinvest.com/weekly-news-review-oct-19-oct-25-2026/"
+     "title": "News report",
+     "url": "https://strategicmetalsinvest.com/weekly-news-review-oct-19-oct-25-2026/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -372,13 +380,15 @@
      "publisher": "Minister for Resources (Australia)",
      "date": "2026-10-27",
      "title": "Critical Minerals Strategy update to build resilience and security",
-     "url": "https://www.minister.industry.gov.au/king/media/critical-minerals-strategy-update-build-resilience-and-security"
+     "url": "https://www.minister.industry.gov.au/king/media/critical-minerals-strategy-update-build-resilience-and-security",
+     "kind": "official"
     },
     {
      "publisher": "Department of Industry, Science and Resources",
      "date": "2026-10-27",
      "title": "Critical Minerals Strategy 2023–2030 (2026 update)",
-     "url": "https://www.industry.gov.au/publications/critical-minerals-strategy-2023-2030"
+     "url": "https://www.industry.gov.au/publications/critical-minerals-strategy-2023-2030",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -470,7 +480,8 @@
      "publisher": "Federal Register",
      "date": "2026-10-27",
      "title": "Notice of Publication of U.S. Resources Management Industry Listing and Opportunity To Apply for the Listing",
-     "url": "https://www.federalregister.gov/documents/2026/10/27/2026-21896/notice-of-publication-of-us-resources-management-industry-listing-and-opportunity-to-apply-for-the"
+     "url": "https://www.federalregister.gov/documents/2026/10/27/2026-21896/notice-of-publication-of-us-resources-management-industry-listing-and-opportunity-to-apply-for-the",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -552,7 +563,8 @@
      "publisher": "EUR-Lex (Official Journal of the EU)",
      "date": "2026-10-27",
      "title": "Council Regulation (EU) 2026/2374 of 26 October 2026 amending Regulation (EC) No 1183/2005 concerning restrictive measures in view of the situation in the Democratic Republic of the Congo",
-     "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026R2374"
+     "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026R2374",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -628,19 +640,22 @@
      "publisher": "US Department of Energy",
      "date": "2026-10-23",
      "title": "Energy Department designates helium a critical material",
-     "url": "https://www.energy.gov/articles/energy-department-designates-helium-critical-material-strengthen-american-manufacturing"
+     "url": "https://www.energy.gov/articles/energy-department-designates-helium-critical-material-strengthen-american-manufacturing",
+     "kind": "official"
     },
     {
      "publisher": "Federal Register",
      "date": "2026-10-27",
      "title": "Critical Material List; Addition of Helium",
-     "url": "https://www.federalregister.gov/public-inspection/2026-21884/critical-material-list-addition-of-helium"
+     "url": "https://www.federalregister.gov/public-inspection/2026-21884/critical-material-list-addition-of-helium",
+     "kind": "official"
     },
     {
      "publisher": "USGS",
      "date": "2026-01",
      "title": "Mineral Commodity Summaries 2026: Helium",
-     "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-helium.pdf"
+     "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-helium.pdf",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -702,21 +717,23 @@
    ],
    "primary": "minerals",
    "summary": "The US has 170+ days of copper on hand. The rest of the world has 48. That's the split in refined copper inventory cover, per Wood Mackenzie's latest base metals outlook (22 Oct). Copper has hit a record $14,759 a tonne, and much of that is about where the…",
-   "body": "The US has 170+ days of copper on hand. The rest of the world has 48.\n\nThat's the split in refined copper inventory cover, per Wood Mackenzie's latest base metals outlook (22 Oct). Copper has hit a record $14,759 a tonne, and much of that is about where the metal sits, not just how much exists.\n\n3 key takeaways:\n\n1. The shortage is regional and policy-made. Metal has flowed into US warehouses since Washington opened its copper import investigation in February 2025. COMEX now holds roughly 70% of exchange-visible stocks, while markets outside the US face a refined deficit of about 450,000 tonnes.\n\n2. AI is adding a new layer of demand. Wood Mackenzie tracks more than 250 GW of data centre projects worldwide, over three times the pipeline a year ago. The grids, substations and power plants behind them can need three to four times more metal than the data centres themselves.\n\n3. Supply isn't keeping up. Chile's mine output is forecast to fall 5.2% this year, and the industry needs about 850,000 tonnes of new greenfield supply every year for a decade. In Europe, CODELCO – Corporación Nacional del Cobre de Chile is reportedly offering a record $350 a tonne premium over LME for 2027 deliveries.\n\nWhy it matters: Copper security is no longer only about mines. Stockpiles and trade policy now decide who gets metal and at what price. For grid and data centre builders in Europe, Asia and Canada, that means higher costs and longer lead times.\n\nCaveat: Analysts disagree on the global balance. Macquarie expects global surpluses in the coming years, and if the US stockpile flows back out, prices outside the US could ease quickly.\n\nWhat should allied governments prioritise first: shared stockpiles, faster permits, or recycling?",
+   "body": "The US has 170+ days of copper on hand. The rest of the world has 48.\n\nThat's the split in refined copper inventory cover, per Wood Mackenzie's latest base metals outlook (22 Oct). Copper has hit a record $14,759 a tonne, and much of that is about where the metal sits, not just how much exists.\n\n3 key takeaways:\n\n1. The shortage is regional and policy-made. Metal has flowed into US warehouses since Washington opened its copper import investigation in February 2025. COMEX now holds roughly 70% of exchange-visible stocks, while markets outside the US face a refined deficit of about 450,000 tonnes.\n\n2. AI is adding a new layer of demand. Wood Mackenzie counts over 250 GW of data-centre projects in the pipeline, more than triple a year earlier. The power infrastructure that feeds those sites can use several times more metal than the buildings do.\n\n3. Supply isn't keeping up. Chile's mine output is forecast to fall 5.2% this year, and the industry needs about 850,000 tonnes of new greenfield supply every year for a decade. In Europe, CODELCO – Corporación Nacional del Cobre de Chile is reportedly offering a record $350 a tonne premium over LME for 2027 deliveries.\n\nWhy it matters: Copper security is no longer only about mines. Stockpiles and trade policy now decide who gets metal and at what price. For grid and data centre builders in Europe, Asia and Canada, that means higher costs and longer lead times.\n\nCaveat: Analysts disagree on the global balance. Macquarie expects global surpluses in the coming years, and if the US stockpile flows back out, prices outside the US could ease quickly.\n\nWhat should allied governments prioritise first: shared stockpiles, faster permits, or recycling?",
    "stat": null,
    "keyPoints": [],
    "sources": [
     {
      "publisher": "Wood Mackenzie",
      "date": "2026-10-22",
-     "title": "Geopolitical supply shocks and AI power crunch collide across global base metals",
-     "url": "https://www.woodmac.com/press-releases/wood-mackenzie-geopolitical-supply-shocks-and-ai-power-crunch-collide-across-global-base-metals/"
+     "title": "News report",
+     "url": "https://www.woodmac.com/press-releases/wood-mackenzie-geopolitical-supply-shocks-and-ai-power-crunch-collide-across-global-base-metals/",
+     "kind": "news"
     },
     {
      "publisher": "MINING.COM",
      "date": "2026-10",
-     "title": "AI boom could overwhelm metals supply: WoodMac",
-     "url": "https://www.mining.com/ai-boom-could-overwhelm-metals-supply-woodmac/"
+     "title": "News report",
+     "url": "https://www.mining.com/ai-boom-could-overwhelm-metals-supply-woodmac/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -807,7 +824,7 @@
    ],
    "primary": "ai",
    "summary": "18 tasks. That's how many China's State Council just set out to manage AI's impact on jobs. The guideline (Guobanfa No. 29), released Oct 23, treats AI job displacement as a risk to plan for, not a side effect.",
-   "body": "18 tasks. That's how many China's State Council just set out to manage AI's impact on jobs.\n\nThe guideline (Guobanfa No. 29), released Oct 23, treats AI job displacement as a risk to plan for, not a side effect.\n\n3 key takeaways:\n\n1. Job-risk checks before rollout. AI projects under market-access review that could cause major job disruption get an employment-risk assessment as part of that review.\n\n2. Where AI goes first. Priority goes to labour-short and hazardous jobs. In labour-intensive sectors, the scope, intensity and pace of adoption should be handled \"prudently\".\n\n3. A buffer for workers. Companies are encouraged to explore an \"unemployment buffer period\": advance notice for affected workers plus help moving into new roles.\n\nWhy it matters: For companies deploying AI in China, workforce impact becomes part of the approval and compliance conversation. Other governments now have a concrete model to point to as their own AI-and-jobs debates heat up.\n\nCaveat: This is a State Council guideline, not a statute. The buffer period is encouraged, not mandatory, with no set length or pay guarantee. The real detail will come from ministries and provinces.\n\nShould governments assess AI's job impact before deployment, after it, or not at all?",
+   "body": "18 tasks. That's how many China's State Council just set out to manage AI's impact on jobs.\n\nThe guideline (Guobanfa No. 29), released Oct 23, treats AI job displacement as a risk to plan for, not a side effect.\n\n3 key takeaways:\n\n1. Job-risk checks before rollout. AI projects under market-access review that could cause major job disruption get an employment-risk assessment as part of that review.\n\n2. Where AI goes first. Priority goes to labour-short and hazardous jobs. In labour-intensive sectors, the scope, intensity and pace of adoption should be handled \"prudently\".\n\n3. A buffer for workers. Employers are asked to consider a transition period for affected staff, with early notice and support to move into other jobs.\n\nWhy it matters: For companies deploying AI in China, workforce impact becomes part of the approval and compliance conversation. Other governments now have a concrete model to point to as their own AI-and-jobs debates heat up.\n\nCaveat: This is a State Council guideline, not a statute. The buffer period is encouraged, not mandatory, with no set length or pay guarantee. The real detail will come from ministries and provinces.\n\nShould governments assess AI's job impact before deployment, after it, or not at all?",
    "stat": {
     "value": "18",
     "label": "tasks in China's new State Council guideline on AI and employment (released Oct 23, 2026)"
@@ -822,25 +839,29 @@
      "publisher": "State Council General Office (gov.cn)",
      "date": "2026-10-23",
      "title": "Opinions on adapting to AI technology development to help build an employment-friendly development model (Guobanfa [2026] No. 29, dated Oct 16)",
-     "url": "https://www.gov.cn/zhengce/content/202610/content_7084107.htm"
+     "url": "https://www.gov.cn/zhengce/content/202610/content_7084107.htm",
+     "kind": "official"
     },
     {
      "publisher": "Xinhua via english.gov.cn",
      "date": "2026-10-23",
      "title": "China issues guidelines to promote employment amid AI advances (18 tasks in six areas)",
-     "url": "https://english.www.gov.cn/policies/latestreleases/202610/23/content_WS6adb4e53c6d00ca5f9a0deb7.html"
+     "url": "https://english.www.gov.cn/policies/latestreleases/202610/23/content_WS6adb4e53c6d00ca5f9a0deb7.html",
+     "kind": "official"
     },
     {
      "publisher": "China Daily (Xinhua)",
      "date": "2026-10-23",
-     "title": "China issues guidelines to promote employment amid AI advances",
-     "url": "https://www.chinadaily.com.cn/a/202610/23/WS6adb4e13e4b06d4aa0564866.html"
+     "title": "News report",
+     "url": "https://www.chinadaily.com.cn/a/202610/23/WS6adb4e13e4b06d4aa0564866.html",
+     "kind": "news"
     },
     {
      "publisher": "Magica",
      "date": "2026-10-23",
-     "title": "China pairs AI job safeguards with push for cheaper adoption (buffer period has no fixed duration or pay guarantee)",
-     "url": "https://magica.com/news/china-ai-employment-guidelines-worker-protections"
+     "title": "News report",
+     "url": "https://magica.com/news/china-ai-employment-guidelines-worker-protections",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -910,7 +931,8 @@
      "publisher": "Federal Register",
      "date": "2026-10-26",
      "title": "Outbound Investment Security Program Regulations",
-     "url": "https://www.federalregister.gov/documents/2026/10/26/2026-21786/outbound-investment-security-program-regulations"
+     "url": "https://www.federalregister.gov/documents/2026/10/26/2026-21786/outbound-investment-security-program-regulations",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -1022,14 +1044,16 @@
     {
      "publisher": "National Conference of State Legislatures",
      "date": "2026-10",
-     "title": "As Congress deliberates, states lead the way on AI regulation",
-     "url": "https://www.ncsl.org/state-legislatures-news/details/as-congress-deliberates-states-lead-the-way-on-ai-regulation"
+     "title": "News report",
+     "url": "https://www.ncsl.org/state-legislatures-news/details/as-congress-deliberates-states-lead-the-way-on-ai-regulation",
+     "kind": "news"
     },
     {
      "publisher": "OpenAI",
      "date": "2026-10-20",
-     "title": "Letter to Governor Newsom on SB 53",
-     "url": "https://cdn.openai.com/pdf/openai-letter-to-governor-newsom-20261020.pdf"
+     "title": "News report",
+     "url": "https://cdn.openai.com/pdf/openai-letter-to-governor-newsom-20261020.pdf",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1096,22 +1120,25 @@
    "keyPoints": [],
    "sources": [
     {
+     "publisher": "European Parliament",
+     "date": "2026-10-22",
+     "title": "Methane rules: Parliament backs longer delay for energy importers and producers",
+     "url": "https://www.europarl.europa.eu/news/en/press-room/20261021IPR48321/methane-rules-parliament-backs-longer-delay-for-energy-importers-and-producers",
+     "kind": "official"
+    },
+    {
      "publisher": "ENTSOG",
      "date": "2026-10",
-     "title": "Winter Supply Outlook 2026/27",
-     "url": "https://www.entsog.eu/sites/default/files/2026-10/SO0072-26_Winter%20Supply%20Outlook%202026-27.pdf"
+     "title": "News report",
+     "url": "https://www.entsog.eu/sites/default/files/2026-10/SO0072-26_Winter%20Supply%20Outlook%202026-27.pdf",
+     "kind": "news"
     },
     {
      "publisher": "Gas Infrastructure Europe",
      "date": "2026-10",
-     "title": "Europe enters winter with historically low storage levels",
-     "url": "https://www.gie.eu/press/europe-enters-winter-with-historically-low-storage-levels-reinforcing-the-need-for-lng-imports-and-storage-flexibility/"
-    },
-    {
-     "publisher": "European Parliament",
-     "date": "2026-10-22",
-     "title": "Methane rules: Parliament backs longer delay for energy importers and producers",
-     "url": "https://www.europarl.europa.eu/news/en/press-room/20261021IPR48321/methane-rules-parliament-backs-longer-delay-for-energy-importers-and-producers"
+     "title": "News report",
+     "url": "https://www.gie.eu/press/europe-enters-winter-with-historically-low-storage-levels-reinforcing-the-need-for-lng-imports-and-storage-flexibility/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1185,38 +1212,44 @@
     {
      "publisher": "The Japan Times (AFP-Jiji)",
      "date": "2026-10-22",
-     "title": "Supplies of rare earth yttrium have 'stalled,' industry ministry official says (Sept yttrium oxide exports to Japan 4,000 kg vs 51,000 kg; IEA: China 92% of refined output)",
-     "url": "https://www.japantimes.co.jp/business/2026/10/22/rare-earth-supply-stall/"
+     "title": "News report",
+     "url": "https://www.japantimes.co.jp/business/2026/10/22/rare-earth-supply-stall/",
+     "kind": "news"
     },
     {
      "publisher": "Financial Times",
      "date": "2026-10-20",
-     "title": "Japan 'months' from running out of critical rare earth as China squeezes supply (Argus: ~US$1,150/kg outside China vs ~US$9/kg inside)",
-     "url": "https://www.ft.com/content/ebd3244a-9120-4773-b55f-41df77f60c93"
+     "title": "News report",
+     "url": "https://www.ft.com/content/ebd3244a-9120-4773-b55f-41df77f60c93",
+     "kind": "news"
     },
     {
      "publisher": "Mining.com.au",
      "date": "2026-10",
-     "title": "Japan runs low on yttrium amid Chinese supply squeeze (licensing of yttrium and six other REEs since April 2025; Argus prices cited by FT)",
-     "url": "https://mining.com.au/japan-runs-low-on-yttrium-amid-chinese-supply-squeeze/"
+     "title": "News report",
+     "url": "https://mining.com.au/japan-runs-low-on-yttrium-amid-chinese-supply-squeeze/",
+     "kind": "news"
     },
     {
      "publisher": "The Oregon Group",
      "date": "2026-10-20",
-     "title": "Japan months away from running out of yttrium as China cuts exports 98% (SMM: Japan got 4 t of 110.1 t of Sept yttrium oxide exports)",
-     "url": "https://theoregongroup.com/latest-news/japan-yttrium-shortage-china-export-controls/"
+     "title": "News report",
+     "url": "https://theoregongroup.com/latest-news/japan-yttrium-shortage-china-export-controls/",
+     "kind": "news"
     },
     {
      "publisher": "Reuters (via Investing.com)",
      "date": "2026-10-22",
-     "title": "Exclusive: TSMC seeks factory-equipment alternatives to thwart China's rare earths grip, sources say",
-     "url": "https://www.investing.com/news/stock-market-news/exclusivetsmc-seeks-factoryequipment-alternatives-to-thwart-chinas-rare-earths-grip-sources-say-4964973"
+     "title": "News report",
+     "url": "https://www.investing.com/news/stock-market-news/exclusivetsmc-seeks-factoryequipment-alternatives-to-thwart-chinas-rare-earths-grip-sources-say-4964973",
+     "kind": "news"
     },
     {
      "publisher": "Lynas Rare Earths (ASX)",
      "date": "2026-07",
-     "title": "Quarterly report for the period ended 30 June 2026 (Malaysia heavy rare earths: yttrium oxide expected early calendar 2028)",
-     "url": "https://cdn-api.markitdigital.com/apiman-gateway/ASX/asx-research/1.0/file/2924-03113064-6A1334860&v=undefined"
+     "title": "News report",
+     "url": "https://cdn-api.markitdigital.com/apiman-gateway/ASX/asx-research/1.0/file/2924-03113064-6A1334860&v=undefined",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1314,37 +1347,43 @@
      "publisher": "Ofgem",
      "date": "2026-07-29",
      "title": "Curate - Demand Connections Reform (consultation): queue rose from 41 GW to 125 GW Nov 2024-Jun 2025, ~73 GW data centres; GB peak demand 45 GW in 2025; proposed £237,500-£712,500/MW commitment fee above 40 MW",
-     "url": "https://www.ofgem.gov.uk/sites/default/files/2026-07/Proposed-data-centre-connection-reforms-curate-consultation-document.pdf"
+     "url": "https://www.ofgem.gov.uk/sites/default/files/2026-07/Proposed-data-centre-connection-reforms-curate-consultation-document.pdf",
+     "kind": "official"
     },
     {
      "publisher": "Ofgem",
      "date": "2026-07-29",
      "title": "Ofgem acts to free up grid capacity by tackling speculative data centre projects",
-     "url": "https://www.ofgem.gov.uk/press-release/ofgem-acts-free-grid-capacity-tackling-speculative-data-centre-projects"
-    },
-    {
-     "publisher": "Reuters (via Investing.com)",
-     "date": "2026-10-19",
-     "title": "Microsoft pulls out of UK Nscale data centre deal over power delay (23,040 Nvidia GB300 GPUs, 50 MW; queue delays up to 13 years)",
-     "url": "https://www.investing.com/news/stock-market-news/microsoft-pulls-out-of-uk-nscale-data-centre-deal-over-power-delay-4960690"
-    },
-    {
-     "publisher": "The Guardian",
-     "date": "2026-10-18",
-     "title": "Microsoft pulls out of AI datacentre project in Essex over power supply concerns",
-     "url": "https://www.theguardian.com/uk-news/2026/oct/18/microsoft-drops-huge-ai-datacentre-project-in-essex-over-power-supply-concerns"
-    },
-    {
-     "publisher": "Property Week",
-     "date": "2026-10",
-     "title": "Microsoft pulls out of Essex data centre development over power delays (50 MW site scalable to 90 MW; awaiting transmission works)",
-     "url": "https://www.propertyweek.com/news/674409"
+     "url": "https://www.ofgem.gov.uk/press-release/ofgem-acts-free-grid-capacity-tackling-speculative-data-centre-projects",
+     "kind": "official"
     },
     {
      "publisher": "GOV.UK (DSIT)",
      "date": "2025-11-13",
      "title": "Delivering AI Growth Zones: grid connections the single biggest blocker",
-     "url": "https://www.gov.uk/government/publications/delivering-ai-growth-zones/delivering-ai-growth-zones"
+     "url": "https://www.gov.uk/government/publications/delivering-ai-growth-zones/delivering-ai-growth-zones",
+     "kind": "official"
+    },
+    {
+     "publisher": "Reuters (via Investing.com)",
+     "date": "2026-10-19",
+     "title": "News report",
+     "url": "https://www.investing.com/news/stock-market-news/microsoft-pulls-out-of-uk-nscale-data-centre-deal-over-power-delay-4960690",
+     "kind": "news"
+    },
+    {
+     "publisher": "The Guardian",
+     "date": "2026-10-18",
+     "title": "News report",
+     "url": "https://www.theguardian.com/uk-news/2026/oct/18/microsoft-drops-huge-ai-datacentre-project-in-essex-over-power-supply-concerns",
+     "kind": "news"
+    },
+    {
+     "publisher": "Property Week",
+     "date": "2026-10",
+     "title": "News report",
+     "url": "https://www.propertyweek.com/news/674409",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1404,7 +1443,7 @@
    ],
    "primary": "arctic",
    "summary": "1 subsea cable system. That's all that connects Greenland to Europe today. It runs via Iceland and on to Canada.",
-   "body": "1 subsea cable system.\n\nThat's all that connects Greenland to Europe today. It runs via Iceland and on to Canada.\n\nToday, the European Commission and EU foreign policy chief Kaja Kallas presented a new EU Arctic Strategy, updating the 2021 policy. It aims to change that, and a lot more.\n\n3 key takeaways:\n\n1. Connectivity is now a security issue. A new Pan-Arctic Cable would link Greenland directly to Europe, with possible later extensions towards Canada and Japan. An Arctic Cable Hub would monitor, protect and help repair cables in the North Atlantic-Arctic. The EU has already earmarked €107 million for connectivity projects involving Greenland, but there is no final route, budget or timeline yet.\n\n2. Icebreakers become a European project. The EU will map industrial capacity and look at joint procurement, pooling and sharing of icebreakers, including high-endurance designs that could run on nuclear propulsion.\n\n3. The oil and gas line has softened. The strategy still says oil, coal and gas should stay in the ground, including in the Arctic. But it drops the 2021 pledge to seek a multilateral legal ban on new Arctic hydrocarbon development and on buying what it produces. Norway had pressed Brussels to drop its opposition to new Arctic drilling.\n\nWhy it matters: Brussels is backing Arctic infrastructure and hard security first. For anyone building in the North, from data centres to mines to ports, cables, ships and secure links are becoming the entry ticket. Canada sits on the proposed route to Asia, which makes it a natural partner.\n\nWhich flagship matters most for the North: the Greenland cable, shared icebreakers, or the oil and gas shift?",
+   "body": "1 subsea cable system.\n\nThat's all that connects Greenland to Europe today. It runs via Iceland and on to Canada.\n\nToday, the European Commission and EU foreign policy chief Kaja Kallas presented a new EU Arctic Strategy, updating the 2021 policy. It aims to change that, and a lot more.\n\n3 key takeaways:\n\n1. Connectivity is now a security issue. A new Pan-Arctic Cable would link Greenland directly to Europe, with possible later extensions towards Canada and Japan. An Arctic Cable Hub would monitor, protect and help repair cables in the North Atlantic-Arctic. Brussels has set aside €107 million for Greenland connectivity work; route, budget and timing for the cable are not fixed.\n\n2. Icebreakers become a European project. The EU will map industrial capacity and look at joint procurement, pooling and sharing of icebreakers, including high-endurance designs that could run on nuclear propulsion.\n\n3. The oil and gas line has softened. The strategy still says oil, coal and gas should stay in the ground, including in the Arctic. But it drops the 2021 pledge to seek a multilateral legal ban on new Arctic hydrocarbon development and on buying what it produces. Norway had pressed Brussels to drop its opposition to new Arctic drilling.\n\nWhy it matters: Brussels is backing Arctic infrastructure and hard security first. For anyone building in the North, from data centres to mines to ports, cables, ships and secure links are becoming the entry ticket. Canada sits on the proposed route to Asia, which makes it a natural partner.\n\nWhich flagship matters most for the North: the Greenland cable, shared icebreakers, or the oil and gas shift?",
    "stat": {
     "value": "1 subsea cable system",
     "label": "All that connects Greenland to Europe today"
@@ -1415,19 +1454,22 @@
      "publisher": "European Commission",
      "date": "2026-10-20",
      "title": "EU sets out new strategy for the Arctic",
-     "url": "https://digital-strategy.ec.europa.eu/en/news/eu-sets-out-new-strategy-arctic"
+     "url": "https://digital-strategy.ec.europa.eu/en/news/eu-sets-out-new-strategy-arctic",
+     "kind": "official"
     },
     {
      "publisher": "European Commission (International Partnerships)",
      "date": "2026-10",
      "title": "The EU's Arctic strategy",
-     "url": "https://international-partnerships.ec.europa.eu/policies/eus-arctic-strategy_en"
+     "url": "https://international-partnerships.ec.europa.eu/policies/eus-arctic-strategy_en",
+     "kind": "official"
     },
     {
      "publisher": "Euronews",
      "date": "2026-10-19",
-     "title": "EU eyes Arctic cable linking Greenland to Europe",
-     "url": "https://www.euronews.com/2026/10/19/eu-eyes-arctic-cable-linking-greenland-to-europe-amid-growing-security-threats"
+     "title": "News report",
+     "url": "https://www.euronews.com/2026/10/19/eu-eyes-arctic-cable-linking-greenland-to-europe-amid-growing-security-threats",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1546,7 +1588,8 @@
      "publisher": "Federal Register",
      "date": "2026-10-20",
      "title": "American Samoa Outer Continental Shelf Pacific Mineral Lease Sale 1",
-     "url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1"
+     "url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -1626,19 +1669,22 @@
      "publisher": "BOEM",
      "date": "2026-10",
      "title": "MMA announces Final Leasing Notice for first-ever offshore mineral lease sale",
-     "url": "https://www.boem.gov/newsroom/press-releases/mma-announces-final-leasing-notice-first-ever-offshore-mineral-lease-sale"
+     "url": "https://www.boem.gov/newsroom/press-releases/mma-announces-final-leasing-notice-first-ever-offshore-mineral-lease-sale",
+     "kind": "official"
     },
     {
      "publisher": "Federal Register",
      "date": "2026-10-20",
      "title": "American Samoa OCS Pacific Mineral Lease Sale 1",
-     "url": "https://public-inspection.federalregister.gov/2026-21462.pdf"
+     "url": "https://public-inspection.federalregister.gov/2026-21462.pdf",
+     "kind": "official"
     },
     {
      "publisher": "MINING.COM",
      "date": "2026-10",
-     "title": "Greenland to introduce ban on seabed mining",
-     "url": "https://www.mining.com/greenland-to-introduce-ban-on-seabed-mining/"
+     "title": "News report",
+     "url": "https://www.mining.com/greenland-to-introduce-ban-on-seabed-mining/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1732,19 +1778,22 @@
      "publisher": "USGS",
      "date": "2026-01",
      "title": "Mineral Commodity Summaries 2026: Gallium",
-     "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-gallium.pdf"
-    },
-    {
-     "publisher": "Xinhua",
-     "date": "2025-11-09",
-     "title": "China suspends export ban on gallium, germanium and antimony to the US",
-     "url": "https://english.news.cn/20251109/5edd761a05be48a0b369f12cdea0e78c/c.html"
+     "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-gallium.pdf",
+     "kind": "official"
     },
     {
      "publisher": "US Department of Energy",
      "date": "2026",
      "title": "Office of Critical Minerals and Energy Innovation selects five organizations (TRACE-Ga)",
-     "url": "https://www.energy.gov/cmei/articles/does-office-critical-minerals-and-energy-innovation-selects-five-organizations"
+     "url": "https://www.energy.gov/cmei/articles/does-office-critical-minerals-and-energy-innovation-selects-five-organizations",
+     "kind": "official"
+    },
+    {
+     "publisher": "Xinhua",
+     "date": "2025-11-09",
+     "title": "News report",
+     "url": "https://english.news.cn/20251109/5edd761a05be48a0b369f12cdea0e78c/c.html",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1833,7 +1882,7 @@
    ],
    "primary": "ai",
    "summary": "10²⁶ FLOPs. That's the training-compute line China just proposed for controlling exports of frontier AI know-how. The EU AI Act's systemic-risk presumption starts at 10²⁵.",
-   "body": "10²⁶ FLOPs. That's the training-compute line China just proposed for controlling exports of frontier AI know-how. The EU AI Act's systemic-risk presumption starts at 10²⁵.\n\nOn Oct 16, China's Ministry of Commerce and Ministry of Science and Technology published a draft adding 40 technologies to the national export-control catalogue. It's a proposal, open for comment until Nov 15, but registration of covered transfers started the same day.\n\n3 key takeaways:\n\n1. AI is the biggest block: 23 of the 40 items, covering large models, agents, AI chip design and compute clusters of more than 10,000 accelerator cards. Overall, 14 items would be banned and 26 restricted.\n\n2. It targets the recipe, not the meal. Weights, checkpoints, source code and training methods are restricted for models at 10²⁶ FLOPs, 2 trillion parameters, or a global top-10 ranking. API, app and SaaS access stays out of scope, and already open-sourced work is excluded.\n\n3. Solar is in too: 12 photovoltaic items, from polysilicon to cell manufacturing, including key equipment. Finished modules are not covered.\n\nWhy it matters: Licensing deals, overseas factory builds and transfers of control to foreign owners now need a registration step, including deals already under way.\n\nCaveat: This is a draft. Thresholds and scope can change before the final catalogue.\n\nWhere is your bigger exposure: AI know-how or solar equipment?",
+   "body": "10²⁶ FLOPs. That's the training-compute line China just proposed for controlling exports of frontier AI know-how. The EU AI Act's systemic-risk presumption starts at 10²⁵.\n\nA joint MOFCOM and MOST draft dated Oct 16 would put 40 more technologies on China's export-control list. It's a proposal, open for comment until Nov 15, but registration of covered transfers started the same day.\n\n3 key takeaways:\n\n1. AI is the biggest block: 23 of the 40 items, covering large models, agents, AI chip design and compute clusters of more than 10,000 accelerator cards. Overall, 14 items would be banned and 26 restricted.\n\n2. It targets the recipe, not the meal. Weights, checkpoints, source code and training methods are restricted for models at 10²⁶ FLOPs, 2 trillion parameters, or a global top-10 ranking. API, app and SaaS access stays out of scope, and already open-sourced work is excluded.\n\n3. Solar is in too: 12 photovoltaic items, from polysilicon to cell manufacturing, including key equipment. Finished modules are not covered.\n\nWhy it matters: Licensing deals, overseas factory builds and transfers of control to foreign owners now need a registration step, including deals already under way.\n\nCaveat: This is a draft. Thresholds and scope can change before the final catalogue.\n\nWhere is your bigger exposure: AI know-how or solar equipment?",
    "stat": {
     "value": "10²⁶",
     "label": "FLOPs: proposed training-compute line for restricting frontier-model know-how exports"
@@ -1848,31 +1897,36 @@
      "publisher": "Ministry of Commerce of China (MOFCOM) & Ministry of Science and Technology",
      "date": "2026-10-16",
      "title": "Announcement 2026 No. 48: Public consultation on revising the Catalogue of Technologies Prohibited and Restricted from Export, with interim pre-export registration",
-     "url": "https://www.mofcom.gov.cn/zcfb/blgg/gg/2026/art/2026/art_05e2643a8ca04eb9adf9dd0542991fe4.html"
-    },
-    {
-     "publisher": "Yicai Global",
-     "date": "2026-10-19",
-     "title": "China Proposes Export Controls on Key AI, Biomedicine, and Solar Technologies",
-     "url": "https://www.yicaiglobal.com/news/china-proposes-export-controls-on-40-ai-biomedicine-and-solar-techs"
-    },
-    {
-     "publisher": "AP News",
-     "date": "2026-10-16",
-     "title": "China moves to curb tech exports, including AI, citing national security risks",
-     "url": "https://apnews.com/article/china-export-restrictions-ai-chips-solar-us-5ac381c0c6d6628bbea2e0da7d855a5b"
-    },
-    {
-     "publisher": "On The Wire",
-     "date": "2026-10-16",
-     "title": "China proposes export controls on 23 AI technologies, from large models to agents, but not on work already open-sourced",
-     "url": "https://onthewire.ai/article/china-proposes-export-controls-on-23-ai-technologies-from-large-models-to-agents"
+     "url": "https://www.mofcom.gov.cn/zcfb/blgg/gg/2026/art/2026/art_05e2643a8ca04eb9adf9dd0542991fe4.html",
+     "kind": "official"
     },
     {
      "publisher": "EUR-Lex",
      "date": "2024-07-12",
      "title": "Regulation (EU) 2024/1689 (AI Act), Article 51: 10^25 FLOPs presumption for systemic-risk GPAI models",
-     "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+     "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+     "kind": "official"
+    },
+    {
+     "publisher": "Yicai Global",
+     "date": "2026-10-19",
+     "title": "News report",
+     "url": "https://www.yicaiglobal.com/news/china-proposes-export-controls-on-40-ai-biomedicine-and-solar-techs",
+     "kind": "news"
+    },
+    {
+     "publisher": "AP News",
+     "date": "2026-10-16",
+     "title": "News report",
+     "url": "https://apnews.com/article/china-export-restrictions-ai-chips-solar-us-5ac381c0c6d6628bbea2e0da7d855a5b",
+     "kind": "news"
+    },
+    {
+     "publisher": "On The Wire",
+     "date": "2026-10-16",
+     "title": "News report",
+     "url": "https://onthewire.ai/article/china-proposes-export-controls-on-23-ai-technologies-from-large-models-to-agents",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -1887,7 +1941,7 @@
     }
    ],
    "soWhat": {
-    "changed": "On Oct 16, China's Ministry of Commerce and Ministry of Science and Technology published a draft adding 40 technologies to the national…",
+    "changed": "A joint MOFCOM and MOST draft dated Oct 16 would put 40 more technologies on China's export-control list.",
     "who": "AI developers, compute and cloud providers, and the firms that deploy their models",
     "watch": "Comments close Nov 15, 2026"
    },
@@ -1979,7 +2033,8 @@
      "publisher": "Federal Register",
      "date": "2026-10-19",
      "title": "Marine Mammals; Incidental Take of Polar Bears and Pacific Walruses in the Beaufort Sea and North Slope of Alaska",
-     "url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north"
+     "url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -2109,7 +2164,8 @@
      "publisher": "Canada Gazette, Part I",
      "date": "2026-10-17",
      "title": "Non-Financial Activities (Banks and Bank Holding Companies) Regulations",
-     "url": "https://gazette.gc.ca/rp-pr/p1/2026/2026-10-17/html/reg1-eng.html"
+     "url": "https://gazette.gc.ca/rp-pr/p1/2026/2026-10-17/html/reg1-eng.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -2192,13 +2248,15 @@
      "publisher": "Statistics Canada",
      "date": "2026-07-08",
      "title": "Nunavut Air Exit Survey and Nunavut Cruise Exit Survey, third quarter 2025",
-     "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260708/dq260708d-eng.htm"
+     "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260708/dq260708d-eng.htm",
+     "kind": "official"
     },
     {
      "publisher": "AECO",
      "date": "2026",
-     "title": "Community dialogue shapes expedition cruise tourism in Pond Inlet",
-     "url": "https://aeco.no/community-dialogue-shapes-expedition-cruise-tourism-in-pond-inlet/"
+     "title": "News report",
+     "url": "https://aeco.no/community-dialogue-shapes-expedition-cruise-tourism-in-pond-inlet/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -2313,14 +2371,16 @@
     {
      "publisher": "Goldman Sachs Research",
      "date": "2026",
-     "title": "Global AI investment is forecast to exceed $1 trillion in 2026",
-     "url": "https://www.goldmansachs.com/insights/articles/global-investment-is-forecast-to-exceed-1-trillion-in-2026"
+     "title": "News report",
+     "url": "https://www.goldmansachs.com/insights/articles/global-investment-is-forecast-to-exceed-1-trillion-in-2026",
+     "kind": "news"
     },
     {
      "publisher": "J.P. Morgan",
      "date": "2026",
-     "title": "Financing AI infrastructure and data centers",
-     "url": "https://www.jpmorgan.com/insights/banking/capital-markets/financing-ai-infrastructure-data-centers"
+     "title": "News report",
+     "url": "https://www.jpmorgan.com/insights/banking/capital-markets/financing-ai-infrastructure-data-centers",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -2390,7 +2450,8 @@
      "publisher": "Natural Resources Canada",
      "date": "2026-10-16",
      "title": "Thompson Mine Complex transaction closes, helping secure a stronger future for Canadian nickel",
-     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/thompson-mine-complex-transaction-closes-helping-secure-a-stronger-future-for-canadian-nickel.html"
+     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/thompson-mine-complex-transaction-closes-helping-secure-a-stronger-future-for-canadian-nickel.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -2497,19 +2558,22 @@
      "publisher": "Natural Resources Canada",
      "date": "2026-05",
      "title": "Canada invests in Arctic infrastructure to bring critical minerals to market",
-     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/05/canada-invests-in-arctic-infrastructure-to-bring-critical-minerals-to-market-and-strengthen-northern-communities.html"
+     "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/05/canada-invests-in-arctic-infrastructure-to-bring-critical-minerals-to-market-and-strengthen-northern-communities.html",
+     "kind": "official"
     },
     {
      "publisher": "Major Projects Office",
      "date": "2026",
      "title": "Grays Bay Road and Port",
-     "url": "https://www.canada.ca/en/privy-council/major-projects-office/projects/national/grays-bay.html"
+     "url": "https://www.canada.ca/en/privy-council/major-projects-office/projects/national/grays-bay.html",
+     "kind": "official"
     },
     {
      "publisher": "Major Projects Office",
      "date": "2026",
      "title": "Arctic Economic and Security Corridor",
-     "url": "https://www.canada.ca/en/privy-council/major-projects-office/projects/national/aesc.html"
+     "url": "https://www.canada.ca/en/privy-council/major-projects-office/projects/national/aesc.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -2609,19 +2673,22 @@
      "publisher": "Housing, Infrastructure and Communities Canada",
      "date": "2026-01",
      "title": "Delivering on more homes for Nunavut",
-     "url": "https://www.canada.ca/en/housing-infrastructure-communities/news/2026/01/delivering-on-more-homes-for-nunavut.html"
+     "url": "https://www.canada.ca/en/housing-infrastructure-communities/news/2026/01/delivering-on-more-homes-for-nunavut.html",
+     "kind": "official"
     },
     {
      "publisher": "CMHC",
      "date": "2026",
      "title": "Modular housing factory increases supply for Canada's North",
-     "url": "https://www.cmhc-schl.gc.ca/observer/stories/119-modular-housing-factory-increases-supply-for-canadas-north"
+     "url": "https://www.cmhc-schl.gc.ca/observer/stories/119-modular-housing-factory-increases-supply-for-canadas-north",
+     "kind": "official"
     },
     {
      "publisher": "KNOM",
      "date": "2025-09-02",
-     "title": "Nome's first 3D-printed house underway",
-     "url": "https://knom.org/2025/09/02/nomes-first-3d-printed-house-underway/"
+     "title": "News report",
+     "url": "https://knom.org/2025/09/02/nomes-first-3d-printed-house-underway/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -2692,20 +2759,23 @@
     {
      "publisher": "PROOF (University of Toronto)",
      "date": "2026-04-29",
-     "title": "New data on household food insecurity in 2025",
-     "url": "https://proof.utoronto.ca/2026/new-data-on-household-food-insecurity-in-2025/"
+     "title": "News report",
+     "url": "https://proof.utoronto.ca/2026/new-data-on-household-food-insecurity-in-2025/",
+     "kind": "news"
     },
     {
      "publisher": "DCD",
      "date": "2026",
-     "title": "Canaan pilot uses waste heat from bitcoin mining to grow tomatoes",
-     "url": "https://www.datacenterdynamics.com/en/news/canaan-pilot-uses-waste-heat-from-bitcoin-mining-to-grow-tomatoes/"
+     "title": "News report",
+     "url": "https://www.datacenterdynamics.com/en/news/canaan-pilot-uses-waste-heat-from-bitcoin-mining-to-grow-tomatoes/",
+     "kind": "news"
     },
     {
      "publisher": "Nunatsiaq News",
      "date": "2026",
-     "title": "Inside Gjoa Haven's greenhouse",
-     "url": "https://nunatsiaq.com/stories/article/fresh-mint-strawberries-and-spicy-peppers-inside-gjoa-havens-greenhouse/"
+     "title": "News report",
+     "url": "https://nunatsiaq.com/stories/article/fresh-mint-strawberries-and-spicy-peppers-inside-gjoa-havens-greenhouse/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -2820,22 +2890,25 @@
    "keyPoints": [],
    "sources": [
     {
-     "publisher": "Telesat",
-     "date": "2026-08",
-     "title": "Telesat secures $2.3 billion Arctic military satcom contract",
-     "url": "https://www.telesat.com/press/press-releases/telesat-secures-2-3-billion-arctic-military-satcom-contract-expanding-telesat-lightspeed-network-and-capacity-by-44/"
-    },
-    {
      "publisher": "Defence Investment Agency",
      "date": "2026-08",
      "title": "Government of Canada awards a military communications contract",
-     "url": "https://www.canada.ca/en/defence-investment-agency/news/2026/08/the-government-of-canada-awards-a-military-communications-contract-to-support-arctic-sovereignty-and-national-security0.html"
+     "url": "https://www.canada.ca/en/defence-investment-agency/news/2026/08/the-government-of-canada-awards-a-military-communications-contract-to-support-arctic-sovereignty-and-national-security0.html",
+     "kind": "official"
     },
     {
      "publisher": "Prime Minister of Canada",
      "date": "2026-03-12",
      "title": "Plan to defend, build and transform Canada's North and Arctic",
-     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/03/12/prime-minister-carney-announces-ambitious-new-plan-defend-build-and"
+     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/03/12/prime-minister-carney-announces-ambitious-new-plan-defend-build-and",
+     "kind": "official"
+    },
+    {
+     "publisher": "Telesat",
+     "date": "2026-08",
+     "title": "News report",
+     "url": "https://www.telesat.com/press/press-releases/telesat-secures-2-3-billion-arctic-military-satcom-contract-expanding-telesat-lightspeed-network-and-capacity-by-44/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -2910,31 +2983,36 @@
      "publisher": "Hong Kong Monetary Authority",
      "date": "2026-10-15",
      "title": "HKMA announces \"ART\" Framework to promote responsible A.I. adoption",
-     "url": "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2026/10/20261015-3/"
+     "url": "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2026/10/20261015-3/",
+     "kind": "official"
     },
     {
      "publisher": "Monetary Authority of Singapore",
      "date": "2026-10-07",
      "title": "Guidelines on Artificial Intelligence Risk Management for Financial Institutions",
-     "url": "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
-    },
-    {
-     "publisher": "The Business Times (Singapore)",
-     "date": "2026-10-07",
-     "title": "MAS issues AI risk management guidelines for Singapore finance sector",
-     "url": "https://www.businesstimes.com.sg/singapore/economy-policy/mas-rolls-out-ai-risk-management-guidelines-singapores-financial-sector"
-    },
-    {
-     "publisher": "Singapore Business Review",
-     "date": "2026-10-07",
-     "title": "MAS issues AI risk management guidelines for financial sector",
-     "url": "https://sbr.com.sg/news/mas-issues-ai-risk-management-guidelines-financial-sector"
+     "url": "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions",
+     "kind": "official"
     },
     {
      "publisher": "Information Commissioner's Office (UK)",
      "date": "2026-10-08",
      "title": "ICO secures changes from leading AI developers as scrutiny extends to AI agents",
-     "url": "https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2026/10/ico-secures-changes-from-leading-ai-developers-as-scrutiny-extends-to-ai-agents/"
+     "url": "https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2026/10/ico-secures-changes-from-leading-ai-developers-as-scrutiny-extends-to-ai-agents/",
+     "kind": "official"
+    },
+    {
+     "publisher": "The Business Times (Singapore)",
+     "date": "2026-10-07",
+     "title": "News report",
+     "url": "https://www.businesstimes.com.sg/singapore/economy-policy/mas-rolls-out-ai-risk-management-guidelines-singapores-financial-sector",
+     "kind": "news"
+    },
+    {
+     "publisher": "Singapore Business Review",
+     "date": "2026-10-07",
+     "title": "News report",
+     "url": "https://sbr.com.sg/news/mas-issues-ai-risk-management-guidelines-financial-sector",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3015,37 +3093,43 @@
      "publisher": "Ministry of Foreign Affairs of the People's Republic of China",
      "date": "2026-10-12",
      "title": "Wang Yi Meets with Russian Presidential Aide and Chairman of the Maritime Board Nikolai Patrushev",
-     "url": "https://www.fmprc.gov.cn/mfa_eng/wjbzhd/202610/t20261014_12040281.html"
+     "url": "https://www.fmprc.gov.cn/mfa_eng/wjbzhd/202610/t20261014_12040281.html",
+     "kind": "official"
     },
     {
      "publisher": "TASS",
      "date": "2026-10-12",
-     "title": "China ready to safeguard maritime interests, navigation with Russia — foreign minister",
-     "url": "https://tass.com/world/2201065"
+     "title": "News report",
+     "url": "https://tass.com/world/2201065",
+     "kind": "news"
     },
     {
      "publisher": "The Arctic Century",
      "date": "2026-10-13",
-     "title": "Russia and China: Changing the Geoeconomic Map?",
-     "url": "https://arcticcentury.org/posts/changing-the-geoeconomic-map/"
+     "title": "News report",
+     "url": "https://arcticcentury.org/posts/changing-the-geoeconomic-map/",
+     "kind": "news"
     },
     {
      "publisher": "Invest Foresight (citing Interfax interview with First Deputy PM Denis Manturov)",
      "date": "2026-10-05",
-     "title": "Russia and India prepare Arctic route",
-     "url": "https://investforesight.com/russia-and-india-prepare-arctic-route/"
+     "title": "News report",
+     "url": "https://investforesight.com/russia-and-india-prepare-arctic-route/",
+     "kind": "news"
     },
     {
      "publisher": "PolarJournal",
      "date": "2026-10-13",
-     "title": "Russia and India are pushing ahead with the Arctic freight corridor",
-     "url": "https://polarjournal.net/russia-and-india-are-pushing-ahead-with-the-arctic-freight-corridor/"
+     "title": "News report",
+     "url": "https://polarjournal.net/russia-and-india-are-pushing-ahead-with-the-arctic-freight-corridor/",
+     "kind": "news"
     },
     {
      "publisher": "The Korea Herald",
      "date": "2026-10-13",
-     "title": "Seoul to pursue Arctic route in strict compliance with sanctions: Lee",
-     "url": "https://www.koreaherald.com/article/10901410"
+     "title": "News report",
+     "url": "https://www.koreaherald.com/article/10901410",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3170,37 +3254,43 @@
      "publisher": "FedDev Ontario / Government of Canada",
      "date": "2026-10-13",
      "title": "Government of Canada expands support to adopt and commercialize artificial intelligence",
-     "url": "https://www.canada.ca/en/economic-development-southern-ontario/news/2026/10/government-of-canada-expands-support-to-adopt-and-commercialize-artificial-intelligence.html"
+     "url": "https://www.canada.ca/en/economic-development-southern-ontario/news/2026/10/government-of-canada-expands-support-to-adopt-and-commercialize-artificial-intelligence.html",
+     "kind": "official"
     },
     {
      "publisher": "Prime Minister of Canada",
      "date": "2026-06-04",
      "title": "Prime Minister Carney launches AI for All: Canada's new national artificial intelligence strategy",
-     "url": "https://www.pm.gc.ca/en/news/speeches/2026/06/04/prime-minister-carney-launches-ai-all-canadas-new-national-artificial"
+     "url": "https://www.pm.gc.ca/en/news/speeches/2026/06/04/prime-minister-carney-launches-ai-all-canadas-new-national-artificial",
+     "kind": "official"
     },
     {
      "publisher": "ISED",
      "date": "2026-06",
      "title": "Canada's National Artificial Intelligence Strategy: AI for All (PDF)",
-     "url": "https://ised-isde.canada.ca/site/ised/sites/default/files/documents/ai-strategy-en.pdf"
+     "url": "https://ised-isde.canada.ca/site/ised/sites/default/files/documents/ai-strategy-en.pdf",
+     "kind": "official"
     },
     {
      "publisher": "ISED",
      "date": "2026",
      "title": "AI Sovereign Compute Infrastructure Program",
-     "url": "https://www.ised-isde.canada.ca/site/ised/en/ai-sovereign-compute-infrastructure-program"
+     "url": "https://www.ised-isde.canada.ca/site/ised/en/ai-sovereign-compute-infrastructure-program",
+     "kind": "official"
     },
     {
      "publisher": "ISED",
      "date": "2026-06-24",
      "title": "Program Guide: AI Compute Access Fund",
-     "url": "https://www.ised-isde.canada.ca/site/ised/en/canadian-sovereign-ai-compute-strategy/ai-compute-access-fund/program-guide-ai-compute-access-fund"
+     "url": "https://www.ised-isde.canada.ca/site/ised/en/canadian-sovereign-ai-compute-strategy/ai-compute-access-fund/program-guide-ai-compute-access-fund",
+     "kind": "official"
     },
     {
      "publisher": "ISED / Government of Canada",
      "date": "2026-05",
      "title": "Government of Canada and TELUS advance work to build sovereign AI infrastructure",
-     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2026/05/government-of-canada-and-telus-advance-work-to-build-sovereign-ai-infrastructure.html"
+     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2026/05/government-of-canada-and-telus-advance-work-to-build-sovereign-ai-infrastructure.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -3275,25 +3365,29 @@
      "publisher": "Global Affairs Canada",
      "date": "2026-10-12",
      "title": "Pledge on maintaining the integrity of the International Law of the Sea – No Fees / No Tolls",
-     "url": "https://www.canada.ca/en/global-affairs/news/2026/10/pledge-on-maintaining-the-integrity-of-the-international-law-of-the-sea--no-fees--no-tolls.html"
-    },
-    {
-     "publisher": "Centre for High North Logistics (CHNL)",
-     "date": "2026-10-09",
-     "title": "Overview of NSR Transit Voyages as of September 30, 2026",
-     "url": "https://chnl.no/news/overview-of-nsr-transit-voyages-as-of-september-30-2026/"
-    },
-    {
-     "publisher": "Scott Polar Research Institute (R. K. Headland)",
-     "date": "2025-11-01",
-     "title": "Northwest Passage transits to end of the 2025 navigation season",
-     "url": "https://www.spri.cam.ac.uk/resources/infosheets/northwestpassage.pdf"
+     "url": "https://www.canada.ca/en/global-affairs/news/2026/10/pledge-on-maintaining-the-integrity-of-the-international-law-of-the-sea--no-fees--no-tolls.html",
+     "kind": "official"
     },
     {
      "publisher": "Global Affairs Canada",
      "date": "2024-12-06",
      "title": "Canada's Arctic Foreign Policy",
-     "url": "https://international.canada.ca/en/global-affairs/corporate/reports/arctic-policy-2024"
+     "url": "https://international.canada.ca/en/global-affairs/corporate/reports/arctic-policy-2024",
+     "kind": "official"
+    },
+    {
+     "publisher": "Centre for High North Logistics (CHNL)",
+     "date": "2026-10-09",
+     "title": "News report",
+     "url": "https://chnl.no/news/overview-of-nsr-transit-voyages-as-of-september-30-2026/",
+     "kind": "news"
+    },
+    {
+     "publisher": "Scott Polar Research Institute (R. K. Headland)",
+     "date": "2025-11-01",
+     "title": "News report",
+     "url": "https://www.spri.cam.ac.uk/resources/infosheets/northwestpassage.pdf",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3407,8 +3501,9 @@
     {
      "publisher": "Meta",
      "date": "2025-02",
-     "title": "Meta's Odense Data Center (165,000 MWh of surplus heat a year)",
-     "url": "https://datacenters.atmeta.com/wp-content/uploads/2025/02/Metas-Odense-Data-Center.pdf"
+     "title": "News report",
+     "url": "https://datacenters.atmeta.com/wp-content/uploads/2025/02/Metas-Odense-Data-Center.pdf",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3484,32 +3579,37 @@
     {
      "publisher": "DatacenterDynamics (DCD)",
      "date": "2026-08-03",
-     "title": "Indigenous IT firm eyes data center campus in Canada's Northwest Territories",
-     "url": "https://www.datacenterdynamics.com/en/news/indigenous-it-firm-eyes-data-center-campus-in-canadas-northwest-territories/"
+     "title": "News report",
+     "url": "https://www.datacenterdynamics.com/en/news/indigenous-it-firm-eyes-data-center-campus-in-canadas-northwest-territories/",
+     "kind": "news"
     },
     {
      "publisher": "CBC News North",
      "date": "2026-08-10",
-     "title": "Proposed data centre is no supersized AI facility, says N.W.T. company",
-     "url": "https://www.cbc.ca/news/canada/north/ai-data-centre-nwt-katl-odeeche-9.7300880"
+     "title": "News report",
+     "url": "https://www.cbc.ca/news/canada/north/ai-data-centre-nwt-katl-odeeche-9.7300880",
+     "kind": "news"
     },
     {
      "publisher": "Canada's National Observer",
      "date": "2025-10-27",
-     "title": "Arctic security and AI boom could fire up Canada's vast geothermal play",
-     "url": "https://www.nationalobserver.com/2025/10/27/analysis/geothermal-energy-northern-canada"
+     "title": "News report",
+     "url": "https://www.nationalobserver.com/2025/10/27/analysis/geothermal-energy-northern-canada",
+     "kind": "news"
     },
     {
      "publisher": "Cascade Institute",
      "date": "2025-10-27",
-     "title": "Geothermal power is the key to cheaper energy in the Canadian Arctic",
-     "url": "https://cascadeinstitute.org/geothermal-power-is-the-key-to-cheaper-energy-in-the-canadian-arctic/"
+     "title": "News report",
+     "url": "https://cascadeinstitute.org/geothermal-power-is-the-key-to-cheaper-energy-in-the-canadian-arctic/",
+     "kind": "news"
     },
     {
      "publisher": "Data Center Frontier",
      "date": "2026-07-29",
-     "title": "Meta's Canadian AI Data Center: A New Model for Infrastructure and Energy Integration",
-     "url": "https://www.datacenterfrontier.com/hyperscale/article/55391399/metas-canadian-ai-data-center-a-new-model-for-infrastructure-and-energy-integration"
+     "title": "News report",
+     "url": "https://www.datacenterfrontier.com/hyperscale/article/55391399/metas-canadian-ai-data-center-a-new-model-for-infrastructure-and-energy-integration",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3582,34 +3682,39 @@
    ],
    "sources": [
     {
+     "publisher": "Presidência da República (Brazil)",
+     "date": "2026-09-16",
+     "title": "Lei nº 15.506 – Política Nacional de Minerais Críticos e Estratégicos (PNMCE) e CIMCE",
+     "url": "https://www.presidencia.gov.br/ccivil_03/_ato2023-2026/2026/lei/l15506.htm",
+     "kind": "official"
+    },
+    {
      "publisher": "Moneycontrol",
      "date": "2026-10-09",
-     "title": "Critical minerals stockpiling policy likely in a month, says Mines Secretary",
-     "url": "https://www.moneycontrol.com/news/business/critical-minerals-stockpiling-policy-likely-in-a-month-says-mines-secretary-14048620.html"
+     "title": "News report",
+     "url": "https://www.moneycontrol.com/news/business/critical-minerals-stockpiling-policy-likely-in-a-month-says-mines-secretary-14048620.html",
+     "kind": "news"
     },
     {
      "publisher": "The Times of India",
      "date": "2026-10-10",
-     "title": "Government to announce a policy on stockpiling of critical minerals",
-     "url": "https://timesofindia.indiatimes.com/business/india-business/government-to-announce-a-policy-on-stockpiling-of-critical-minerals/articleshow/134850751.cms"
+     "title": "News report",
+     "url": "https://timesofindia.indiatimes.com/business/india-business/government-to-announce-a-policy-on-stockpiling-of-critical-minerals/articleshow/134850751.cms",
+     "kind": "news"
     },
     {
      "publisher": "MINING.COM",
      "date": "2026-10-12",
-     "title": "Lynas plans Brazil rare earths plant with state support",
-     "url": "https://www.mining.com/lynas-plans-brazil-rare-earths-plant-with-state-support/"
-    },
-    {
-     "publisher": "Presidência da República (Brazil)",
-     "date": "2026-09-16",
-     "title": "Lei nº 15.506 – Política Nacional de Minerais Críticos e Estratégicos (PNMCE) e CIMCE",
-     "url": "https://www.presidencia.gov.br/ccivil_03/_ato2023-2026/2026/lei/l15506.htm"
+     "title": "News report",
+     "url": "https://www.mining.com/lynas-plans-brazil-rare-earths-plant-with-state-support/",
+     "kind": "news"
     },
     {
      "publisher": "MDIC (Brazil)",
      "date": "2026-09-16",
-     "title": "Presidente sanciona Política Nacional de Minerais Críticos e Estratégicos",
-     "url": ""
+     "title": "News report",
+     "url": "",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3706,25 +3811,29 @@
      "publisher": "European Commission (Have Your Say)",
      "date": "2026-10-12",
      "title": "AI Act Implementing Act - Articles 75c-75d (feedback 12 Oct to 9 Nov 2026; adoption planned Q4 2026)",
-     "url": "https://ec.europa.eu/info/law/better-regulation/have-your-say/initiatives/19292-AI-Act-Implementing-Act-Articles-75c-75d_en"
+     "url": "https://ec.europa.eu/info/law/better-regulation/have-your-say/initiatives/19292-AI-Act-Implementing-Act-Articles-75c-75d_en",
+     "kind": "official"
     },
     {
      "publisher": "European Commission (draft text)",
      "date": "2026-10-12",
      "title": "Draft Commission Implementing Regulation on practical and specific arrangements for proceedings under Articles 75c and 75d of Regulation (EU) 2024/1689, Ares(2026)9589403",
-     "url": "https://ec.europa.eu/info/law/better-regulation/api/download/090166e534f8b82e"
+     "url": "https://ec.europa.eu/info/law/better-regulation/api/download/090166e534f8b82e",
+     "kind": "official"
     },
     {
      "publisher": "Agence Europe",
      "date": "2026-10-12",
-     "title": "European Commission launches public consultation on draft implementing act under 'AI Act'",
-     "url": "https://agenceurope.eu/en/bulletin/article/13958/18/european-commission-launches-public-consultation-on-draft-implementing-act-under-ai-act"
+     "title": "News report",
+     "url": "https://agenceurope.eu/en/bulletin/article/13958/18/european-commission-launches-public-consultation-on-draft-implementing-act-under-ai-act",
+     "kind": "news"
     },
     {
      "publisher": "Reuters (via RNZ)",
      "date": "2026-10-10",
-     "title": "Europe confident its rules can thwart rogue AI",
-     "url": "https://www.rnz.co.nz/news/science-and-technology/1824809/europe-confident-its-rules-can-thwart-rogue-ai"
+     "title": "News report",
+     "url": "https://www.rnz.co.nz/news/science-and-technology/1824809/europe-confident-its-rules-can-thwart-rogue-ai",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3791,7 +3900,7 @@
    ],
    "primary": "arctic",
    "summary": "Greenland’s new defence pact with the US just cleared its first debate in Nuuk. Read the fine print: it is also an investment filter.",
-   "body": "Greenland’s new defence pact with the US just cleared its first debate in Nuuk. Read the fine print: it is also an investment filter.\n\n3 key takeaways:\n\n1. Oct 12 (Nuuk): A majority in Inatsisartut sent the US–Denmark–Greenland agreement to a second reading without committee review. The governing Demokraatit, Inuit Ataqatigiit and Atassut backed it as it stands; Siumut and Naleraq wanted committee scrutiny. No date is set for the second reading.\n\n2. Sep 22 (New York, signed text): The US may establish defense areas at Narsarsuaq and Mestersvig, with modalities still to be mutually agreed, and its public vessels gain undersea access to Greenland’s territorial waters. The agreement has no end date; an independent Greenland would stay in NATO and assume its obligations.\n\n3. Article X (geoeconomics): Investors from states outside NATO, NATO partners or the EU may not gain control, significant influence or access to non-public information in “particularly sensitive” sectors, including critical infrastructure and resource extraction, unless the parties agree otherwise.\n\nWhy it matters: If ratified, Greenland’s minerals and infrastructure would sit behind an allied capital screen written into a defence treaty.\n\nCaveat: Not in force. It still needs a second reading, approval by Denmark’s Folketing and a diplomatic note. Naleraq objects that Greenland is guaranteed no fixed payment.\n\nWho should read Article X most closely: miners, infrastructure investors or lenders?",
+   "body": "Greenland’s new defence pact with the US just cleared its first debate in Nuuk. Read the fine print: it is also an investment filter.\n\n3 key takeaways:\n\n1. Oct 12 (Nuuk): A majority in Inatsisartut sent the US–Denmark–Greenland agreement to a second reading without committee review. The three governing parties supported the text unchanged; two opposition parties asked for committee review. No date is set for the second reading.\n\n2. Sep 22 (New York, signed text): The US may establish defense areas at Narsarsuaq and Mestersvig, with modalities still to be mutually agreed, and its public vessels gain undersea access to Greenland’s territorial waters. The agreement has no end date; an independent Greenland would stay in NATO and assume its obligations.\n\n3. Article X (geoeconomics): Investors from states outside NATO, NATO partners or the EU may not gain control, significant influence or access to non-public information in “particularly sensitive” sectors, including critical infrastructure and resource extraction, unless the parties agree otherwise.\n\nWhy it matters: If ratified, Greenland’s minerals and infrastructure would sit behind an allied capital screen written into a defence treaty.\n\nCaveat: Not in force. It still needs a second reading, approval by Denmark’s Folketing and a diplomatic note. Naleraq objects that Greenland is guaranteed no fixed payment.\n\nWho should read Article X most closely: miners, infrastructure investors or lenders?",
    "stat": {
     "value": "2",
     "label": "named sites for new US defense areas: Narsarsuaq & Mestersvig (modalities still to be agreed)"
@@ -3806,25 +3915,29 @@
      "publisher": "The White House",
      "date": "2026-09-22",
      "title": "Agreement between the United States, the Kingdom of Denmark and the Government of Greenland to amend and supplement the 1951 Defense Agreement (full text)",
-     "url": "https://www.whitehouse.gov/briefings-statements/2026/09/agreement-between-the-government-of-the-united-states-of-america-and-the-government-of-the-kingdom-of-denmark-together-with-the-government-of-greenland-to-amend-and-supplement-the-agreement-of-27-apri/"
+     "url": "https://www.whitehouse.gov/briefings-statements/2026/09/agreement-between-the-government-of-the-united-states-of-america-and-the-government-of-the-kingdom-of-denmark-together-with-the-government-of-greenland-to-amend-and-supplement-the-agreement-of-27-apri/",
+     "kind": "official"
     },
     {
      "publisher": "KNR",
      "date": "2026-10-12",
-     "title": "Inatsisartut sender USA-aftale videre til anden behandling",
-     "url": "https://knr.gl/da/nyheder/inatsisartut-diskuterer-ny-usa-aftale"
+     "title": "News report",
+     "url": "https://knr.gl/da/nyheder/inatsisartut-diskuterer-ny-usa-aftale",
+     "kind": "news"
     },
     {
      "publisher": "ArcticToday",
      "date": "2026-10-12",
-     "title": "‘Our country has been under threat,’ Greenland’s foreign minister says as defense deal advances",
-     "url": "https://www.arctictoday.com/our-country-has-been-under-threat-greenlands-foreign-minister-says-as-defense-deal-advances/"
+     "title": "News report",
+     "url": "https://www.arctictoday.com/our-country-has-been-under-threat-greenlands-foreign-minister-says-as-defense-deal-advances/",
+     "kind": "news"
     },
     {
      "publisher": "Sermitsiaq",
      "date": "2026-10-12",
-     "title": "Overblik: Forsvarsaftale, tidens bestemmelse og deepfakes",
-     "url": "https://www.sermitsiaq.ag/samfund/forsvarsaftale-tidens-bestemmelse-og-deepfakes/2434855"
+     "title": "News report",
+     "url": "https://www.sermitsiaq.ag/samfund/forsvarsaftale-tidens-bestemmelse-og-deepfakes/2434855",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3884,8 +3997,8 @@
     "minerals"
    ],
    "primary": "minerals",
-   "summary": "Brussels just named the next wave of Europe’s critical-minerals buildout. On 9 October 2026 the European Commission selected 46 new Strategic Projects under the Critical Raw Materials Act — across 16 Member States.",
-   "body": "Brussels just named the next wave of Europe’s critical-minerals buildout.\n\nOn 9 October 2026 the European Commission selected 46 new Strategic Projects under the Critical Raw Materials Act — across 16 Member States.\n\n3 key takeaways:\n\n1. Oct 9 (Brussels): 46 projects from 102 EU applications — 8 extraction, 11 processing, 19 recycling, 8 integrated. With the 47 named in March 2025, the in-EU pipeline is now 93, plus 13 earlier third-country projects.\n\n2. Oct 9 (materials): Covers 15 of 17 strategic raw materials. Battery chain: 7 lithium, 12 nickel, 10 cobalt, 5 manganese, 4 graphite. Defence/aerospace: magnesium and tungsten. Four rare-earth projects back permanent magnets. The Commission says the 2025–26 slate could fully meet extraction benchmarks for lithium, nickel, rare earths, magnesium and tungsten, and processing for lithium and rare earths.\n\n3. Oct 9 (follow-through): Status means faster permitting and help accessing finance — not automatic EU funding. Expected capital for the 46: about €21.1 billion. First-wave progress: 25 finished EIA; 17 hold construction permits.\n\nWhy it matters: Policy risk is shifting from “will Europe legislate?” to “which projects clear permits and offtake first?”\n\nCaveat: Benchmark language is the Commission’s projection (“could”), not a guarantee.\n\nWhich of these 46 is on your supply-risk map?",
+   "summary": "Brussels just named the next wave of Europe’s critical-minerals buildout. The Commission added 46 Strategic Projects in 16 Member States on 9 October 2026.",
+   "body": "Brussels just named the next wave of Europe’s critical-minerals buildout.\n\nThe Commission added 46 Strategic Projects in 16 Member States on 9 October 2026.\n\n3 key takeaways:\n\n1. Oct 9 (Brussels): 46 projects from 102 EU applications — 8 extraction, 11 processing, 19 recycling, 8 integrated. With the 47 named in March 2025, the in-EU pipeline is now 93, plus 13 earlier third-country projects.\n\n2. Oct 9 (materials): Covers 15 of 17 strategic raw materials. Battery chain: 7 lithium, 12 nickel, 10 cobalt, 5 manganese, 4 graphite. Defence/aerospace: magnesium and tungsten. Four rare-earth projects back permanent magnets. The Commission says the 2025–26 slate could fully meet extraction benchmarks for lithium, nickel, rare earths, magnesium and tungsten, and processing for lithium and rare earths.\n\n3. Oct 9 (follow-through): Status means faster permitting and help accessing finance — not automatic EU funding. Expected capital for the 46: about €21.1 billion. First-wave progress: 25 finished EIA; 17 hold construction permits.\n\nWhy it matters: Policy risk is shifting from “will Europe legislate?” to “which projects clear permits and offtake first?”\n\nCaveat: Benchmark language is the Commission’s projection (“could”), not a guarantee.\n\nWhich of these 46 is on your supply-risk map?",
    "stat": {
     "value": "46",
     "label": "new EU Strategic Projects under the Critical Raw Materials Act (Oct 9)"
@@ -3900,25 +4013,29 @@
      "publisher": "European Commission",
      "date": "2026-10-09",
      "title": "Commission selects 46 new Strategic Projects to bolster the EU's supply of critical raw materials",
-     "url": "https://ec.europa.eu/commission/presscorner/detail/en/ip_26_2113"
+     "url": "https://ec.europa.eu/commission/presscorner/detail/en/ip_26_2113",
+     "kind": "official"
     },
     {
      "publisher": "European Commission (Q&A)",
      "date": "2026-10-09",
      "title": "Questions and answers on the Critical Raw Materials strategic projects",
-     "url": "https://europa.eu/newsroom/ecpc-failover/pdf/qanda-26-2114_en.pdf"
+     "url": "https://europa.eu/newsroom/ecpc-failover/pdf/qanda-26-2114_en.pdf",
+     "kind": "official"
     },
     {
      "publisher": "European Commission DG GROW",
      "date": "2026-10-09",
      "title": "Selected strategic projects under CRMA",
-     "url": "https://single-market-economy.ec.europa.eu/sectors/raw-materials/areas-specific-interest/critical-raw-materials/strategic-projects-under-crma/selected-projects_en"
+     "url": "https://single-market-economy.ec.europa.eu/sectors/raw-materials/areas-specific-interest/critical-raw-materials/strategic-projects-under-crma/selected-projects_en",
+     "kind": "official"
     },
     {
      "publisher": "ThinkGeoEnergy",
      "date": "2026-10-12",
-     "title": "More geothermal lithium projects identified as Strategic Projects by the European Commission",
-     "url": "https://www.thinkgeoenergy.com/more-geothermal-lithium-projects-identified-as-strategic-projects-by-the-european-commission/"
+     "title": "News report",
+     "url": "https://www.thinkgeoenergy.com/more-geothermal-lithium-projects-identified-as-strategic-projects-by-the-european-commission/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -3999,7 +4116,7 @@
    ],
    "primary": "minerals",
    "summary": "Rare earth security is being bargained in trade talks — not just written into domestic bills. On October 8–9 in Beijing, the EU and China turned their trade consultation mechanism into a first package tying critical materials to cars and tariffs.",
-   "body": "Rare earth security is being bargained in trade talks — not just written into domestic bills.\n\nOn October 8–9 in Beijing, the EU and China turned their trade consultation mechanism into a first package tying critical materials to cars and tariffs.\n\n3 key takeaways:\n\n1. Oct 8–9, Beijing: After talks between Trade Commissioner Maroš Šefčovič and Commerce Minister Wang Wentao, China said it will continue facilitating export-licence approvals for rare earths and permanent magnets destined for the EU via the existing fast-track channel. Export controls are not being abolished.\n\n2. Oct 9, EU: Šefčovič called the package a “crucial first step.” It also includes an understanding on hybrid vehicle exports and talks on lower tariffs covering about €4 billion in current EU exports — still needing legal and political follow-through.\n\n3. U.S. clock: Treasury Secretary Scott Bessent said (Sep 23) the U.S.–China Busan truce — including rare-earth export-control suspensions — was extended to January 10, 2027. China’s MOFCOM Notice 70 still lists the suspension through November 10, 2026, leaving a gazette gap for buyers.\n\nWhy it matters: Allied critical-mineral strategy now runs on two tracks — home institutions and negotiated licence predictability with China.\n\nCaveat: Licensing facilitation is not unrestricted supply. Hybrid and tariff pieces are understandings, not fully implemented law. Treat Jan 10 as a political clock until MOFCOM updates Notice 70.\n\nIs your minerals risk register tracking licence lead times as closely as mine and refining capacity?",
+   "body": "Rare earth security is being bargained in trade talks — not just written into domestic bills.\n\nOn October 8–9 in Beijing, the EU and China turned their trade consultation mechanism into a first package tying critical materials to cars and tariffs.\n\n3 key takeaways:\n\n1. Oct 8 to 9, Beijing: after EU and Chinese trade ministers met, China said EU-bound rare earth and magnet licences would keep using the fast-track route. Export controls are not being abolished.\n\n2. Oct 9, EU: Šefčovič called the package a “crucial first step.” It also includes an understanding on hybrid vehicle exports and talks on lower tariffs covering about €4 billion in current EU exports — still needing legal and political follow-through.\n\n3. U.S. clock: Treasury Secretary Scott Bessent said (Sep 23) the U.S.–China Busan truce — including rare-earth export-control suspensions — was extended to January 10, 2027. China’s MOFCOM Notice 70 still lists the suspension through November 10, 2026, leaving a gazette gap for buyers.\n\nWhy it matters: Allied critical-mineral strategy now runs on two tracks — home institutions and negotiated licence predictability with China.\n\nCaveat: Licensing facilitation is not unrestricted supply. Hybrid and tariff pieces are understandings, not fully implemented law. Treat Jan 10 as a political clock until MOFCOM updates Notice 70.\n\nIs your minerals risk register tracking licence lead times as closely as mine and refining capacity?",
    "stat": {
     "value": "Jan 10",
     "label": "2027 date Bessent cited for the U.S.–China Busan truce extension on rare earths"
@@ -4011,34 +4128,39 @@
    ],
    "sources": [
     {
+     "publisher": "China Ministry of Commerce / GACC (Notice 70)",
+     "date": "2025-11-07",
+     "title": "Announcement No. 70 [2025] suspending rare-earth and related export-control notices through 10 Nov 2026",
+     "url": "https://www.mofcom.gov.cn/zfxxgk/gkml/art/2025/art_b1bff63a6bdd412a99c84203dd30fd39.html",
+     "kind": "official"
+    },
+    {
      "publisher": "The Japan Times (AFP)",
      "date": "2026-10-09",
-     "title": "China, EU agree on dialogue, cars and rare earths after trade talks",
-     "url": "https://www.thejapantimes.jp/Economy/755332-china-eu-agree-on-dialogue-cars-and-rare-earths-after-trade-talks.html"
+     "title": "News report",
+     "url": "https://www.thejapantimes.jp/Economy/755332-china-eu-agree-on-dialogue-cars-and-rare-earths-after-trade-talks.html",
+     "kind": "news"
     },
     {
      "publisher": "EUobserver",
      "date": "2026-10-09",
-     "title": "EU trade chief hails ‘crucial first step’ as Beijing talks avoid trade war",
-     "url": "https://euobserver.com/242093/eu-trade-chief-hails-crucial-first-step-as-beijing-talks-avoid-trade-war/"
+     "title": "News report",
+     "url": "https://euobserver.com/242093/eu-trade-chief-hails-crucial-first-step-as-beijing-talks-avoid-trade-war/",
+     "kind": "news"
     },
     {
      "publisher": "2EU.brussels",
      "date": "2026-10-09",
-     "title": "EU and China announce first trade rebalancing results on hybrids, tariffs and rare earths",
-     "url": "https://2eu.brussels/en/news/eu-and-china-announce-first-trade-rebalancing-results-on-hybrids-tariffs-and-rare-earths"
-    },
-    {
-     "publisher": "China Ministry of Commerce / GACC (Notice 70)",
-     "date": "2025-11-07",
-     "title": "Announcement No. 70 [2025] suspending rare-earth and related export-control notices through 10 Nov 2026",
-     "url": "https://www.mofcom.gov.cn/zfxxgk/gkml/art/2025/art_b1bff63a6bdd412a99c84203dd30fd39.html"
+     "title": "News report",
+     "url": "https://2eu.brussels/en/news/eu-and-china-announce-first-trade-rebalancing-results-on-hybrids-tariffs-and-rare-earths",
+     "kind": "news"
     },
     {
      "publisher": "NBC News / Fox News (Bessent)",
      "date": "2026-09-23",
-     "title": "Bessent: U.S.–China Busan trade truce extended to Jan. 10, 2027",
-     "url": "https://sourcing.center/news/2026-09-24-bessent-us-china-busan-truce-extended-to-jan-10"
+     "title": "News report",
+     "url": "https://sourcing.center/news/2026-09-24-bessent-us-china-busan-truce-extended-to-jan-10",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -4135,19 +4257,22 @@
      "publisher": "UK Information Commissioner's Office (ICO)",
      "date": "2026-10-08",
      "title": "ICO secures changes from leading AI developers as scrutiny extends to AI agents",
-     "url": "https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2026/10/ico-secures-changes-from-leading-ai-developers-as-scrutiny-extends-to-ai-agents/"
+     "url": "https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2026/10/ico-secures-changes-from-leading-ai-developers-as-scrutiny-extends-to-ai-agents/",
+     "kind": "official"
     },
     {
      "publisher": "ABC News (Australia)",
      "date": "2026-10-08",
-     "title": "Australia outlines plans to make AI companies prove their safety systems work",
-     "url": "https://www.abc.net.au/news/2026-10-08/federal-politics-ai-regulation-andrew-charlton-speech/107241674"
+     "title": "News report",
+     "url": "https://www.abc.net.au/news/2026-10-08/federal-politics-ai-regulation-andrew-charlton-speech/107241674",
+     "kind": "news"
     },
     {
      "publisher": "POLITICO",
      "date": "2026-10-08",
-     "title": "AI safety framework floated by Democratic duo",
-     "url": "https://www.politico.com/news/2026/10/08/ai-safety-framework-floated-by-democratic-duo-01112981"
+     "title": "News report",
+     "url": "https://www.politico.com/news/2026/10/08/ai-safety-framework-floated-by-democratic-duo-01112981",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -4228,19 +4353,22 @@
      "publisher": "Global Affairs Canada",
      "date": "2026-10-08",
      "title": "Canada-Iceland Joint Statement",
-     "url": "https://www.canada.ca/en/global-affairs/news/2026/10/canada-iceland-joint-statement.html"
+     "url": "https://www.canada.ca/en/global-affairs/news/2026/10/canada-iceland-joint-statement.html",
+     "kind": "official"
     },
     {
      "publisher": "Department of National Defence (Defence Stories)",
      "date": "2026-10-08",
      "title": "Arctic partnerships strengthened during Operation ARCTIC VANGUARD",
-     "url": "https://www.canada.ca/en/department-national-defence/maple-leaf/defence/2026/10/arctic-partnerships-strengthened-operation-arctic-vanguard.html"
+     "url": "https://www.canada.ca/en/department-national-defence/maple-leaf/defence/2026/10/arctic-partnerships-strengthened-operation-arctic-vanguard.html",
+     "kind": "official"
     },
     {
      "publisher": "Anvil North",
      "date": "2026-10-05",
-     "title": "JEF ministers advance recommendation on Canada's membership ahead of Reykjavik summit",
-     "url": "https://anvilnorth.ca/news/canada-jef-membership-recommendation-reykjavik-summit/"
+     "title": "News report",
+     "url": "https://anvilnorth.ca/news/canada-jef-membership-recommendation-reykjavik-summit/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -4314,7 +4442,8 @@
      "publisher": "Grants.gov",
      "date": "2026-08-06",
      "title": "U.S. National Science Foundation State and Regional Artificial Intelligence Infrastructure Hubs",
-     "url": "https://www.grants.gov/search-results-detail/363481"
+     "url": "https://www.grants.gov/search-results-detail/363481",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4401,7 +4530,8 @@
      "publisher": "Grants.gov",
      "date": "2026-07-21",
      "title": "Unlocking Dataset Value for AI-Enabled Scientific Discovery (AI Datasets)",
-     "url": "https://www.grants.gov/search-results-detail/363268"
+     "url": "https://www.grants.gov/search-results-detail/363268",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4481,7 +4611,8 @@
      "publisher": "Prime Minister of Canada",
      "date": "2026-03-12",
      "title": "Over $40 billion plan to defend, build and transform Canada's North and Arctic (Grays Bay Road and Port)",
-     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/03/12/prime-minister-carney-announces-ambitious-new-plan-defend-build-and"
+     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/03/12/prime-minister-carney-announces-ambitious-new-plan-defend-build-and",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4549,13 +4680,15 @@
      "publisher": "Innovation, Science and Economic Development Canada",
      "date": "2024-12",
      "title": "Canadian Sovereign AI Compute Strategy",
-     "url": "https://www.ised-isde.canada.ca/site/ised/en/canadian-sovereign-ai-compute-strategy"
+     "url": "https://www.ised-isde.canada.ca/site/ised/en/canadian-sovereign-ai-compute-strategy",
+     "kind": "official"
     },
     {
      "publisher": "Government of Canada",
      "date": "2025-03",
      "title": "Government of Canada introduces AI Compute Access Fund",
-     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2025/03/government-of-canada-introduces-ai-compute-access-fund-to-support-canadian-innovators.html"
+     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2025/03/government-of-canada-introduces-ai-compute-access-fund-to-support-canadian-innovators.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4622,13 +4755,15 @@
      "publisher": "NERC",
      "date": "2025",
      "title": "Incident Review: Considering Simultaneous Voltage-Sensitive Load Reductions (about 60 data centers, 1,500 MW)",
-     "url": "https://www.nerc.com/globalassets/our-work/reports/event-reports/incident_review_large_load_loss.pdf"
+     "url": "https://www.nerc.com/globalassets/our-work/reports/event-reports/incident_review_large_load_loss.pdf",
+     "kind": "official"
     },
     {
      "publisher": "DCD",
      "date": "2025",
-     "title": "Virginia narrowly avoided power cuts when 60 data centers dropped off the grid at once",
-     "url": "https://www.datacenterdynamics.com/en/news/virginia-narrowly-avoided-power-cuts-when-60-data-centers-dropped-off-the-grid-at-once/"
+     "title": "News report",
+     "url": "https://www.datacenterdynamics.com/en/news/virginia-narrowly-avoided-power-cuts-when-60-data-centers-dropped-off-the-grid-at-once/",
+     "kind": "news"
     }
    ],
    "image": null,
@@ -4698,13 +4833,15 @@
      "publisher": "Prime Minister of Canada",
      "date": "2026-04-27",
      "title": "Prime Minister Carney announces the Canada Strong Fund, Canada's first sovereign wealth fund",
-     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/04/27/prime-minister-carney-announces-canada-strong-fund-canadas-first"
+     "url": "https://www.pm.gc.ca/en/news/news-releases/2026/04/27/prime-minister-carney-announces-canada-strong-fund-canadas-first",
+     "kind": "official"
     },
     {
      "publisher": "Department of Finance Canada",
      "date": "2026-04",
      "title": "Canada Strong Fund",
-     "url": "https://www.canada.ca/en/department-finance/news/2026/04/canada-strong-fund.html"
+     "url": "https://www.canada.ca/en/department-finance/news/2026/04/canada-strong-fund.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4773,7 +4910,8 @@
      "publisher": "International Energy Agency",
      "date": "2025-04-10",
      "title": "AI is set to drive surging electricity demand from data centres",
-     "url": "https://www.iea.org/news/ai-is-set-to-drive-surging-electricity-demand-from-data-centres-while-offering-the-potential-to-transform-how-the-energy-sector-works"
+     "url": "https://www.iea.org/news/ai-is-set-to-drive-surging-electricity-demand-from-data-centres-while-offering-the-potential-to-transform-how-the-energy-sector-works",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4848,7 +4986,8 @@
      "publisher": "Grants.gov",
      "date": "2026-04-14",
      "title": "Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences, Arctic System Sciences, and Arctic Observing Network (DDRIG)",
-     "url": "https://www.grants.gov/search-results-detail/361896"
+     "url": "https://www.grants.gov/search-results-detail/361896",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -4928,13 +5067,15 @@
      "publisher": "US Energy Information Administration",
      "date": "2025-06",
      "title": "Amid regional conflict, the Strait of Hormuz remains critical oil chokepoint",
-     "url": "https://www.eia.gov/todayinEnergy/detail.php?id=65504"
+     "url": "https://www.eia.gov/todayinEnergy/detail.php?id=65504",
+     "kind": "official"
     },
     {
      "publisher": "US Energy Information Administration",
      "date": "2026-02",
      "title": "World Oil Transit Chokepoints",
-     "url": "https://www.eia.gov/international/content/analysis/special_topics/World_Oil_Transit_Chokepoints"
+     "url": "https://www.eia.gov/international/content/analysis/special_topics/World_Oil_Transit_Chokepoints",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -5004,13 +5145,15 @@
      "publisher": "Innovation, Science and Economic Development Canada",
      "date": "2026-03-19",
      "title": "Minister McGuinty highlights $900 million to boost defence innovation and quantum technology",
-     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2026/03/canada-advances-defence-industrial-strategy-to-strengthen-security-sovereignty-and-prosperity0.html"
+     "url": "https://www.canada.ca/en/innovation-science-economic-development/news/2026/03/canada-advances-defence-industrial-strategy-to-strengthen-security-sovereignty-and-prosperity0.html",
+     "kind": "official"
     },
     {
      "publisher": "National Research Council of Canada",
      "date": "2026-03-09",
      "title": "New programs to support Canada's Defence Industrial Strategy",
-     "url": "https://www.canada.ca/en/national-research-council/news/2026/03/new-programs-to-support-canadas-defence-industrial-strategy.html"
+     "url": "https://www.canada.ca/en/national-research-council/news/2026/03/new-programs-to-support-canadas-defence-industrial-strategy.html",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -5077,7 +5220,8 @@
      "publisher": "International Energy Agency",
      "date": "2025-10",
      "title": "Gas 2025: Executive summary",
-     "url": "https://www.iea.org/reports/gas-2025/executive-summary"
+     "url": "https://www.iea.org/reports/gas-2025/executive-summary",
+     "kind": "official"
     }
    ],
    "image": null,
