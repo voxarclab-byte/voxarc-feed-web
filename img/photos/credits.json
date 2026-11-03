@@ -1,0 +1,195 @@
+{
+ "note": "Bundled photos. Public domain, CC0 or CC BY only (no share-alike). Credit shown on the detail screen.",
+ "photos": {
+  "arctic-icebreaker": {
+   "file": "img/photos/arctic-icebreaker.webp",
+   "title": "Icebreakers Louis S. St-Laurent and Healy in the Arctic Ocean.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Icebreakers_Louis_S._St-Laurent_and_Healy_in_the_Arctic_Ocean.jpg",
+   "author": "Petty Officer 3rd Class Patrick Kelley",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "arctic-polar-bear": {
+   "file": "img/photos/arctic-polar-bear.webp",
+   "title": "Polar bears on the Beaufort Sea coast.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Polar_bears_on_the_Beaufort_Sea_coast.jpg",
+   "author": "USFWS",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "minerals-lithium": {
+   "file": "img/photos/minerals-lithium.webp",
+   "title": "Crepúsculo salino (Explore) - Flickr - Runa 59.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Crep%C3%BAsculo_salino_(Explore)_-_Flickr_-_Runa_59.jpg",
+   "author": "Runa 59",
+   "license": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "minerals-rare-earth": {
+   "file": "img/photos/minerals-rare-earth.webp",
+   "title": "Rareearthoxides.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rareearthoxides.jpg",
+   "author": "Peggy Greb, US department of agriculture",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "minerals-nickel": {
+   "file": "img/photos/minerals-nickel.webp",
+   "title": "Victoria Mine nickel smelter General view.png",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Victoria_Mine_nickel_smelter_General_view.png",
+   "author": "Arthur Philemon Coleman",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "ai-datacenter": {
+   "file": "img/photos/ai-datacenter.webp",
+   "title": "Datacenter Server Racks (22370909788).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Datacenter_Server_Racks_(22370909788).jpg",
+   "author": "Carl Lender from Sunrise, USA",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "ai-supercomputer": {
+   "file": "img/photos/ai-supercomputer.webp",
+   "title": "Theta supercomputer - 389 071 002 (36954713450).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Theta_supercomputer_-_389_071_002_(36954713450).jpg",
+   "author": "U.S. Department of Energy from United States",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "geo-capitol": {
+   "file": "img/photos/geo-capitol.webp",
+   "title": "US Capitol dome Jan 2006.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:US_Capitol_dome_Jan_2006.jpg",
+   "author": "Diliff",
+   "license": "CC BY 2.5",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+   "modified": "resized to 600px, WebP"
+  },
+  "geo-eu": {
+   "file": "img/photos/geo-eu.webp",
+   "title": "Berlaymont building (DSCF7542-DSCF7548).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Berlaymont_building_(DSCF7542-DSCF7548).jpg",
+   "author": "Trougnouf (Benoit Brummer)",
+   "license": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "geo-port": {
+   "file": "img/photos/geo-port.webp",
+   "title": "Container ship being loaded in Long Beach container port.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Container_ship_being_loaded_in_Long_Beach_container_port.jpg",
+   "author": "biofriendly",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "geo-tanker": {
+   "file": "img/photos/geo-tanker.webp",
+   "title": "Oil tanker, gas tanker in the high sea Refinery Industry cargo ship (52848038105).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oil_tanker,_gas_tanker_in_the_high_sea_Refinery_Industry_cargo_ship_(52848038105).jpg",
+   "author": "Jernej Furman from Slovenia",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "grid-power": {
+   "file": "img/photos/grid-power.webp",
+   "title": "Electric transmission power tower2.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Electric_transmission_power_tower2.jpg",
+   "author": "Foto3821",
+   "license": "CC0",
+   "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "modified": "resized to 600px, WebP"
+  },
+  "arctic-port": {
+   "file": "img/photos/arctic-port.webp",
+   "title": "PRUDHOE BAY ALASKA - DPLA - 6030bbb5743c3fbf8332937d9011cb81.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:PRUDHOE_BAY_ALASKA_-_DPLA_-_6030bbb5743c3fbf8332937d9011cb81.jpg",
+   "author": "National Aeronautics and Space Administration. John H. Glenn Research Center at ",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "arctic-nunavut": {
+   "file": "img/photos/arctic-nunavut.webp",
+   "title": "USCGC Alder off Pond Inlet, Nunavut, during Operation Nanook 2010 - 100819-G-4702D-105.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:USCGC_Alder_off_Pond_Inlet,_Nunavut,_during_Operation_Nanook_2010_-_100819-G-4702D-105.jpg",
+   "author": "Petty Officer 3rd Class George Degener",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "arctic-greenland": {
+   "file": "img/photos/arctic-greenland.webp",
+   "title": "Port of Nuuk (SIKUKI - Nuuk Harbour AS).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Port_of_Nuuk_(SIKUKI_-_Nuuk_Harbour_AS).jpg",
+   "author": "Quintin Soloviev",
+   "license": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "minerals-seabed": {
+   "file": "img/photos/minerals-seabed.webp",
+   "title": "Pelagite (deep seafloor manganese nodule) (Pacific Ocean) 2.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pelagite_(deep_seafloor_manganese_nodule)_(Pacific_Ocean)_2.jpg",
+   "author": "James St. John",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "minerals-openpit": {
+   "file": "img/photos/minerals-openpit.webp",
+   "title": "Bingham Canyon mine dumps, 2004.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bingham_Canyon_mine_dumps,_2004.jpg",
+   "author": "Doc Searls from Santa Barbara, USA",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "ai-chip": {
+   "file": "img/photos/ai-chip.webp",
+   "title": "A Wafer of the Latest D-Wave Quantum Computers (39188583425).jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Wafer_of_the_Latest_D-Wave_Quantum_Computers_(39188583425).jpg",
+   "author": "Steve Jurvetson from Menlo Park, USA",
+   "license": "CC BY 2.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+   "modified": "resized to 600px, WebP"
+  },
+  "arctic-sea-ice": {
+   "file": "img/photos/arctic-sea-ice.webp",
+   "title": "US Navy 050824-N-8108S-001 A U.S. Coast Guard HH-65 Dolphin helicopter prepares to depart the Coast Guard cutter USCGC Healy (WAGB 20) to fly members of a science party to a remote ice floe.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:US_Navy_050824-N-8108S-001_A_U.S._Coast_Guard_HH-65_Dolphin_helicopter_prepares_to_depart_the_Coast_Guard_cutter_USCGC_Healy_(WAGB_20)_to_fly_members_of_a_science_party_to_a_remote_ice_floe.jpg",
+   "author": "U.S. Navy photo by Aerographer’s Mate 1st Class Gene Swope",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  }
+ }
+}
