@@ -167,9 +167,9 @@
       .then(function (f) {
         clearTimeout(t); if (!validFeed(f)) throw 0;
         var before = S.items.length, had = {}; S.items.forEach(function (x) { had[x.id] = 1; }); S.items = mergeFeeds(S.items, f.items);
-        topicAlert(f.items.filter(function (x) { return x && !had[x.id] && inFollow(x); })); S.updated = new Date().toISOString();
+        topicAlert(f.items.filter(function (x) { return x && !had[x.id] && inFollow(x); })); S.updated = new Date().toISOString(); if (f.generated && (!S.generated || f.generated > S.generated)) S.generated = f.generated; if (f.signalTrends) S.trends = f.signalTrends;
         if (Array.isArray(f.dataCards) && f.dataCards.length) S.cards = f.dataCards;
-        store.set('vx.feedCache', { items: S.items, updated: S.updated, dataCards: S.cards });
+        store.set('vx.feedCache', { items: S.items, updated: S.updated, dataCards: S.cards, generated: S.generated, signalTrends: S.trends });
         render(); var n = S.items.length - before;
         if (n > 0) spotlightIndex();
         if (manual) toast(n > 0 ? n + ' new briefing' + (n > 1 ? 's' : '') : 'You\u2019re up to date');
@@ -1276,7 +1276,7 @@
       S.cards = cc.length ? cc : bc;
       store.get('vx.tipSignals').then(function (v) { if (v) { S.tipDone = true; render(); } });
       store.get('vx.reposts').then(function (v) { if (v && typeof v === 'object') { S.reposts = v; render(); } });
-      S.generated = validFeed(bundled) ? bundled.generated : null;
+      S.generated = validFeed(bundled) ? bundled.generated : null; if (cache && cache.generated && (!S.generated || cache.generated > S.generated)) S.generated = cache.generated;
       S.trends = validFeed(bundled) && bundled.signalTrends ? bundled.signalTrends : null;
       S.items = mergeFeeds(validFeed(bundled) ? bundled.items : [], cache && Array.isArray(cache.items) ? cache.items : []);
       S.saved = Array.isArray(r[2]) ? r[2] : []; S.read = r[3] || {}; if (cache && cache.updated) S.updated = cache.updated;

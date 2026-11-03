@@ -1,7 +1,7 @@
 {
  "version": 1,
  "publisher": "Voxarc Lab",
- "generated": "2026-10-30T21:19:05+00:00",
+ "generated": "2026-11-03T19:15:31+00:00",
  "items": [
   {
    "id": "fr-2026-22094",
@@ -656,6 +656,14 @@
      "title": "Mineral Commodity Summaries 2026: Helium",
      "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-helium.pdf",
      "kind": "official"
+    },
+    {
+     "publisher": "Federal Register",
+     "date": "2026-10-27",
+     "title": "Critical Material List; Addition of Helium",
+     "url": "https://www.federalregister.gov/documents/2026/10/27/2026-21884/critical-material-list-addition-of-helium",
+     "note": "Official document (merged duplicate fr-2026-21884)",
+     "kind": "official"
     }
    ],
    "image": null,
@@ -675,7 +683,7 @@
    },
    "signal": {
     "so_what": "Chip, medical imaging and space users may see processing support; the bottleneck is refining, not geology.",
-    "n_sources": 3,
+    "n_sources": 4,
     "signal_title": "Helium supply is now a US security priority",
     "crux": "DOE added helium to its Critical Material List, opening the door to processing support.",
     "importance": "Medium",
@@ -698,7 +706,7 @@
      "6ad66e84a07c63635f9885f2"
     ],
     "watch_next": "Whether new processing capacity gets funded: DOE names refining and permitting, not geology, as the bottleneck.",
-    "confidence_score": 91,
+    "confidence_score": 95,
     "source_name": "US Department of Energy",
     "source_url": "https://www.energy.gov/articles/energy-department-designates-helium-critical-material-strengthen-american-manufacturing",
     "published_date": "2026-10-26"
@@ -963,9 +971,8 @@
     "title": "US export-control rules (BIS)",
     "value": "12",
     "unit": "final rules in 2026 so far",
-    "change": "15 in the last 12 months",
+    "change": "13 in the last 12 months",
     "series": [
-     2,
      1,
      2,
      1,
@@ -976,11 +983,121 @@
      2,
      5,
      1,
+     0,
      0
     ],
     "seriesLabel": "Final rules per month, last 12 months",
-    "asOf": "2026-10-30",
-    "asOfLabel": "Oct 30, 2026",
+    "weekly": [
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     1,
+     2,
+     1,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyEntityList": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     2,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyLabel": "Final rules per week, last 52 weeks",
+    "asOf": "2026-11-03",
+    "asOfLabel": "Nov 3, 2026",
     "source": "Federal Register API, Bureau of Industry and Security",
     "license": "Public domain (US government work)",
     "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau"
@@ -1485,14 +1602,10 @@
     "id": "nsidc-ice",
     "kind": "level",
     "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
+    "value": "8.13M km²",
     "unit": "daily extent",
     "change": "-1.67M km² vs the 1981–2010 average for the date",
     "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
      5.8,
      5.86,
      5.959,
@@ -1518,11 +1631,378 @@
      7.525,
      7.601,
      7.673,
-     7.743
+     7.743,
+     7.755,
+     7.84,
+     8.016,
+     8.135
     ],
     "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
+    "daily90": [
+     [
+      "2026-08-05",
+      6.255
+     ],
+     [
+      "2026-08-06",
+      6.18
+     ],
+     [
+      "2026-08-07",
+      6.131
+     ],
+     [
+      "2026-08-08",
+      6.042
+     ],
+     [
+      "2026-08-09",
+      6.031
+     ],
+     [
+      "2026-08-10",
+      5.896
+     ],
+     [
+      "2026-08-11",
+      5.829
+     ],
+     [
+      "2026-08-12",
+      5.726
+     ],
+     [
+      "2026-08-13",
+      5.676
+     ],
+     [
+      "2026-08-14",
+      5.513
+     ],
+     [
+      "2026-08-15",
+      5.354
+     ],
+     [
+      "2026-08-16",
+      5.334
+     ],
+     [
+      "2026-08-17",
+      5.382
+     ],
+     [
+      "2026-08-18",
+      5.414
+     ],
+     [
+      "2026-08-19",
+      5.387
+     ],
+     [
+      "2026-08-20",
+      5.303
+     ],
+     [
+      "2026-08-21",
+      5.265
+     ],
+     [
+      "2026-08-22",
+      5.117
+     ],
+     [
+      "2026-08-23",
+      5.107
+     ],
+     [
+      "2026-08-24",
+      5.087
+     ],
+     [
+      "2026-08-25",
+      4.998
+     ],
+     [
+      "2026-08-26",
+      4.983
+     ],
+     [
+      "2026-08-27",
+      5.028
+     ],
+     [
+      "2026-08-28",
+      4.96
+     ],
+     [
+      "2026-08-29",
+      4.911
+     ],
+     [
+      "2026-08-30",
+      4.849
+     ],
+     [
+      "2026-08-31",
+      4.838
+     ],
+     [
+      "2026-09-01",
+      4.733
+     ],
+     [
+      "2026-09-02",
+      4.674
+     ],
+     [
+      "2026-09-03",
+      4.656
+     ],
+     [
+      "2026-09-04",
+      4.69
+     ],
+     [
+      "2026-09-05",
+      4.668
+     ],
+     [
+      "2026-09-06",
+      4.632
+     ],
+     [
+      "2026-09-07",
+      4.596
+     ],
+     [
+      "2026-09-08",
+      4.59
+     ],
+     [
+      "2026-09-09",
+      4.615
+     ],
+     [
+      "2026-09-10",
+      4.609
+     ],
+     [
+      "2026-09-11",
+      4.6
+     ],
+     [
+      "2026-09-12",
+      4.574
+     ],
+     [
+      "2026-09-13",
+      4.595
+     ],
+     [
+      "2026-09-14",
+      4.651
+     ],
+     [
+      "2026-09-15",
+      4.724
+     ],
+     [
+      "2026-09-16",
+      4.656
+     ],
+     [
+      "2026-09-17",
+      4.634
+     ],
+     [
+      "2026-09-18",
+      4.666
+     ],
+     [
+      "2026-09-19",
+      4.708
+     ],
+     [
+      "2026-09-20",
+      4.709
+     ],
+     [
+      "2026-09-21",
+      4.772
+     ],
+     [
+      "2026-09-22",
+      4.868
+     ],
+     [
+      "2026-09-23",
+      4.95
+     ],
+     [
+      "2026-09-24",
+      4.993
+     ],
+     [
+      "2026-09-25",
+      5.169
+     ],
+     [
+      "2026-09-26",
+      5.164
+     ],
+     [
+      "2026-09-27",
+      5.228
+     ],
+     [
+      "2026-09-28",
+      5.333
+     ],
+     [
+      "2026-09-29",
+      5.378
+     ],
+     [
+      "2026-09-30",
+      5.478
+     ],
+     [
+      "2026-10-01",
+      5.65
+     ],
+     [
+      "2026-10-02",
+      5.714
+     ],
+     [
+      "2026-10-03",
+      5.771
+     ],
+     [
+      "2026-10-04",
+      5.8
+     ],
+     [
+      "2026-10-05",
+      5.86
+     ],
+     [
+      "2026-10-06",
+      5.959
+     ],
+     [
+      "2026-10-07",
+      6.007
+     ],
+     [
+      "2026-10-08",
+      6.073
+     ],
+     [
+      "2026-10-09",
+      6.018
+     ],
+     [
+      "2026-10-10",
+      6.076
+     ],
+     [
+      "2026-10-11",
+      6.178
+     ],
+     [
+      "2026-10-12",
+      6.297
+     ],
+     [
+      "2026-10-13",
+      6.33
+     ],
+     [
+      "2026-10-14",
+      6.538
+     ],
+     [
+      "2026-10-15",
+      6.809
+     ],
+     [
+      "2026-10-16",
+      6.731
+     ],
+     [
+      "2026-10-17",
+      6.717
+     ],
+     [
+      "2026-10-18",
+      6.777
+     ],
+     [
+      "2026-10-19",
+      6.792
+     ],
+     [
+      "2026-10-20",
+      6.817
+     ],
+     [
+      "2026-10-21",
+      6.954
+     ],
+     [
+      "2026-10-22",
+      7.178
+     ],
+     [
+      "2026-10-23",
+      7.364
+     ],
+     [
+      "2026-10-24",
+      7.344
+     ],
+     [
+      "2026-10-25",
+      7.438
+     ],
+     [
+      "2026-10-26",
+      7.525
+     ],
+     [
+      "2026-10-27",
+      7.601
+     ],
+     [
+      "2026-10-28",
+      7.673
+     ],
+     [
+      "2026-10-29",
+      7.743
+     ],
+     [
+      "2026-10-30",
+      7.755
+     ],
+     [
+      "2026-10-31",
+      7.84
+     ],
+     [
+      "2026-11-01",
+      8.016
+     ],
+     [
+      "2026-11-02",
+      8.135
+     ]
+    ],
+    "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+    "asOf": "2026-11-02",
+    "asOfLabel": "Nov 2, 2026",
     "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
     "license": "Free to use with citation",
     "url": "https://nsidc.org/data/g02135/versions/4"
@@ -1564,90 +2044,6 @@
     "source_name": "European Commission",
     "source_url": "https://digital-strategy.ec.europa.eu/en/news/eu-sets-out-new-strategy-arctic",
     "published_date": "2026-10-20"
-   }
-  },
-  {
-   "id": "fr-2026-21462",
-   "published": "2026-10-20T12:00:00Z",
-   "kicker": "Critical Minerals · Federal Register",
-   "title": "American Samoa Outer Continental Shelf Pacific Mineral Lease Sale 1",
-   "topics": [
-    "minerals"
-   ],
-   "primary": "minerals",
-   "summary": "The Marine Minerals Administration (MMA) will conduct an auction for lease areas offered in the American Samoa Outer Continental Shelf (OCS) Pacific Mineral Lease Sale 1 (Lease Sale PACM-1), in accordance with the Outer Continental Shelf Lands Act (OCSLA)…",
-   "body": "The Marine Minerals Administration (MMA) will conduct an auction for lease areas offered in the American Samoa Outer Continental Shelf (OCS) Pacific Mineral Lease Sale 1 (Lease Sale PACM-1), in accordance with the Outer Continental Shelf Lands Act (OCSLA), as amended, and its implementing regulations. The Final Leasing Notice (FLN) package for this lease sale contains information essential to potential bidders, including Information to Lessees and Lease Stipulations.\n\nKey dates: MMA will hold Lease Sale PACM-1 on Thursday, November 19, 2026, at 9:00 a.m. All times referred to in this document will be Pacific Time, unless otherwise specified. Lease areas will be awarded through an ascending oral auction. For more information on bid submission and auction rules, see Section VII of this document, \"Bidding Instructions.\"\n\nDocument type: Notice. Agency: Interior, Ocean Energy Management Bureau. Docket: Docket No. BOEM-2026-0331.\n\nWhy it matters: This is the official text. Check the Federal Register notice for the exact scope, definitions and how to comment.",
-   "stat": null,
-   "keyPoints": [
-    "Notice from Ocean Energy Management Bureau",
-    "Key date Nov 19, 2026",
-    "Docket Docket No. BOEM-2026-0331"
-   ],
-   "sources": [
-    {
-     "publisher": "Federal Register",
-     "date": "2026-10-20",
-     "title": "American Samoa Outer Continental Shelf Pacific Mineral Lease Sale 1",
-     "url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1",
-     "kind": "official"
-    }
-   ],
-   "image": null,
-   "readMinutes": 1,
-   "origin": "Federal Register",
-   "primarySource": {
-    "name": "Federal Register",
-    "kind": "Official US government publication",
-    "terms": "Public domain (US government work)"
-   },
-   "deadlines": [
-    {
-     "type": "event",
-     "label": "Key date",
-     "date": "2026-11-19",
-     "url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1"
-    }
-   ],
-   "titleMarkup": "American Samoa Outer Continental Shelf Pacific Mineral Lease Sale 1",
-   "soWhat": {
-    "changed": "Ocean Energy Management Bureau published a notice: American Samoa Outer Continental Shelf Pacific Mineral Lease Sale 1",
-    "who": "The Final Leasing Notice (FLN) package for this lease sale contains information essential to potential bidders…",
-    "watch": "Key date Nov 19, 2026"
-   },
-   "photo": {
-    "src": "img/photos/minerals-seabed.webp",
-    "credit": "Photo: James St. John, CC BY 2.0",
-    "url": "https://commons.wikimedia.org/wiki/File:Pelagite_(deep_seafloor_manganese_nodule)_(Pacific_Ocean)_2.jpg",
-    "key": "minerals-seabed"
-   },
-   "signal": {
-    "so_what": "Deep-sea miners can bid Nov 19 off American Samoa.",
-    "n_sources": 1,
-    "signal_title": "US seabed mining opens for bids",
-    "crux": "BOEM set the first Pacific OCS mineral lease sale off American Samoa for Nov 19.",
-    "importance": "High",
-    "impact_score": 70,
-    "time_horizon": "Near term",
-    "affected_sectors": [
-     "Deep-sea mining",
-     "Nickel",
-     "Cobalt"
-    ],
-    "affected_regions": [
-     "United States",
-     "Pacific"
-    ],
-    "risk_level": "High",
-    "opportunity_level": "High",
-    "related_signals": [
-     "nrcan-thompson-mine-complex-transaction-closes-helping-secure-a-st"
-    ],
-    "watch_next": "Key date Nov 19, 2026",
-    "confidence_score": 67,
-    "source_name": "Federal Register",
-    "source_url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1",
-    "published_date": "2026-10-20",
-    "duplicate_of": "6ad7c0a0a69d84a91a2bf0c2"
    }
   },
   {
@@ -1811,9 +2207,8 @@
     "title": "US export-control rules (BIS)",
     "value": "12",
     "unit": "final rules in 2026 so far",
-    "change": "15 in the last 12 months",
+    "change": "13 in the last 12 months",
     "series": [
-     2,
      1,
      2,
      1,
@@ -1824,11 +2219,121 @@
      2,
      5,
      1,
+     0,
      0
     ],
     "seriesLabel": "Final rules per month, last 12 months",
-    "asOf": "2026-10-30",
-    "asOfLabel": "Oct 30, 2026",
+    "weekly": [
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     1,
+     2,
+     1,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyEntityList": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     2,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyLabel": "Final rules per week, last 52 weeks",
+    "asOf": "2026-11-03",
+    "asOfLabel": "Nov 3, 2026",
     "source": "Federal Register API, Bureau of Industry and Security",
     "license": "Public domain (US government work)",
     "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau"
@@ -1951,9 +2456,8 @@
     "title": "US export-control rules (BIS)",
     "value": "12",
     "unit": "final rules in 2026 so far",
-    "change": "15 in the last 12 months",
+    "change": "13 in the last 12 months",
     "series": [
-     2,
      1,
      2,
      1,
@@ -1964,11 +2468,121 @@
      2,
      5,
      1,
+     0,
      0
     ],
     "seriesLabel": "Final rules per month, last 12 months",
-    "asOf": "2026-10-30",
-    "asOfLabel": "Oct 30, 2026",
+    "weekly": [
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     1,
+     2,
+     1,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyEntityList": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     2,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "weeklyLabel": "Final rules per week, last 52 weeks",
+    "asOf": "2026-11-03",
+    "asOfLabel": "Nov 3, 2026",
     "source": "Federal Register API, Bureau of Industry and Security",
     "license": "Public domain (US government work)",
     "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau"
@@ -2007,138 +2621,6 @@
     "confidence_score": 88,
     "source_name": "Ministry of Commerce of China (MOFCOM) & Ministry of Science and Technology",
     "source_url": "https://www.mofcom.gov.cn/zcfb/blgg/gg/2026/art/2026/art_05e2643a8ca04eb9adf9dd0542991fe4.html",
-    "published_date": "2026-10-19"
-   }
-  },
-  {
-   "id": "fr-2026-21371",
-   "published": "2026-10-19T12:00:00Z",
-   "kicker": "Arctic · Federal Register",
-   "title": "Marine Mammals; Incidental Take of Polar Bears and Pacific Walruses in the Beaufort Sea and North Slope of…",
-   "topics": [
-    "arctic",
-    "geo"
-   ],
-   "primary": "arctic",
-   "summary": "We, the U.S. Fish and Wildlife Service (FWS), in response to a request under the Marine Mammal Protection Act (MMPA) of 1972 from the Alaska Oil and Gas Association (AOGA), finalize regulations facilitating the authorization of incidental…",
-   "body": "We, the U.S. Fish and Wildlife Service (FWS), in response to a request under the Marine Mammal Protection Act (MMPA) of 1972 from the Alaska Oil and Gas Association (AOGA), finalize regulations facilitating the authorization of incidental, unintentional take of small numbers of polar bears (Ursus maritimus) and Pacific walruses (Odobenus rosmarus divergens) during year-round oil and gas industry activities in the Beaufort Sea (Alaska and the Outer Continental Shelf (OCS)) and adjacent northern coast of Alaska. Take may result from oil and gas exploration, development, production, and transportation activities occurring for a period of 5 years. Oil and gas industry operations include similar types of activities covered by the previous 5-year Beaufort Sea incidental take regulations effective from August 6, 2021, through August 5, 2026. We will issue letters of authorization, upon request, for specific activities in accordance with these regulations.\n\nKey dates: This rule is effective October 19, 2026 and remains effective through October 19, 2031.\n\nDocument type: Final rule. Agency: Interior, Fish and Wildlife Service. Docket: Docket No. FWS-R7-ES-2026-0694, FXES111607MRG01-267-FF07CAMM00.\n\nWhy it matters: This is the official text. Check the Federal Register notice for the exact scope, definitions and how to comment.",
-   "stat": null,
-   "keyPoints": [
-    "Final rule from Fish and Wildlife Service",
-    "Takes effect Oct 19, 2026",
-    "Docket Docket No. FWS-R7-ES-2026-0694"
-   ],
-   "sources": [
-    {
-     "publisher": "Federal Register",
-     "date": "2026-10-19",
-     "title": "Marine Mammals; Incidental Take of Polar Bears and Pacific Walruses in the Beaufort Sea and North Slope of Alaska",
-     "url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north",
-     "kind": "official"
-    }
-   ],
-   "image": null,
-   "readMinutes": 1,
-   "origin": "Federal Register",
-   "primarySource": {
-    "name": "Federal Register",
-    "kind": "Official US government publication",
-    "terms": "Public domain (US government work)"
-   },
-   "deadlines": [
-    {
-     "type": "effective",
-     "label": "Takes effect",
-     "date": "2026-10-19",
-     "url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north"
-    }
-   ],
-   "titleMarkup": "Marine Mammals; Incidental Take of Polar Bears and Pacific Walruses in the Beaufort Sea and North Slope of…",
-   "soWhat": {
-    "changed": "Fish and Wildlife Service issued a final rule: Marine Mammals; Incidental Take of Polar Bears and Pacific Walruses in the Beaufort Sea and North Slope of…",
-    "who": "Arctic governments, Indigenous communities, shipping and defence planners",
-    "watch": "Takes effect Oct 19, 2026"
-   },
-   "dataCard": {
-    "id": "nsidc-ice",
-    "kind": "level",
-    "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
-    "unit": "daily extent",
-    "change": "-1.67M km² vs the 1981–2010 average for the date",
-    "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
-     5.8,
-     5.86,
-     5.959,
-     6.007,
-     6.073,
-     6.018,
-     6.076,
-     6.178,
-     6.297,
-     6.33,
-     6.538,
-     6.809,
-     6.731,
-     6.717,
-     6.777,
-     6.792,
-     6.817,
-     6.954,
-     7.178,
-     7.364,
-     7.344,
-     7.438,
-     7.525,
-     7.601,
-     7.673,
-     7.743
-    ],
-    "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
-    "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
-    "license": "Free to use with citation",
-    "url": "https://nsidc.org/data/g02135/versions/4"
-   },
-   "photo": {
-    "src": "img/photos/arctic-polar-bear.webp",
-    "credit": "Photo: USFWS, Public domain",
-    "url": "https://commons.wikimedia.org/wiki/File:Polar_bears_on_the_Beaufort_Sea_coast.jpg",
-    "key": "arctic-polar-bear"
-   },
-   "signal": {
-    "so_what": "Oil and gas work in the Beaufort Sea area gains regulatory certainty.",
-    "n_sources": 1,
-    "signal_title": "North Slope operators get a five-year wildlife permit path",
-    "crux": "FWS finalised incidental take rules for polar bears and walruses on the Beaufort Sea and North Slope.",
-    "importance": "Low",
-    "impact_score": 38,
-    "time_horizon": "Long term",
-    "affected_sectors": [
-     "Oil and gas",
-     "Environment"
-    ],
-    "affected_regions": [
-     "United States",
-     "Alaska",
-     "Arctic"
-    ],
-    "risk_level": "Medium",
-    "opportunity_level": "Medium",
-    "related_signals": [
-     "6ad7c0a0a69d84a91a2bf0be",
-     "6ace51427d6da06c8ebdbdd1",
-     "6ac8edbd6722b5b4db1fbb14"
-    ],
-    "watch_next": "Takes effect Oct 19, 2026",
-    "confidence_score": 67,
-    "source_name": "Federal Register",
-    "source_url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north",
     "published_date": "2026-10-19"
    }
   },
@@ -2272,14 +2754,10 @@
     "id": "nsidc-ice",
     "kind": "level",
     "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
+    "value": "8.13M km²",
     "unit": "daily extent",
     "change": "-1.67M km² vs the 1981–2010 average for the date",
     "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
      5.8,
      5.86,
      5.959,
@@ -2305,11 +2783,378 @@
      7.525,
      7.601,
      7.673,
-     7.743
+     7.743,
+     7.755,
+     7.84,
+     8.016,
+     8.135
     ],
     "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
+    "daily90": [
+     [
+      "2026-08-05",
+      6.255
+     ],
+     [
+      "2026-08-06",
+      6.18
+     ],
+     [
+      "2026-08-07",
+      6.131
+     ],
+     [
+      "2026-08-08",
+      6.042
+     ],
+     [
+      "2026-08-09",
+      6.031
+     ],
+     [
+      "2026-08-10",
+      5.896
+     ],
+     [
+      "2026-08-11",
+      5.829
+     ],
+     [
+      "2026-08-12",
+      5.726
+     ],
+     [
+      "2026-08-13",
+      5.676
+     ],
+     [
+      "2026-08-14",
+      5.513
+     ],
+     [
+      "2026-08-15",
+      5.354
+     ],
+     [
+      "2026-08-16",
+      5.334
+     ],
+     [
+      "2026-08-17",
+      5.382
+     ],
+     [
+      "2026-08-18",
+      5.414
+     ],
+     [
+      "2026-08-19",
+      5.387
+     ],
+     [
+      "2026-08-20",
+      5.303
+     ],
+     [
+      "2026-08-21",
+      5.265
+     ],
+     [
+      "2026-08-22",
+      5.117
+     ],
+     [
+      "2026-08-23",
+      5.107
+     ],
+     [
+      "2026-08-24",
+      5.087
+     ],
+     [
+      "2026-08-25",
+      4.998
+     ],
+     [
+      "2026-08-26",
+      4.983
+     ],
+     [
+      "2026-08-27",
+      5.028
+     ],
+     [
+      "2026-08-28",
+      4.96
+     ],
+     [
+      "2026-08-29",
+      4.911
+     ],
+     [
+      "2026-08-30",
+      4.849
+     ],
+     [
+      "2026-08-31",
+      4.838
+     ],
+     [
+      "2026-09-01",
+      4.733
+     ],
+     [
+      "2026-09-02",
+      4.674
+     ],
+     [
+      "2026-09-03",
+      4.656
+     ],
+     [
+      "2026-09-04",
+      4.69
+     ],
+     [
+      "2026-09-05",
+      4.668
+     ],
+     [
+      "2026-09-06",
+      4.632
+     ],
+     [
+      "2026-09-07",
+      4.596
+     ],
+     [
+      "2026-09-08",
+      4.59
+     ],
+     [
+      "2026-09-09",
+      4.615
+     ],
+     [
+      "2026-09-10",
+      4.609
+     ],
+     [
+      "2026-09-11",
+      4.6
+     ],
+     [
+      "2026-09-12",
+      4.574
+     ],
+     [
+      "2026-09-13",
+      4.595
+     ],
+     [
+      "2026-09-14",
+      4.651
+     ],
+     [
+      "2026-09-15",
+      4.724
+     ],
+     [
+      "2026-09-16",
+      4.656
+     ],
+     [
+      "2026-09-17",
+      4.634
+     ],
+     [
+      "2026-09-18",
+      4.666
+     ],
+     [
+      "2026-09-19",
+      4.708
+     ],
+     [
+      "2026-09-20",
+      4.709
+     ],
+     [
+      "2026-09-21",
+      4.772
+     ],
+     [
+      "2026-09-22",
+      4.868
+     ],
+     [
+      "2026-09-23",
+      4.95
+     ],
+     [
+      "2026-09-24",
+      4.993
+     ],
+     [
+      "2026-09-25",
+      5.169
+     ],
+     [
+      "2026-09-26",
+      5.164
+     ],
+     [
+      "2026-09-27",
+      5.228
+     ],
+     [
+      "2026-09-28",
+      5.333
+     ],
+     [
+      "2026-09-29",
+      5.378
+     ],
+     [
+      "2026-09-30",
+      5.478
+     ],
+     [
+      "2026-10-01",
+      5.65
+     ],
+     [
+      "2026-10-02",
+      5.714
+     ],
+     [
+      "2026-10-03",
+      5.771
+     ],
+     [
+      "2026-10-04",
+      5.8
+     ],
+     [
+      "2026-10-05",
+      5.86
+     ],
+     [
+      "2026-10-06",
+      5.959
+     ],
+     [
+      "2026-10-07",
+      6.007
+     ],
+     [
+      "2026-10-08",
+      6.073
+     ],
+     [
+      "2026-10-09",
+      6.018
+     ],
+     [
+      "2026-10-10",
+      6.076
+     ],
+     [
+      "2026-10-11",
+      6.178
+     ],
+     [
+      "2026-10-12",
+      6.297
+     ],
+     [
+      "2026-10-13",
+      6.33
+     ],
+     [
+      "2026-10-14",
+      6.538
+     ],
+     [
+      "2026-10-15",
+      6.809
+     ],
+     [
+      "2026-10-16",
+      6.731
+     ],
+     [
+      "2026-10-17",
+      6.717
+     ],
+     [
+      "2026-10-18",
+      6.777
+     ],
+     [
+      "2026-10-19",
+      6.792
+     ],
+     [
+      "2026-10-20",
+      6.817
+     ],
+     [
+      "2026-10-21",
+      6.954
+     ],
+     [
+      "2026-10-22",
+      7.178
+     ],
+     [
+      "2026-10-23",
+      7.364
+     ],
+     [
+      "2026-10-24",
+      7.344
+     ],
+     [
+      "2026-10-25",
+      7.438
+     ],
+     [
+      "2026-10-26",
+      7.525
+     ],
+     [
+      "2026-10-27",
+      7.601
+     ],
+     [
+      "2026-10-28",
+      7.673
+     ],
+     [
+      "2026-10-29",
+      7.743
+     ],
+     [
+      "2026-10-30",
+      7.755
+     ],
+     [
+      "2026-10-31",
+      7.84
+     ],
+     [
+      "2026-11-01",
+      8.016
+     ],
+     [
+      "2026-11-02",
+      8.135
+     ]
+    ],
+    "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+    "asOf": "2026-11-02",
+    "asOfLabel": "Nov 2, 2026",
     "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
     "license": "Free to use with citation",
     "url": "https://nsidc.org/data/g02135/versions/4"
@@ -2791,14 +3636,10 @@
     "id": "nsidc-ice",
     "kind": "level",
     "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
+    "value": "8.13M km²",
     "unit": "daily extent",
     "change": "-1.67M km² vs the 1981–2010 average for the date",
     "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
      5.8,
      5.86,
      5.959,
@@ -2824,11 +3665,378 @@
      7.525,
      7.601,
      7.673,
-     7.743
+     7.743,
+     7.755,
+     7.84,
+     8.016,
+     8.135
     ],
     "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
+    "daily90": [
+     [
+      "2026-08-05",
+      6.255
+     ],
+     [
+      "2026-08-06",
+      6.18
+     ],
+     [
+      "2026-08-07",
+      6.131
+     ],
+     [
+      "2026-08-08",
+      6.042
+     ],
+     [
+      "2026-08-09",
+      6.031
+     ],
+     [
+      "2026-08-10",
+      5.896
+     ],
+     [
+      "2026-08-11",
+      5.829
+     ],
+     [
+      "2026-08-12",
+      5.726
+     ],
+     [
+      "2026-08-13",
+      5.676
+     ],
+     [
+      "2026-08-14",
+      5.513
+     ],
+     [
+      "2026-08-15",
+      5.354
+     ],
+     [
+      "2026-08-16",
+      5.334
+     ],
+     [
+      "2026-08-17",
+      5.382
+     ],
+     [
+      "2026-08-18",
+      5.414
+     ],
+     [
+      "2026-08-19",
+      5.387
+     ],
+     [
+      "2026-08-20",
+      5.303
+     ],
+     [
+      "2026-08-21",
+      5.265
+     ],
+     [
+      "2026-08-22",
+      5.117
+     ],
+     [
+      "2026-08-23",
+      5.107
+     ],
+     [
+      "2026-08-24",
+      5.087
+     ],
+     [
+      "2026-08-25",
+      4.998
+     ],
+     [
+      "2026-08-26",
+      4.983
+     ],
+     [
+      "2026-08-27",
+      5.028
+     ],
+     [
+      "2026-08-28",
+      4.96
+     ],
+     [
+      "2026-08-29",
+      4.911
+     ],
+     [
+      "2026-08-30",
+      4.849
+     ],
+     [
+      "2026-08-31",
+      4.838
+     ],
+     [
+      "2026-09-01",
+      4.733
+     ],
+     [
+      "2026-09-02",
+      4.674
+     ],
+     [
+      "2026-09-03",
+      4.656
+     ],
+     [
+      "2026-09-04",
+      4.69
+     ],
+     [
+      "2026-09-05",
+      4.668
+     ],
+     [
+      "2026-09-06",
+      4.632
+     ],
+     [
+      "2026-09-07",
+      4.596
+     ],
+     [
+      "2026-09-08",
+      4.59
+     ],
+     [
+      "2026-09-09",
+      4.615
+     ],
+     [
+      "2026-09-10",
+      4.609
+     ],
+     [
+      "2026-09-11",
+      4.6
+     ],
+     [
+      "2026-09-12",
+      4.574
+     ],
+     [
+      "2026-09-13",
+      4.595
+     ],
+     [
+      "2026-09-14",
+      4.651
+     ],
+     [
+      "2026-09-15",
+      4.724
+     ],
+     [
+      "2026-09-16",
+      4.656
+     ],
+     [
+      "2026-09-17",
+      4.634
+     ],
+     [
+      "2026-09-18",
+      4.666
+     ],
+     [
+      "2026-09-19",
+      4.708
+     ],
+     [
+      "2026-09-20",
+      4.709
+     ],
+     [
+      "2026-09-21",
+      4.772
+     ],
+     [
+      "2026-09-22",
+      4.868
+     ],
+     [
+      "2026-09-23",
+      4.95
+     ],
+     [
+      "2026-09-24",
+      4.993
+     ],
+     [
+      "2026-09-25",
+      5.169
+     ],
+     [
+      "2026-09-26",
+      5.164
+     ],
+     [
+      "2026-09-27",
+      5.228
+     ],
+     [
+      "2026-09-28",
+      5.333
+     ],
+     [
+      "2026-09-29",
+      5.378
+     ],
+     [
+      "2026-09-30",
+      5.478
+     ],
+     [
+      "2026-10-01",
+      5.65
+     ],
+     [
+      "2026-10-02",
+      5.714
+     ],
+     [
+      "2026-10-03",
+      5.771
+     ],
+     [
+      "2026-10-04",
+      5.8
+     ],
+     [
+      "2026-10-05",
+      5.86
+     ],
+     [
+      "2026-10-06",
+      5.959
+     ],
+     [
+      "2026-10-07",
+      6.007
+     ],
+     [
+      "2026-10-08",
+      6.073
+     ],
+     [
+      "2026-10-09",
+      6.018
+     ],
+     [
+      "2026-10-10",
+      6.076
+     ],
+     [
+      "2026-10-11",
+      6.178
+     ],
+     [
+      "2026-10-12",
+      6.297
+     ],
+     [
+      "2026-10-13",
+      6.33
+     ],
+     [
+      "2026-10-14",
+      6.538
+     ],
+     [
+      "2026-10-15",
+      6.809
+     ],
+     [
+      "2026-10-16",
+      6.731
+     ],
+     [
+      "2026-10-17",
+      6.717
+     ],
+     [
+      "2026-10-18",
+      6.777
+     ],
+     [
+      "2026-10-19",
+      6.792
+     ],
+     [
+      "2026-10-20",
+      6.817
+     ],
+     [
+      "2026-10-21",
+      6.954
+     ],
+     [
+      "2026-10-22",
+      7.178
+     ],
+     [
+      "2026-10-23",
+      7.364
+     ],
+     [
+      "2026-10-24",
+      7.344
+     ],
+     [
+      "2026-10-25",
+      7.438
+     ],
+     [
+      "2026-10-26",
+      7.525
+     ],
+     [
+      "2026-10-27",
+      7.601
+     ],
+     [
+      "2026-10-28",
+      7.673
+     ],
+     [
+      "2026-10-29",
+      7.743
+     ],
+     [
+      "2026-10-30",
+      7.755
+     ],
+     [
+      "2026-10-31",
+      7.84
+     ],
+     [
+      "2026-11-01",
+      8.016
+     ],
+     [
+      "2026-11-02",
+      8.135
+     ]
+    ],
+    "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+    "asOf": "2026-11-02",
+    "asOfLabel": "Nov 2, 2026",
     "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
     "license": "Free to use with citation",
     "url": "https://nsidc.org/data/g02135/versions/4"
@@ -3145,14 +4353,10 @@
     "id": "nsidc-ice",
     "kind": "level",
     "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
+    "value": "8.13M km²",
     "unit": "daily extent",
     "change": "-1.67M km² vs the 1981–2010 average for the date",
     "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
      5.8,
      5.86,
      5.959,
@@ -3178,11 +4382,378 @@
      7.525,
      7.601,
      7.673,
-     7.743
+     7.743,
+     7.755,
+     7.84,
+     8.016,
+     8.135
     ],
     "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
+    "daily90": [
+     [
+      "2026-08-05",
+      6.255
+     ],
+     [
+      "2026-08-06",
+      6.18
+     ],
+     [
+      "2026-08-07",
+      6.131
+     ],
+     [
+      "2026-08-08",
+      6.042
+     ],
+     [
+      "2026-08-09",
+      6.031
+     ],
+     [
+      "2026-08-10",
+      5.896
+     ],
+     [
+      "2026-08-11",
+      5.829
+     ],
+     [
+      "2026-08-12",
+      5.726
+     ],
+     [
+      "2026-08-13",
+      5.676
+     ],
+     [
+      "2026-08-14",
+      5.513
+     ],
+     [
+      "2026-08-15",
+      5.354
+     ],
+     [
+      "2026-08-16",
+      5.334
+     ],
+     [
+      "2026-08-17",
+      5.382
+     ],
+     [
+      "2026-08-18",
+      5.414
+     ],
+     [
+      "2026-08-19",
+      5.387
+     ],
+     [
+      "2026-08-20",
+      5.303
+     ],
+     [
+      "2026-08-21",
+      5.265
+     ],
+     [
+      "2026-08-22",
+      5.117
+     ],
+     [
+      "2026-08-23",
+      5.107
+     ],
+     [
+      "2026-08-24",
+      5.087
+     ],
+     [
+      "2026-08-25",
+      4.998
+     ],
+     [
+      "2026-08-26",
+      4.983
+     ],
+     [
+      "2026-08-27",
+      5.028
+     ],
+     [
+      "2026-08-28",
+      4.96
+     ],
+     [
+      "2026-08-29",
+      4.911
+     ],
+     [
+      "2026-08-30",
+      4.849
+     ],
+     [
+      "2026-08-31",
+      4.838
+     ],
+     [
+      "2026-09-01",
+      4.733
+     ],
+     [
+      "2026-09-02",
+      4.674
+     ],
+     [
+      "2026-09-03",
+      4.656
+     ],
+     [
+      "2026-09-04",
+      4.69
+     ],
+     [
+      "2026-09-05",
+      4.668
+     ],
+     [
+      "2026-09-06",
+      4.632
+     ],
+     [
+      "2026-09-07",
+      4.596
+     ],
+     [
+      "2026-09-08",
+      4.59
+     ],
+     [
+      "2026-09-09",
+      4.615
+     ],
+     [
+      "2026-09-10",
+      4.609
+     ],
+     [
+      "2026-09-11",
+      4.6
+     ],
+     [
+      "2026-09-12",
+      4.574
+     ],
+     [
+      "2026-09-13",
+      4.595
+     ],
+     [
+      "2026-09-14",
+      4.651
+     ],
+     [
+      "2026-09-15",
+      4.724
+     ],
+     [
+      "2026-09-16",
+      4.656
+     ],
+     [
+      "2026-09-17",
+      4.634
+     ],
+     [
+      "2026-09-18",
+      4.666
+     ],
+     [
+      "2026-09-19",
+      4.708
+     ],
+     [
+      "2026-09-20",
+      4.709
+     ],
+     [
+      "2026-09-21",
+      4.772
+     ],
+     [
+      "2026-09-22",
+      4.868
+     ],
+     [
+      "2026-09-23",
+      4.95
+     ],
+     [
+      "2026-09-24",
+      4.993
+     ],
+     [
+      "2026-09-25",
+      5.169
+     ],
+     [
+      "2026-09-26",
+      5.164
+     ],
+     [
+      "2026-09-27",
+      5.228
+     ],
+     [
+      "2026-09-28",
+      5.333
+     ],
+     [
+      "2026-09-29",
+      5.378
+     ],
+     [
+      "2026-09-30",
+      5.478
+     ],
+     [
+      "2026-10-01",
+      5.65
+     ],
+     [
+      "2026-10-02",
+      5.714
+     ],
+     [
+      "2026-10-03",
+      5.771
+     ],
+     [
+      "2026-10-04",
+      5.8
+     ],
+     [
+      "2026-10-05",
+      5.86
+     ],
+     [
+      "2026-10-06",
+      5.959
+     ],
+     [
+      "2026-10-07",
+      6.007
+     ],
+     [
+      "2026-10-08",
+      6.073
+     ],
+     [
+      "2026-10-09",
+      6.018
+     ],
+     [
+      "2026-10-10",
+      6.076
+     ],
+     [
+      "2026-10-11",
+      6.178
+     ],
+     [
+      "2026-10-12",
+      6.297
+     ],
+     [
+      "2026-10-13",
+      6.33
+     ],
+     [
+      "2026-10-14",
+      6.538
+     ],
+     [
+      "2026-10-15",
+      6.809
+     ],
+     [
+      "2026-10-16",
+      6.731
+     ],
+     [
+      "2026-10-17",
+      6.717
+     ],
+     [
+      "2026-10-18",
+      6.777
+     ],
+     [
+      "2026-10-19",
+      6.792
+     ],
+     [
+      "2026-10-20",
+      6.817
+     ],
+     [
+      "2026-10-21",
+      6.954
+     ],
+     [
+      "2026-10-22",
+      7.178
+     ],
+     [
+      "2026-10-23",
+      7.364
+     ],
+     [
+      "2026-10-24",
+      7.344
+     ],
+     [
+      "2026-10-25",
+      7.438
+     ],
+     [
+      "2026-10-26",
+      7.525
+     ],
+     [
+      "2026-10-27",
+      7.601
+     ],
+     [
+      "2026-10-28",
+      7.673
+     ],
+     [
+      "2026-10-29",
+      7.743
+     ],
+     [
+      "2026-10-30",
+      7.755
+     ],
+     [
+      "2026-10-31",
+      7.84
+     ],
+     [
+      "2026-11-01",
+      8.016
+     ],
+     [
+      "2026-11-02",
+      8.135
+     ]
+    ],
+    "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+    "asOf": "2026-11-02",
+    "asOfLabel": "Nov 2, 2026",
     "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
     "license": "Free to use with citation",
     "url": "https://nsidc.org/data/g02135/versions/4"
@@ -3403,14 +4974,10 @@
     "id": "nsidc-ice",
     "kind": "level",
     "title": "Arctic sea-ice extent",
-    "value": "7.74M km²",
+    "value": "8.13M km²",
     "unit": "daily extent",
     "change": "-1.67M km² vs the 1981–2010 average for the date",
     "series": [
-     5.478,
-     5.65,
-     5.714,
-     5.771,
      5.8,
      5.86,
      5.959,
@@ -3436,11 +5003,378 @@
      7.525,
      7.601,
      7.673,
-     7.743
+     7.743,
+     7.755,
+     7.84,
+     8.016,
+     8.135
     ],
     "seriesLabel": "Daily, last 30 days",
-    "asOf": "2026-10-29",
-    "asOfLabel": "Oct 29, 2026",
+    "daily90": [
+     [
+      "2026-08-05",
+      6.255
+     ],
+     [
+      "2026-08-06",
+      6.18
+     ],
+     [
+      "2026-08-07",
+      6.131
+     ],
+     [
+      "2026-08-08",
+      6.042
+     ],
+     [
+      "2026-08-09",
+      6.031
+     ],
+     [
+      "2026-08-10",
+      5.896
+     ],
+     [
+      "2026-08-11",
+      5.829
+     ],
+     [
+      "2026-08-12",
+      5.726
+     ],
+     [
+      "2026-08-13",
+      5.676
+     ],
+     [
+      "2026-08-14",
+      5.513
+     ],
+     [
+      "2026-08-15",
+      5.354
+     ],
+     [
+      "2026-08-16",
+      5.334
+     ],
+     [
+      "2026-08-17",
+      5.382
+     ],
+     [
+      "2026-08-18",
+      5.414
+     ],
+     [
+      "2026-08-19",
+      5.387
+     ],
+     [
+      "2026-08-20",
+      5.303
+     ],
+     [
+      "2026-08-21",
+      5.265
+     ],
+     [
+      "2026-08-22",
+      5.117
+     ],
+     [
+      "2026-08-23",
+      5.107
+     ],
+     [
+      "2026-08-24",
+      5.087
+     ],
+     [
+      "2026-08-25",
+      4.998
+     ],
+     [
+      "2026-08-26",
+      4.983
+     ],
+     [
+      "2026-08-27",
+      5.028
+     ],
+     [
+      "2026-08-28",
+      4.96
+     ],
+     [
+      "2026-08-29",
+      4.911
+     ],
+     [
+      "2026-08-30",
+      4.849
+     ],
+     [
+      "2026-08-31",
+      4.838
+     ],
+     [
+      "2026-09-01",
+      4.733
+     ],
+     [
+      "2026-09-02",
+      4.674
+     ],
+     [
+      "2026-09-03",
+      4.656
+     ],
+     [
+      "2026-09-04",
+      4.69
+     ],
+     [
+      "2026-09-05",
+      4.668
+     ],
+     [
+      "2026-09-06",
+      4.632
+     ],
+     [
+      "2026-09-07",
+      4.596
+     ],
+     [
+      "2026-09-08",
+      4.59
+     ],
+     [
+      "2026-09-09",
+      4.615
+     ],
+     [
+      "2026-09-10",
+      4.609
+     ],
+     [
+      "2026-09-11",
+      4.6
+     ],
+     [
+      "2026-09-12",
+      4.574
+     ],
+     [
+      "2026-09-13",
+      4.595
+     ],
+     [
+      "2026-09-14",
+      4.651
+     ],
+     [
+      "2026-09-15",
+      4.724
+     ],
+     [
+      "2026-09-16",
+      4.656
+     ],
+     [
+      "2026-09-17",
+      4.634
+     ],
+     [
+      "2026-09-18",
+      4.666
+     ],
+     [
+      "2026-09-19",
+      4.708
+     ],
+     [
+      "2026-09-20",
+      4.709
+     ],
+     [
+      "2026-09-21",
+      4.772
+     ],
+     [
+      "2026-09-22",
+      4.868
+     ],
+     [
+      "2026-09-23",
+      4.95
+     ],
+     [
+      "2026-09-24",
+      4.993
+     ],
+     [
+      "2026-09-25",
+      5.169
+     ],
+     [
+      "2026-09-26",
+      5.164
+     ],
+     [
+      "2026-09-27",
+      5.228
+     ],
+     [
+      "2026-09-28",
+      5.333
+     ],
+     [
+      "2026-09-29",
+      5.378
+     ],
+     [
+      "2026-09-30",
+      5.478
+     ],
+     [
+      "2026-10-01",
+      5.65
+     ],
+     [
+      "2026-10-02",
+      5.714
+     ],
+     [
+      "2026-10-03",
+      5.771
+     ],
+     [
+      "2026-10-04",
+      5.8
+     ],
+     [
+      "2026-10-05",
+      5.86
+     ],
+     [
+      "2026-10-06",
+      5.959
+     ],
+     [
+      "2026-10-07",
+      6.007
+     ],
+     [
+      "2026-10-08",
+      6.073
+     ],
+     [
+      "2026-10-09",
+      6.018
+     ],
+     [
+      "2026-10-10",
+      6.076
+     ],
+     [
+      "2026-10-11",
+      6.178
+     ],
+     [
+      "2026-10-12",
+      6.297
+     ],
+     [
+      "2026-10-13",
+      6.33
+     ],
+     [
+      "2026-10-14",
+      6.538
+     ],
+     [
+      "2026-10-15",
+      6.809
+     ],
+     [
+      "2026-10-16",
+      6.731
+     ],
+     [
+      "2026-10-17",
+      6.717
+     ],
+     [
+      "2026-10-18",
+      6.777
+     ],
+     [
+      "2026-10-19",
+      6.792
+     ],
+     [
+      "2026-10-20",
+      6.817
+     ],
+     [
+      "2026-10-21",
+      6.954
+     ],
+     [
+      "2026-10-22",
+      7.178
+     ],
+     [
+      "2026-10-23",
+      7.364
+     ],
+     [
+      "2026-10-24",
+      7.344
+     ],
+     [
+      "2026-10-25",
+      7.438
+     ],
+     [
+      "2026-10-26",
+      7.525
+     ],
+     [
+      "2026-10-27",
+      7.601
+     ],
+     [
+      "2026-10-28",
+      7.673
+     ],
+     [
+      "2026-10-29",
+      7.743
+     ],
+     [
+      "2026-10-30",
+      7.755
+     ],
+     [
+      "2026-10-31",
+      7.84
+     ],
+     [
+      "2026-11-01",
+      8.016
+     ],
+     [
+      "2026-11-02",
+      8.135
+     ]
+    ],
+    "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+    "asOf": "2026-11-02",
+    "asOfLabel": "Nov 2, 2026",
     "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
     "license": "Free to use with citation",
     "url": "https://nsidc.org/data/g02135/versions/4"
@@ -4962,93 +6896,6 @@
    }
   },
   {
-   "id": "gg-361896",
-   "published": "2026-04-14T12:00:00Z",
-   "kicker": "Arctic · Grants.gov",
-   "title": "Funding call: Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences…",
-   "topics": [
-    "arctic"
-   ],
-   "primary": "arctic",
-   "summary": "U.S. National Science Foundation is taking applications until Dec 15, 2026 for Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences, Arctic System Sciences, and Arctic Observing Network (DDRIG).",
-   "body": "U.S. National Science Foundation posted funding opportunity 20-597, \"Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences, Arctic System Sciences, and Arctic Observing Network (DDRIG)\", on Grants.gov on Apr 14, 2026. Applications close Dec 15, 2026.\n\nThe National Science Foundation (NSF) invites investigators at U.S. organizations to submit proposals for Doctoral Dissertation Research Improvement Grants (DDRIGs) to the Arctic Sciences Section, Office of Polar Programs (OPP) to conduct dissertation-level research about and related to the Arctic region. The Programs that are currently accepting DDRIG proposals are the Arctic Social Sciences (ASSP), Arctic System Science (ARCSS), and Arctic Observing Network (AON) Programs. The goal of this solicitation is to attract research proposals that advance a fundamental, process, and systems-level understanding of the Arctic's rapidly changing natural environment and social and cultural systems, and, where appropriate, to improve our capacity to project future change.\n\nEstimated total funding: $1,250,000.\n\nWhy it matters: Federal funding calls show where Washington is paying for research and capacity. Check the full notice of funding opportunity for eligibility, cost-share rules and how to apply.",
-   "stat": {
-    "value": "$1,250,000",
-    "label": "estimated total funding, applications due Dec 15, 2026"
-   },
-   "keyPoints": [
-    "Funding call 20-597 from U.S. National Science Foundation",
-    "Applications due Dec 15, 2026",
-    "Estimated total funding: $1,250,000"
-   ],
-   "sources": [
-    {
-     "publisher": "Grants.gov",
-     "date": "2026-04-14",
-     "title": "Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences, Arctic System Sciences, and Arctic Observing Network (DDRIG)",
-     "url": "https://www.grants.gov/search-results-detail/361896",
-     "kind": "official"
-    }
-   ],
-   "image": null,
-   "readMinutes": 1,
-   "origin": "Grants.gov",
-   "primarySource": {
-    "name": "Grants.gov",
-    "kind": "US federal funding opportunity",
-    "terms": "Public US government data (no key)"
-   },
-   "deadlines": [
-    {
-     "type": "funding",
-     "label": "Applications due",
-     "date": "2026-12-15",
-     "url": "https://www.grants.gov/search-results-detail/361896"
-    }
-   ],
-   "titleMarkup": "Funding call: Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences…",
-   "soWhat": {
-    "changed": "U.S. National Science Foundation opened funding call 20-597, Arctic Doctoral Dissertation Research Improvement Grants (Arctic DDRIG) Arctic Social Sciences…",
-    "who": "Researchers, companies and institutions eligible for US federal awards",
-    "watch": "Applications due Dec 15, 2026 on Grants.gov"
-   },
-   "photo": {
-    "src": "img/photos/minerals-openpit.webp",
-    "credit": "Photo: Doc Searls from Santa Barbara, USA, CC BY 2.0",
-    "url": "https://commons.wikimedia.org/wiki/File:Bingham_Canyon_mine_dumps,_2004.jpg",
-    "key": "minerals-openpit"
-   },
-   "signal": {
-    "so_what": "Doctoral students can apply by Dec 15.",
-    "n_sources": 1,
-    "signal_title": "US funds Arctic social science doctoral research",
-    "crux": "NSF reopened Arctic DDRIG doctoral grants; applications due Dec 15.",
-    "importance": "Low",
-    "impact_score": 14,
-    "time_horizon": "Near term",
-    "affected_sectors": [
-     "Research",
-     "Education"
-    ],
-    "affected_regions": [
-     "United States",
-     "Arctic"
-    ],
-    "risk_level": "Low",
-    "opportunity_level": "Low",
-    "related_signals": [
-     "fr-2026-21371",
-     "gg-363481",
-     "gg-363268"
-    ],
-    "watch_next": "Applications due Dec 15, 2026 on Grants.gov",
-    "confidence_score": 72,
-    "source_name": "Grants.gov",
-    "source_url": "https://www.grants.gov/search-results-detail/361896",
-    "published_date": "2026-04-14"
-   }
-  },
-  {
    "id": "6ac8edbd6722b5b4db1fbb20",
    "published": "2026-04-12T15:04:28.914Z",
    "kicker": "Geoeconomics · Analysis",
@@ -5318,9 +7165,6 @@
    "source": "NSIDC Sea Ice Index, Version 4 (NOAA@NSIDC)",
    "license": "Free to use with citation",
    "url": "https://nsidc.org/data/g02135/versions/4",
-   "desks": [
-    "arctic"
-   ],
    "daily90": [
     [
      "2026-08-05",
@@ -5683,7 +7527,10 @@
      8.135
     ]
    ],
-   "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)"
+   "daily90Label": "Daily, last 90 days (gaps are missing NSIDC days, not filled)",
+   "desks": [
+    "arctic"
+   ]
   },
   {
    "id": "wb-copper",
@@ -5808,10 +7655,6 @@
    "source": "Federal Register API, Bureau of Industry and Security",
    "license": "Public domain (US government work)",
    "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
-   "desks": [
-    "ai",
-    "geo"
-   ],
    "weekly": [
     0,
     0,
@@ -5920,80 +7763,21 @@
     0,
     0
    ],
-   "weeklyLabel": "Final rules per week, last 52 weeks"
-  },
-  {
-   "id": "usgs-lithium",
-   "kind": "level",
-   "title": "Lithium: world mine production",
-   "value": "290,000 t",
-   "unit": "lithium content, 2025 estimate (excludes US)",
-   "change": "+31% vs 2024; Top producer: Australia 32%",
-   "series": [
-    11700.0,
-    63700.0,
-    39000.0,
-    11800.0,
-    9000.0
-   ],
-   "seriesLabel": "Price, $/t, battery-grade lithium carbonate, 2021–2025",
-   "asOf": "2026-01-30",
-   "asOfLabel": "USGS MCS 2026 (Jan 2026)",
-   "source": "USGS Mineral Commodity Summaries 2026",
-   "license": "Public domain (US government work)",
-   "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-lithium.pdf"
-  },
-  {
-   "id": "usgs-cobalt",
-   "kind": "level",
-   "title": "Cobalt: world mine production",
-   "value": "310,000 t",
-   "unit": "cobalt content, 2025 estimate",
-   "change": "+3% vs 2024; Top producer: Congo (Kinshasa) 74%",
-   "series": [
-    24.21,
-    30.78,
-    17.2,
-    16.77,
-    21.0
-   ],
-   "seriesLabel": "Price, $/lb, US spot cathode, 2021–2025",
-   "asOf": "2026-01-30",
-   "asOfLabel": "USGS MCS 2026 (Jan 2026)",
-   "source": "USGS Mineral Commodity Summaries 2026",
-   "license": "Public domain (US government work)",
-   "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-cobalt.pdf"
-  },
-  {
-   "id": "usgs-ree",
-   "kind": "level",
-   "title": "Rare earths: world mine production",
-   "value": "390,000 t",
-   "unit": "rare-earth oxide, 2025 estimate",
-   "change": "+3% vs 2024; Top producer: China 69%",
-   "series": [
-    92.0,
-    124.0,
-    75.0,
-    55.0,
-    69.0
-   ],
-   "seriesLabel": "Price, $/kg, NdPr oxide, 2021–2025",
-   "asOf": "2026-01-30",
-   "asOfLabel": "USGS MCS 2026 (Jan 2026)",
-   "source": "USGS Mineral Commodity Summaries 2026",
-   "license": "Public domain (US government work)",
-   "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-rare-earths.pdf"
+   "weeklyLabel": "Final rules per week, last 52 weeks",
+   "desks": [
+    "ai",
+    "geo"
+   ]
   }
  ],
  "signalTrends": {
-  "asOf": "2026-10-30T21:19:05+00:00",
+  "asOf": "2026-11-03T19:15:31+00:00",
   "basis": "story count in the bundled feed, window vs prior window",
   "topics": {
    "ai": {
     "7": {
-     "cur": 3,
-     "prev": 5,
+     "cur": 0,
+     "prev": 6,
      "dir": "down",
      "reliable": true
     },
@@ -6013,18 +7797,18 @@
    "arctic": {
     "7": {
      "cur": 0,
-     "prev": 2,
-     "dir": "down",
+     "prev": 0,
+     "dir": "steady",
      "reliable": true
     },
     "30": {
-     "cur": 14,
+     "cur": 13,
      "prev": 0,
      "dir": "up",
      "reliable": false
     },
     "90": {
-     "cur": 14,
+     "cur": 13,
      "prev": 1,
      "dir": "up",
      "reliable": false
@@ -6032,19 +7816,19 @@
    },
    "geo": {
     "7": {
-     "cur": 9,
-     "prev": 7,
-     "dir": "up",
+     "cur": 3,
+     "prev": 8,
+     "dir": "down",
      "reliable": true
     },
     "30": {
-     "cur": 22,
+     "cur": 21,
      "prev": 0,
      "dir": "up",
      "reliable": false
     },
     "90": {
-     "cur": 22,
+     "cur": 21,
      "prev": 2,
      "dir": "up",
      "reliable": false
@@ -6052,9 +7836,9 @@
    },
    "minerals": {
     "7": {
-     "cur": 6,
-     "prev": 3,
-     "dir": "up",
+     "cur": 1,
+     "prev": 6,
+     "dir": "down",
      "reliable": true
     },
     "30": {
