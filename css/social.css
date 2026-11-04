@@ -80,3 +80,24 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .audit h5{margin:0 0 6px}
 .au-r{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}.au-r span{color:var(--dim)}.au-r b{font-weight:500;text-align:right}.au-r em{font-style:normal;color:var(--orange)}
 .au-soc{margin-top:8px;font-size:12px;color:var(--dim)}
+/* fix2 */
+.bnum.fact{font:600 17px/1.35 Inter,sans-serif;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bnl{font-size:12px;color:var(--dim);margin-top:2px}
+.bunlock{display:flex;flex-direction:column;align-items:flex-end;text-decoration:none;line-height:1.25}
+.bunlock span{text-decoration:underline;text-underline-offset:3px;color:var(--gray)}.bunlock small{font-size:10.5px;color:var(--dim)}
+.fa-note{margin:0 0 8px;font-size:12.5px;color:var(--gray)}
+.au-r b small{display:block;color:var(--dim);font-weight:400;font-size:11px}.au-r a{color:var(--text)}
+/* fix2 */
+.bnum.fact{font:600 17px/1.35 Inter,sans-serif;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bnl{font-size:12px;color:var(--dim);margin-top:2px}
+.bunlock{display:flex;flex-direction:column;align-items:flex-end;text-decoration:none;line-height:1.25}
+.bunlock span{text-decoration:underline;text-underline-offset:3px;color:var(--gray)}.bunlock small{font-size:10.5px;color:var(--dim)}
+.fa-note{margin:0 0 8px;font-size:12.5px;color:var(--gray)}
+.au-r b small{display:block;color:var(--dim);font-weight:400;font-size:11px}.au-r a{color:var(--text)}
+/* fix2 */
+.bnum.fact{font:600 17px/1.35 Inter,sans-serif;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bnl{font-size:12px;color:var(--dim);margin-top:2px}
+.bunlock{display:flex;flex-direction:column;align-items:flex-end;text-decoration:none;line-height:1.25}
+.bunlock span{text-decoration:underline;text-underline-offset:3px;color:var(--gray)}.bunlock small{font-size:10.5px;color:var(--dim)}
+.fa-note{margin:0 0 8px;font-size:12.5px;color:var(--gray)}
+.au-r b small{display:block;color:var(--dim);font-weight:400;font-size:11px}.au-r a{color:var(--text)}

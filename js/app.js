@@ -514,22 +514,23 @@
       .sort(function (a, b) { var x = (deadlinesOf(a)[0] || {}).date || '9', y = (deadlinesOf(b)[0] || {}).date || '9'; return x < y ? -1 : x > y ? 1 : scoreOf(b) - scoreOf(a); }).slice(0, 8);
     return { crit: crit, intel: intel, radar: radar };
   }
+  // Pipeline fields (key_number, primary_source, reported_by): from the item, else the local backfill overlay.
+  function kf(i, k) { var g = sigOf(i); if (g[k] !== undefined) return g[k]; var o = S.sigFields && S.sigFields[i.id]; return o ? o[k] : undefined; }
   function keyFact(i) {
-    if (i.stat && i.stat.value) return { v: i.stat.value, l: i.stat.label || '' };
-    var g = sigOf(i), t = [g.crux, g.signal_title, i.summary].join(' ');
-    var m = /(?:US\$|C\$|\$|\u20AC|\u00A3)\s?\d[\d,.]*\s?(?:billion|million|bn|m|k)?|\d[\d,.]*\s?(?:%|per cent|percent)|\b\d[\d,.]*\s(?:billion|million|tonnes|entities|rules|countries|companies|km)\b/i.exec(t);
-    if (m) return { v: m[0].replace(/\s+/g, ' ').replace(/per cent|percent/i, '%'), l: '' };
-    return { v: String(g.importance || 'New') + ' impact', l: '', fact: true };
+    var k = kf(i, 'key_number');
+    if (k && k.value) return { v: k.value + (k.unit ? ' ' + k.unit : ''), l: k.label || '' };
+    var g = sigOf(i); // no valid figure: the core fact as text, never a made-up number
+    return { v: String(g.crux || i.summary || g.signal_title || '').replace(/\s*[\u2014\u2013]\s*/g, ', '), l: '', fact: true };
   }
   function fresh(i) { return fmtDate(i.published); }
   function pillHTML(i, tier) { var s0 = subsetsOf(i)[0]; return '<span class="bp">' + esc(tier) + '</span>' + (s0 ? '<span class="bp sub">' + esc(s0) + '</span>' : ''); }
   function briefRowHTML(i) {
-    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span><button class="bunlock" data-open="' + esc(i.id) + '">Unlock full analysis</button></div>' + actRowHTML(i);
+    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span><button class="bunlock" data-unlock="' + esc(i.id) + '" aria-label="Unlock full analysis, free for a limited time"><span>Unlock full analysis</span><small>Free for a limited time</small></button></div>' + actRowHTML(i);
   }
   function critCardHTML(i) {
     var g = sigOf(i), k = keyFact(i);
     return '<article class="bcard crit" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'Critical Shift') + '</span></div>' +
-      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum' + (k.fact ? ' fact' : '') + '">' + esc(k.v) + '</div><h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum' + (k.fact ? ' fact' : '') + '">' + esc(k.v) + '</div>' + (k.l && !k.fact ? '<div class="bnl">' + esc(k.l) + '</div>' : '') + '<h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
       '<p class="bimp">' + esc(g.so_what || g.crux || i.summary) + '</p>' + briefRowHTML(i) + '</article>';
   }
   function intelCardHTML(i) {
@@ -555,11 +556,12 @@
   }
   // Detail: audit trail and social summary (one tap deeper than the home card)
   function auditHTML(i) {
-    var g = sigOf(i), t = trustOf(i) || {}, k = keyFact(i), src = g.source_name || primaryName(i) || t.name || 'n/a';
+    var g = sigOf(i), k = keyFact(i), ps = kf(i, 'primary_source'), rb = kf(i, 'reported_by');
+    var psH = ps && ps.name ? (safeUrl(ps.url) ? '<a href="#" data-url="' + esc(ps.url) + '">' + esc(ps.name) + '</a>' : esc(ps.name)) + (ps.kind ? '<small>' + esc(ps.kind) + '</small>' : '') : 'Not identified' + (rb ? ', reported by ' + esc(rb) : '');
     var reps = S.reposts[i.id] ? 1 : 0, rx = reactionOf(i.id);
     function row(l, v) { return '<div class="au-r"><span>' + l + '</span><b>' + v + '</b></div>'; }
     return '<section class="audit" aria-label="Audit trail"><h5>Audit trail</h5>' +
-      row('Primary source', esc(src)) + row('Date', esc(g.published_date || String(i.published || '').slice(0, 10) || 'n/a')) +
+      row('Primary source', psH) + (ps && rb ? row('Reported by', esc(rb)) : '') + row('Date', esc(g.published_date || String(i.published || '').slice(0, 10) || 'n/a')) +
       row('Key number', '<em>' + esc(k.fact ? 'n/a' : k.v) + '</em>') + row('Confidence', g.confidence_score != null ? esc(g.confidence_score) + ' of 100' : 'n/a') +
       row('Method', esc('Voxarc Lab read of ' + (g.n_sources || (i.sources || []).length || 1) + ' source' + ((g.n_sources || 1) === 1 ? '' : 's') + ', official first; ratings are editorial')) +
       '<div class="au-soc">' + (rx ? 'You reacted ' + rx + ' \u00B7 ' : '') + (reps ? 'You reposted this \u00B7 ' : '') + 'Comments and reposts from the community are below</div></section>';
@@ -674,7 +676,7 @@
     ts = ts.filter(function (t) { return t && Array.isArray(t.columns) && Array.isArray(t.rows) && t.rows.length; });
     if (!ts.length) return '';
     function na(v) { v = v == null || v === '' ? 'n/a' : String(v).replace(/\s*[\u2014\u2013]\s*/g, ', '); return v === '\u2014' ? 'n/a' : v; }
-    return '<section class="fa" aria-label="Full analysis"><div class="fa-h"><h5>Full analysis</h5><span class="fa-pill">Free during early access</span></div>' + ts.map(function (t) {
+    return '<section class="fa" aria-label="Full analysis"><div class="fa-h"><h5>Full analysis</h5><span class="fa-pill">Free for a limited time</span></div><p class="fa-note">Full analysis is free for a limited time during early access.</p>' + ts.map(function (t) {
       var n = t.columns.length - 1, k = t.keyCol;
       return '<div class="fa-t"><div class="fa-tt">' + esc(t.title) + (t.subset ? '<span class="fa-sub">' + esc(t.subset) + '</span>' : '') + '</div>' +
         '<div class="fa-scroll" tabindex="0" role="region" aria-label="' + esc(t.title) + ', scroll sideways"><table><thead><tr>' + t.columns.map(function (c) { return '<th scope="col">' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
@@ -1251,8 +1253,9 @@
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-unlock],#btnSearch,#sheet');
     if (!t) return;
+    if (t.dataset.unlock) { e.stopPropagation(); openArticle(t.dataset.unlock); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
     if (t.dataset.sinfo) { e.stopPropagation(); infoSheet(); return; }
     if (t.hasAttribute('data-tipdone')) { e.stopPropagation(); S.tipDone = true; store.set('vx.tipSignals', 1); render(); return; }
     if (t.dataset.repin) { var cm = ($('#repc') || {}).value || ''; cm = cm.replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280);
@@ -1408,6 +1411,7 @@
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
       S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : DESK_ORDER.slice());
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
+      fetch('data/signal_fields_local.json').then(function (x) { return x.json(); }).then(function (j) { S.sigFields = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});
       fetch('data/tables_sample.json').then(function (x) { return x.json(); }).then(function (j) { S.tablesById = j && j.items || {}; if (S.current) refreshReader(); }).catch(function () {});
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
