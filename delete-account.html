@@ -45,11 +45,12 @@ ul{padding-left:20px;color:#bdbdbd}#msg{color:#FF6B35}
 </div>
 <p class="note"><a href="./">Back to Voxarc Feed</a> · <a href="contact.html">Contact us</a></p>
 </main>
-<script src="js/social-config.js"></script>
+<script src="js/social-config.js?v=1104c"></script>
 <script>
 (function () {
   var C = window.VX_SUPABASE || {}, live = C.url && C.url.indexOf('YOUR-') < 0, tok = null, $ = function (i) { return document.getElementById(i); };
   function msg(t) { $('msg').textContent = t; }
+  if (C.googleEnabled !== true) $('g').hidden = true; // Google sign-in returns once the OAuth client is set up
   if (!live) { $('online').querySelectorAll('button,input').forEach(function (x) { x.disabled = true; }); msg('Online deletion opens when accounts launch. Until then use email below.'); return; }
   function h() { return { apikey: C.anonKey, Authorization: 'Bearer ' + (tok || C.anonKey), 'Content-Type': 'application/json' }; }
   function ready(t) { tok = t; fetch(C.url + '/auth/v1/user', { headers: h() }).then(function (r) { return r.json(); }).then(function (u) { $('wn').textContent = u.email || 'your account'; $('who').hidden = false; }); }

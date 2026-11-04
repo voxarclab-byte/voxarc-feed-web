@@ -4,6 +4,7 @@
   'use strict';
   var C = window.VX_SUPABASE || {};
   var LIVE = !!(C.url && C.anonKey && C.url.indexOf('YOUR-') < 0 && C.anonKey.indexOf('YOUR-') < 0);
+  var GOOGLE = !LIVE || C.googleEnabled === true; // demo shows it; live only once the OAuth client exists
   var Cap = window.Capacitor, isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
   var P = (Cap && Cap.Plugins) || {};
   var X = function () { return window.__vx; };
@@ -136,8 +137,7 @@
   /* ---------- screens ---------- */
   function signInSheet(why) {
     sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Follow analysts, comment on signals and keep your reposts in sync across devices.') + '</p>' +
-      '<button class="btn primary sx-g" data-sx="google"><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button>' +
-      '<div class="sx-or"><span>or use email</span></div>' +
+      (GOOGLE ? '<button class="btn primary sx-g" data-sx="google"><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button><div class="sx-or"><span>or use email</span></div>' : '') +
       '<input id="sxName" class="sx-in" placeholder="Name (new accounts)" autocomplete="name" maxlength="60">' +
       '<input id="sxEmail" class="sx-in" type="email" placeholder="Email" autocomplete="email">' +
       '<input id="sxPw" class="sx-in" type="password" placeholder="Password (8+ characters)" autocomplete="current-password">' +
@@ -209,7 +209,7 @@
       ? '<button class="cell" data-sx="profile" data-id="' + esc(me.id) + '">' + avatar(me) + '<div class="l">' + esc(me.name) + '<small>@' + esc(me.handle) + ' \u00B7 Profile, followers, blocked accounts</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
-      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account' + (LIVE ? '' : ' (on this device)') + '<small>' + (LIVE ? 'Google or email. Reading stays free without an account.' : 'On-device preview until accounts launch. Nothing is sent anywhere.') + '</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>') + '</div>';
+      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account' + (LIVE ? '' : ' (on this device)') + '<small>' + (LIVE ? '' + (GOOGLE ? 'Google or email' : 'Email') + '. Reading stays free without an account.' : 'On-device preview until accounts launch. Nothing is sent anywhere.') + '</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>') + '</div>';
   }
   function commentsHTML(i) {
     var sid = i.id, list = cache[sid];
@@ -242,6 +242,7 @@
     e.stopPropagation(); e.preventDefault();
     var a = t.dataset.sx, id = t.dataset.id, v = function (q) { var el = document.getElementById(q); return el ? el.value.trim() : ''; };
     if (a === 'signin') return signInSheet();
+    if (a === 'google' && !GOOGLE) return;
     if (a === 'google') return B.signInGoogle().then(function () { if (!LIVE) afterAuth('Signed in with Google'); }).catch(function (er) { toast(er.message); });
     if (a === 'emailin' || a === 'emailup') {
       var em = v('sxEmail'), pw = v('sxPw');
