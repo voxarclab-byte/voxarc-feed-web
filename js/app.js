@@ -588,6 +588,23 @@
       (rel.length ? '<h5>Related signals</h5><div class="sd-rel">' + rel.map(function (r) { return '<button class="sd-rb" data-open="' + esc(r.id) + '">' + sigBadge(r.signal) + '<span>' + esc(r.signal.signal_title) + '</span></button>'; }).join('') + '</div>' : '') +
       '<p class="sd-note">Signal fields are Voxarc Lab editorial judgment on the sources below.</p></section>';
   }
+  // Full analysis (paid layer, free during early access): optional i.tables, or the local sample keyed by id.
+  function tablesHTML(i) {
+    var ts = Array.isArray(i.tables) ? i.tables : (S.tablesById && S.tablesById[i.id]) || [];
+    ts = ts.filter(function (t) { return t && Array.isArray(t.columns) && Array.isArray(t.rows) && t.rows.length; });
+    if (!ts.length) return '';
+    function na(v) { v = v == null || v === '' ? 'n/a' : String(v).replace(/\s*[\u2014\u2013]\s*/g, ', '); return v === '\u2014' ? 'n/a' : v; }
+    return '<section class="fa" aria-label="Full analysis"><div class="fa-h"><h5>Full analysis</h5><span class="fa-pill">Free during early access</span></div>' + ts.map(function (t) {
+      var n = t.columns.length - 1, k = t.keyCol;
+      return '<div class="fa-t"><div class="fa-tt">' + esc(t.title) + (t.subset ? '<span class="fa-sub">' + esc(t.subset) + '</span>' : '') + '</div>' +
+        '<div class="fa-scroll" tabindex="0" role="region" aria-label="' + esc(t.title) + ', scroll sideways"><table><thead><tr>' + t.columns.map(function (c) { return '<th scope="col">' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        t.rows.map(function (r) { var c = Array.isArray(r.cells) ? r.cells : [];
+          var cells = []; for (var j = 0; j < n; j++) cells.push(j === 0 ? '<th scope="row">' + esc(na(c[0])) + '</th>' : '<td' + (j === k ? ' class="key"' : '') + '>' + esc(na(c[j])) + '</td>');
+          return '<tr>' + cells.join('') + '<td class="fa-src">' + esc(na(r.source)) + (r.date ? '<small>' + esc(r.date) + '</small>' : '') + '</td></tr>'; }).join('') +
+        '</tbody></table></div>' + (t.value ? '<p class="fa-v"><b>Value</b> ' + esc(na(t.value)) + '</p>' : '') +
+        (safeUrl(t.url) ? '<button class="fa-link" data-url="' + esc(t.url) + '">Open source document</button>' : '') + '</div>';
+    }).join('') + '</section>';
+  }
   function kickerOf(i) { return String(i.kicker || TOPIC_LABEL[category(i)] || '').replace(/\s*\u00B7\s*Policy Signal$/i, ''); }
   function reactHTML(id, labels) {
     var cur = reactionOf(id);
@@ -911,7 +928,7 @@
       (primaryName(i) ? '<div class="ps-line">' + primaryChipHTML(i) + '<span>Official document, summarized by Voxarc Lab</span></div>' : '') +
       '<div class="ameta"><span>Voxarc Lab</span><span>·</span><span>' + esc(fmtDate(i.published)) + '</span><span>·</span><span>' + readMins(i) + ' min read</span></div>' +
       '<div class="tagrow">' + (i.topics || []).map(function (t) { return '<span class="tag">' + esc(TOPIC_LABEL[t] || t) + '</span>'; }).join('') + '</div>' +
-      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + signalDetailHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
+      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + signalDetailHTML(i) + tablesHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
     if (i.stat && i.stat.value) h += '<div class="statbox"><b>' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
     h += soWhatHTML(i, true);
     var dls = deadlinesOf(i, true);
@@ -1311,6 +1328,7 @@
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
       S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : DESK_ORDER.slice());
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
+      fetch('data/tables_sample.json').then(function (x) { return x.json(); }).then(function (j) { S.tablesById = j && j.items || {}; if (S.current) refreshReader(); }).catch(function () {});
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
       var wantContact = location.hash === '#contact';

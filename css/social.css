@@ -26,3 +26,20 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .sx-more{color:var(--dim);padding:4px 8px;font-size:13px}
 .sx-add{display:flex;gap:8px;align-items:flex-end;margin-top:10px}.sx-add .sx-in{flex:1}.sx-add .btn{width:auto}
 .group .cell .sx-av{margin-right:2px}
+/* Full analysis tables: same layout for every topic; orange only on key numbers */
+.fa{margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+.fa-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}.fa-h h5{margin:0}
+.fa-pill{font-size:11px;color:var(--gray);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.fa-t{margin:12px 0 18px}.fa-tt{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:8px}
+.fa-sub{font-size:11px;font-weight:500;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.fa-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r-s)}
+.fa table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;font-variant-numeric:tabular-nums}
+.fa th,.fa td{padding:8px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);background:#141414}
+.fa thead th{color:var(--dim);font-weight:500;font-size:11px;white-space:normal;min-width:84px;vertical-align:bottom;background:#181818}
+.fa th:first-child{position:sticky;left:0;z-index:1;text-align:left;background:#181818;border-right:1px solid var(--line);min-width:72px}
+.fa tbody th{color:var(--text);font-weight:600}
+.fa td.key{color:var(--orange);font-weight:600}
+.fa td.fa-src,.fa thead th:last-child{text-align:left;color:var(--dim);font-size:11px;min-width:140px}.fa-src small{display:block;color:var(--dim)}
+.fa tr:last-child>*{border-bottom:0}
+.fa-v{margin:8px 0 0;font-size:13px;color:var(--gray);line-height:1.45}.fa-v b{color:var(--text);margin-right:4px}
+.fa-link{margin-top:6px;font-size:12px;color:var(--dim);text-decoration:underline}
