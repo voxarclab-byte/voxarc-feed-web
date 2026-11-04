@@ -484,6 +484,86 @@
     return '<p class="srcl">Source: ' + esc(nm) + (t && t.verified ? ' <span class="vok" aria-label="Verified official source">\u2713</span>' : '') + ', ' + esc(i.title) + '</p>' +
       (n > 1 ? '<span class="xsrc">Extracted from ' + n + ' sources</span>' : '');
   }
+  /* ---------- SIGNAL BRIEF home (1.2.0): three permanent tiers, deterministic mapping ---------- */
+  var SUBSETS = ['Industry Impact', 'Geographic Impact', 'Supply Chain Alert', 'Market Impact', 'Policy Watch', 'Early Signal', 'Allied Exposure', 'Actionable Take', 'Source Strength'];
+  var ALLIED = /canada|united kingdom|\buk\b|european union|\beu\b|germany|france|japan|australia|norway|denmark|greenland|finland|sweden|iceland|korea|nato/i;
+  function sigOf(i) { return i.signal || {}; }
+  function scoreOf(i) { var g = sigOf(i); return (+g.impact_score || 0) * 1000 + (+g.confidence_score || 0) * 10 + d(i.published).getTime() / 1e12; }
+  function subsetsOf(i) {
+    var g = sigOf(i), t = [g.signal_title, g.crux, g.so_what, i.title, i.summary].join(' '), out = [];
+    var test = {
+      'Industry Impact': (g.affected_sectors || []).length >= 3 && g.importance === 'High',
+      'Geographic Impact': (g.affected_regions || []).length >= 3,
+      'Supply Chain Alert': /supply|export control|import|sanction|tariff|chokepoint|shipping|entity list|processing|stockpile/i.test(t),
+      'Market Impact': /price|market|invest|fund|\$|\u20AC|billion|million/i.test(t),
+      'Policy Watch': deadlinesOf(i).length > 0 || /\brule\b|regulation|consultation|\bbill\b|act\b|directive|order/i.test(t),
+      'Early Signal': g.time_horizon === 'Long term' || g.importance === 'Low',
+      'Allied Exposure': (g.affected_regions || []).some(function (r) { return ALLIED.test(r); }),
+      'Actionable Take': !!g.so_what,
+      'Source Strength': (+g.confidence_score || 0) >= 70
+    };
+    SUBSETS.forEach(function (k) { if (test[k]) out.push(k); });
+    return out;
+  }
+  function briefTiers(list) {
+    var sig = list.filter(function (i) { return i.signal; }).slice().sort(function (a, b) { return scoreOf(b) - scoreOf(a); });
+    var intel = sig.filter(function (i) { return sigOf(i).importance === 'High'; })[0] || sig[0];
+    var rest = sig.filter(function (i) { return i !== intel; });
+    var crit = rest.filter(function (i) { return sigOf(i).importance === 'High' && sigOf(i).time_horizon === 'Near term'; }).slice(0, 5);
+    var radar = rest.filter(function (i) { return crit.indexOf(i) < 0 && (sigOf(i).time_horizon !== 'Near term' || sigOf(i).importance === 'Low' || deadlinesOf(i).length); })
+      .sort(function (a, b) { var x = (deadlinesOf(a)[0] || {}).date || '9', y = (deadlinesOf(b)[0] || {}).date || '9'; return x < y ? -1 : x > y ? 1 : scoreOf(b) - scoreOf(a); }).slice(0, 8);
+    return { crit: crit, intel: intel, radar: radar };
+  }
+  function keyFact(i) {
+    if (i.stat && i.stat.value) return { v: i.stat.value, l: i.stat.label || '' };
+    var g = sigOf(i), t = [g.crux, g.signal_title, i.summary].join(' ');
+    var m = /(?:US\$|C\$|\$|\u20AC|\u00A3)\s?\d[\d,.]*\s?(?:billion|million|bn|m|k)?|\d[\d,.]*\s?(?:%|per cent|percent)|\b\d[\d,.]*\s(?:billion|million|tonnes|entities|rules|countries|companies|km)\b/i.exec(t);
+    if (m) return { v: m[0].replace(/\s+/g, ' ').replace(/per cent|percent/i, '%'), l: '' };
+    return { v: String(g.importance || 'New') + ' impact', l: '', fact: true };
+  }
+  function fresh(i) { return fmtDate(i.published); }
+  function pillHTML(i, tier) { var s0 = subsetsOf(i)[0]; return '<span class="bp">' + esc(tier) + '</span>' + (s0 ? '<span class="bp sub">' + esc(s0) + '</span>' : ''); }
+  function briefRowHTML(i) {
+    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span><button class="bunlock" data-open="' + esc(i.id) + '">Unlock full analysis</button></div>' + actRowHTML(i);
+  }
+  function critCardHTML(i) {
+    var g = sigOf(i), k = keyFact(i);
+    return '<article class="bcard crit" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'Critical Shift') + '</span></div>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum' + (k.fact ? ' fact' : '') + '">' + esc(k.v) + '</div><h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
+      '<p class="bimp">' + esc(g.so_what || g.crux || i.summary) + '</p>' + briefRowHTML(i) + '</article>';
+  }
+  function intelCardHTML(i) {
+    var g = sigOf(i);
+    return '<article class="bcard intel" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'Intel Brief') + '</span></div>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bhead">' + esc(g.signal_title || i.title) + '</h3></button>' +
+      '<p class="bnarr">' + esc(g.crux || i.summary) + '</p><p class="bimp">' + esc(g.so_what || '') + '</p>' + briefRowHTML(i) + '</article>';
+  }
+  function radarCardHTML(i) {
+    var g = sigOf(i), dl = deadlinesOf(i)[0];
+    return '<article class="bcard radar" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'On the Radar') + '</span></div>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum sm' + (dl ? '' : ' fact') + '">' + esc(dl ? dlDate(dl.date) : (g.time_horizon || 'Watch')) + '</div><h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
+      '<p class="bimp">' + esc(dl ? dl.label + ', ' + inDays(dl.date) : (g.watch_next || g.so_what || '')) + '</p>' + briefRowHTML(i) + '</article>';
+  }
+  function briefHTML(list) {
+    var T = briefTiers(list);
+    function sec(id, title, sub, body) { return '<section class="btier" aria-labelledby="bt-' + id + '"><div class="bth"><h2 id="bt-' + id + '">' + title + '</h2><span>' + sub + '</span></div>' + body + '</section>'; }
+    return '<header class="tb brief-h"><div class="bk">Signal Brief</div><h1 id="sig-h" tabindex="-1">Today\u2019s Signal Brief</h1><p>' + esc(asOfText()) + '</p></header>' +
+      sec('crit', 'Critical Shifts', 'High impact, near term', T.crit.map(critCardHTML).join('') || '<p class="bempty">No critical shifts right now.</p>') +
+      sec('intel', 'Intel Brief', 'The story that matters most', T.intel ? intelCardHTML(T.intel) : '') +
+      sec('radar', 'On the Radar', 'Dated and early-stage', T.radar.map(radarCardHTML).join('')) +
+      '<button class="bmore" data-tab="signals">All signals</button>';
+  }
+  // Detail: audit trail and social summary (one tap deeper than the home card)
+  function auditHTML(i) {
+    var g = sigOf(i), t = trustOf(i) || {}, k = keyFact(i), src = g.source_name || primaryName(i) || t.name || 'n/a';
+    var reps = S.reposts[i.id] ? 1 : 0, rx = reactionOf(i.id);
+    function row(l, v) { return '<div class="au-r"><span>' + l + '</span><b>' + v + '</b></div>'; }
+    return '<section class="audit" aria-label="Audit trail"><h5>Audit trail</h5>' +
+      row('Primary source', esc(src)) + row('Date', esc(g.published_date || String(i.published || '').slice(0, 10) || 'n/a')) +
+      row('Key number', '<em>' + esc(k.fact ? 'n/a' : k.v) + '</em>') + row('Confidence', g.confidence_score != null ? esc(g.confidence_score) + ' of 100' : 'n/a') +
+      row('Method', esc('Voxarc Lab read of ' + (g.n_sources || (i.sources || []).length || 1) + ' source' + ((g.n_sources || 1) === 1 ? '' : 's') + ', official first; ratings are editorial')) +
+      '<div class="au-soc">' + (rx ? 'You reacted ' + rx + ' \u00B7 ' : '') + (reps ? 'You reposted this \u00B7 ' : '') + 'Comments and reposts from the community are below</div></section>';
+  }
   function homeCardHTML(i, n) {
     var g = i.signal || {}, t = trustOf(i), x = expertNoteOf(i);
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
@@ -662,7 +742,7 @@
     h += '<div class="chips-wrap"><div class="chips" role="tablist" aria-label="Topics">' + TOPICS.map(function (t) { var on = S.topic === t.id; return '<button role="tab" aria-selected="' + on + '" class="chip' + (on ? ' active' : '') + '" data-topic="' + t.id + '">' + topicIcon(t.ic) + '<span>' + esc(t.label) + '</span></button>'; }).join('') + '</div></div>';
     if (!S.query && !S.searchOpen && S.topic === 'all') {
       var hl = focusOrder(list);
-      return h.replace(/<div class="chips-wrap">[\s\S]*?<\/div><\/div>/, '') + '<header class="tb"><h1>Today\u2019s Signals</h1><p>' + esc(asOfText()) + '</p>' + highStripHTML(hl) + '</header>' + tipHTML() + homeDataHTML() + hl.map(function (i, n) { return homeCardHTML(i, n); }).join('');
+      return h.replace(/<div class="chips-wrap">[\s\S]*?<\/div><\/div>/, '') + briefHTML(hl);
     }
     var desk = !S.query && S.topic !== 'all';
     if (desk) {
@@ -928,7 +1008,7 @@
       (primaryName(i) ? '<div class="ps-line">' + primaryChipHTML(i) + '<span>Official document, summarized by Voxarc Lab</span></div>' : '') +
       '<div class="ameta"><span>Voxarc Lab</span><span>·</span><span>' + esc(fmtDate(i.published)) + '</span><span>·</span><span>' + readMins(i) + ' min read</span></div>' +
       '<div class="tagrow">' + (i.topics || []).map(function (t) { return '<span class="tag">' + esc(TOPIC_LABEL[t] || t) + '</span>'; }).join('') + '</div>' +
-      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + signalDetailHTML(i) + tablesHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
+      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + (i.signal ? auditHTML(i) : '') + signalDetailHTML(i) + tablesHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
     if (i.stat && i.stat.value) h += '<div class="statbox"><b>' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
     h += soWhatHTML(i, true);
     var dls = deadlinesOf(i, true);
