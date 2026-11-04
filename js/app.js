@@ -135,6 +135,7 @@
     window.open(url, '_blank', 'noopener');
   }
   var ICON = {
+    cmt: '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',
     repost: '<svg viewBox="0 0 24 24"><path d="M4 9V7a2 2 0 0 1 2-2h12l-3-3M20 15v2a2 2 0 0 1-2 2H6l3 3"/></svg>',
     bell: '<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
     bm: '<svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3.5L7 20z"/></svg>',
@@ -452,8 +453,10 @@
   function repostOf(id) { return S.reposts[id] || null; }
   function saveReposts() { store.set('vx.reposts', S.reposts); }
   function actRowHTML(i) {
+    var nc = window.VXSocial ? window.VXSocial.count(i.id) : 0;
     return '<div class="arow" role="group" aria-label="Actions">' + reactHTML(i.id, false) +
-      '<button class="act" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
+      '<button class="act cmt" data-cm="' + esc(i.id) + '" aria-label="Comments, ' + nc + '">' + ICON.cmt + (nc ? '<span class="cn">' + nc + '</span>' : '') + '</button>' +
+      '<button class="act" data-share=""' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
       '<button class="act' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-pressed="' + !!repostOf(i.id) + '" aria-label="Repost">' + ICON.repost + '</button>' +
       '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from Watchlist' : 'Save to Watchlist') + '">' + ICON.bm + '</button></div>';
   }
@@ -1253,8 +1256,9 @@
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-unlock],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-unlock],[data-cm],#btnSearch,#sheet');
     if (!t) return;
+    if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
     if (t.dataset.unlock) { e.stopPropagation(); openArticle(t.dataset.unlock); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
     if (t.dataset.sinfo) { e.stopPropagation(); infoSheet(); return; }
     if (t.hasAttribute('data-tipdone')) { e.stopPropagation(); S.tipDone = true; store.set('vx.tipSignals', 1); render(); return; }

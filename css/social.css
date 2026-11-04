@@ -101,3 +101,11 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .bunlock span{text-decoration:underline;text-underline-offset:3px;color:var(--gray)}.bunlock small{font-size:10.5px;color:var(--dim)}
 .fa-note{margin:0 0 8px;font-size:12.5px;color:var(--gray)}
 .au-r b small{display:block;color:var(--dim);font-weight:400;font-size:11px}.au-r a{color:var(--text)}
+/* discover: header profile/sign-in, comment count, people list, visible commenter links */
+#sxHead{display:contents}
+.sx-hb{display:inline-flex;align-items:center;gap:6px;margin-right:6px}.sx-hb .sx-av{width:22px;height:22px;font-size:9px}
+.arow .act.cmt{display:inline-flex;align-items:center;gap:3px;width:auto;min-width:40px;padding:0 6px}
+.arow .cn{font-size:12px;color:var(--gray);font-variant-numeric:tabular-nums}
+.sx-prow{justify-content:space-between}.sx-pl{display:flex;align-items:center;gap:12px;text-align:left;flex:1;min-width:0}
+.sx-fb{flex:none;padding:6px 14px;border-radius:999px;border:1px solid var(--line);color:var(--gray);font-size:13px}.sx-fb.on{border-color:var(--orange);color:var(--orange)}
+.sx-nm b{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}

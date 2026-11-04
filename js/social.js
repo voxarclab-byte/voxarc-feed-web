@@ -65,6 +65,9 @@
     userReposts: function (id) { return req('/rest/v1/reposts?user_id=eq.' + id + '&order=created_at.desc&limit=50&select=story_id,comment,created_at,user_id'); },
     followingFeed: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (f) { var ids = f.map(function (x) { return x.followee; }); if (!ids.length) return [];
       return req('/rest/v1/reposts?user_id=in.(' + ids.join(',') + ')&order=created_at.desc&limit=100&select=story_id,comment,created_at,user_id,author:profiles(' + PF + ')'); }) : Promise.resolve([]); },
+    commentCounts: function () { return req('/rest/v1/comments?hidden=eq.false&select=story_id&limit=5000').then(function (a) { var m = {}; (a || []).forEach(function (c) { m[c.story_id] = (m[c.story_id] || 0) + 1; }); return m; }); },
+    people: function () { return req('/rest/v1/profiles?handle=not.is.null&order=created_at.desc&limit=100&select=' + PF); },
+    myFollowing: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (a) { return a.map(function (x) { return x.followee; }); }) : Promise.resolve([]); },
     myReposts: function () { return req('/rest/v1/reposts?user_id=eq.' + uid() + '&select=story_id,comment,created_at'); },
     deleteAccount: function () { return req('/rest/v1/rpc/delete_my_account', { method: 'POST', body: {} }).then(function () { setSess(null); }); }
   };
@@ -116,6 +119,9 @@
     userReposts: function (id) { var d = db(); return ok(id === d.me ? myLocalReposts() : (d.reposts || []).filter(function (r) { return r.user_id === id; })); },
     followingFeed: function () { var d = db(), f = d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; });
       return ok((d.reposts || []).filter(function (r) { return f.indexOf(r.user_id) >= 0; }).map(function (r) { return { story_id: r.story_id, comment: r.comment, created_at: r.created_at, user_id: r.user_id, author: d.users[r.user_id] }; }).sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; })); },
+    commentCounts: function () { var m = {}; db().comments.forEach(function (c) { if (!c.hidden) m[c.story_id] = (m[c.story_id] || 0) + 1; }); return ok(m); },
+    people: function () { var d = db(); return ok(Object.keys(d.users).map(function (k) { return d.users[k]; })); },
+    myFollowing: function () { var d = db(); return ok(d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; })); },
     react: function () { return ok(); }, save: function () { return ok(); }, repost: function () { return ok(); }, myReposts: function () { return ok([]); },
     deleteAccount: function () { var d = db(); delete d.users.me; d.me = null; d.follows = d.follows.filter(function (x) { return x[0] !== 'me' && x[1] !== 'me'; }); d.comments = d.comments.filter(function (c) { return c.user_id !== 'me'; }); sv(d); return ok(); }
   };
@@ -125,7 +131,13 @@
   /* ---------- state ---------- */
   var me = null, blockedIds = [], cache = {}, reported = ls('vx.reported') || {};
   function refreshMe() { return B.me().then(function (m) { me = m; return B.blocked(); }).then(function (b) { blockedIds = (b || []).map(function (u) { return u && u.id; }); rerender(); }).catch(function () {}); }
-  function rerender() { var x = X(); if (!x) return; x.render(); x.refreshReader(); }
+  var ccount = {};
+  function loadCounts() { return B.commentCounts().then(function (m) { ccount = m || {}; rerender(); }).catch(function () {}); }
+  function headerSync() {
+    var h = document.getElementById('sxHead'); if (!h) return;
+    h.innerHTML = me ? '<button class="ct-btn sx-hb" data-sx="me" aria-label="Your profile">' + avatar(me) + '<span>Profile</span></button>' : '<button class="ct-btn sx-hb" data-sx="me">Sign in</button>';
+  }
+  function rerender() { headerSync(); var x = X(); if (!x) return; x.render(); x.refreshReader(); }
   function toast(m) { var x = X(); if (x) x.toast(m); }
   function sheet(h) { X().sheet('<div class="sx">' + h + '</div>'); }
   function closeSheet() { X().closeSheet(); }
@@ -152,7 +164,7 @@
       var u = r[0] || {}, c = r[1], f = r[2], bl = blockedIds.indexOf(id) >= 0, reps = bl ? [] : (r[3] || []);
       sheet('<div class="sx-ph">' + avatar(u, true) + '<div><b class="sx-name">' + esc(u.name) + '</b><span class="sx-handle">@' + esc(u.handle) + '</span></div></div>' +
         '<div class="sx-counts"><button data-sx="list" data-k="followers" data-id="' + esc(id) + '"><b>' + c.followers + '</b>Followers</button><button data-sx="list" data-k="following" data-id="' + esc(id) + '"><b>' + c.following + '</b>Following</button><div><b>' + reps.length + '</b>Reposts</div></div>' +
-        (mine ? '<button class="btn primary" data-sx="ffeed">Following feed</button><button class="btn ghost" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
+        (mine ? '<button class="btn primary" data-sx="ffeed">Following feed</button><button class="btn ghost" data-sx="people">Discover people</button><button class="btn ghost" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
           : bl ? '<button class="btn ghost" data-sx="unblock" data-id="' + esc(id) + '">Unblock @' + esc(u.handle) + '</button>'
           : '<button class="btn ' + (f ? 'ghost' : 'primary') + '" data-sx="' + (f ? 'unfollow' : 'follow') + '" data-id="' + esc(id) + '">' + (f ? 'Following' : 'Follow') + '</button>' +
             '<div class="sx-2"><button class="btn ghost" data-sx="report" data-t="user" data-id="' + esc(id) + '">Report</button><button class="btn ghost sx-danger" data-sx="block" data-id="' + esc(id) + '" data-h="' + esc(u.handle) + '">Block</button></div>') +
@@ -196,6 +208,15 @@
       (r.comment ? '<p class="sx-rpc">' + esc(noDash(r.comment)) + '</p>' : '') +
       '<button class="sx-rps" data-sx="openstory" data-id="' + esc(r.story_id) + '"><span class="sx-rpk">' + esc(i.kicker || 'Signal') + '</span><b>' + esc(noDash(title)) + '</b><small>' + esc(noDash(crux).slice(0, 160)) + '</small></button></div>';
   }
+  function peopleSheet() {
+    Promise.all([B.people(), B.myFollowing()]).then(function (r) {
+      var fl = r[1] || [], list = (r[0] || []).filter(function (u) { return u && u.handle && (!me || u.id !== me.id) && blockedIds.indexOf(u.id) < 0 && !reported['user:' + u.id]; });
+      sheet('<h3>Discover people</h3><p>Analysts and readers on Voxarc. Follow them to see their reposts in your Following feed.</p><div class="sx-list">' + (list.map(function (u) { var f = fl.indexOf(u.id) >= 0;
+        return '<div class="sx-row sx-prow"><button class="sx-pl" data-sx="profile" data-id="' + esc(u.id) + '">' + avatar(u) + '<span><b>' + esc(u.name) + '</b><small>@' + esc(u.handle) + '</small></span></button>' +
+          '<button class="sx-fb' + (f ? '' : ' on') + '" data-sx="' + (f ? 'unfollow' : 'follow') + '" data-id="' + esc(u.id) + '" data-ret="people">' + (f ? 'Following' : 'Follow') + '</button></div>'; }).join('') || '<p class="sx-fine">No one to show yet. Be the first to sign up and comment.</p>') +
+        '</div>' + (me ? '' : '<button class="btn primary" data-sx="signin">Sign in to follow people</button>') + '<button class="btn ghost" data-closesheet>Close</button>');
+    }).catch(function () { toast('Could not load people'); });
+  }
   function followingFeedSheet() {
     B.followingFeed().then(function (a) {
       a = (a || []).filter(function (r) { return blockedIds.indexOf(r.user_id) < 0 && !reported['user:' + r.user_id]; });
@@ -205,7 +226,7 @@
 
   /* ---------- hooks used by app.js ---------- */
   function settingsHTML() {
-    return '<div class="group-h">Account</div><div class="group">' + (me
+    return '<div class="group-h">Account</div><div class="group"><button class="cell" data-sx="people"><div class="l">Discover people<small>Find analysts to follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' + (me
       ? '<button class="cell" data-sx="profile" data-id="' + esc(me.id) + '">' + avatar(me) + '<div class="l">' + esc(me.name) + '<small>@' + esc(me.handle) + ' \u00B7 Profile, followers, blocked accounts</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
@@ -218,7 +239,7 @@
     return '<section class="sx-cm" aria-label="Comments"><h5>Comments' + (Array.isArray(list) ? ' \u00B7 ' + vis.length : '') + '</h5>' +
       (list === 'loading' || !list ? '<p class="sx-fine">Loading comments</p>' : vis.map(function (c) {
         var a = c.author || {}, own = me && c.user_id === me.id;
-        return '<div class="sx-c"><button class="sx-cav" data-sx="profile" data-id="' + esc(c.user_id) + '" aria-label="Profile of ' + esc(a.name) + '">' + avatar(a) + '</button><div class="sx-cb"><div class="sx-ch"><button data-sx="profile" data-id="' + esc(c.user_id) + '"><b>' + esc(a.name) + '</b> <span>@' + esc(a.handle) + ' \u00B7 ' + ago(c.created_at) + '</span></button>' +
+        return '<div class="sx-c"><button class="sx-cav" data-sx="profile" data-id="' + esc(c.user_id) + '" aria-label="Profile of ' + esc(a.name) + '">' + avatar(a) + '</button><div class="sx-cb"><div class="sx-ch"><button class="sx-nm" data-sx="profile" data-id="' + esc(c.user_id) + '"><b>' + esc(a.name) + '</b> <span>@' + esc(a.handle) + ' \u00B7 ' + ago(c.created_at) + '</span></button>' +
           '<button class="sx-more" data-sx="' + (own ? 'delcomment' : 'cmenu') + '" data-id="' + esc(c.id) + '" data-u="' + esc(c.user_id) + '" data-h="' + esc(a.handle) + '" aria-label="' + (own ? 'Delete comment' : 'Report or block') + '">' + (own ? 'Delete' : '\u22EF') + '</button></div><p>' + esc(c.body) + '</p></div></div>';
       }).join('') || '<p class="sx-fine">No comments yet. Start the conversation.</p>') +
       (me ? '<div class="sx-add"><textarea id="sxCm" class="sx-in" maxlength="500" placeholder="Add a comment" aria-label="Add a comment"></textarea><button class="btn primary sm" data-sx="post" data-id="' + esc(sid) + '">Post</button></div>'
@@ -253,13 +274,15 @@
       }).catch(function (er) { toast(er.message || 'Sign in failed'); });
     }
     if (a === 'profile') return profileSheet(id);
+    if (a === 'people') return peopleSheet();
+    if (a === 'me') return me ? profileSheet(me.id) : signInSheet();
     if (a === 'ffeed') return need(function () { demoSeed(); followingFeedSheet(); });
     if (a === 'openstory') return X().openArticle(id);
     if (a === 'list') return listSheet(id, t.dataset.k);
     if (a === 'edit') return editSheet();
     if (a === 'saveprofile') { var h = v('sxPh').replace(/[^\w]/g, '').slice(0, 20); if (h.length < 3) return toast('Handle needs 3 or more letters or numbers');
       return B.updateProfile({ name: noDash(v('sxPn')).slice(0, 60), handle: h.toLowerCase(), avatar_url: /^https:\/\//.test(v('sxPa')) ? v('sxPa') : null }).then(function () { return refreshMe(); }).then(function () { toast('Profile saved'); profileSheet(me.id); }).catch(function (er) { toast(/duplicate|unique/i.test(er.message) ? 'That handle is taken' : er.message); }); }
-    if (a === 'follow' || a === 'unfollow') return need(function () { B[a](id).then(function () { toast(a === 'follow' ? 'Following' : 'Unfollowed'); profileSheet(id); }); });
+    if (a === 'follow' || a === 'unfollow') return need(function () { B[a](id).then(function () { toast(a === 'follow' ? 'Following' : 'Unfollowed'); if (t.dataset.ret === 'people') peopleSheet(); else profileSheet(id); }); });
     if (a === 'report') return need(function () { reportSheet(t.dataset.t, id); });
     if (a === 'reportok') { var rs = document.querySelector('input[name="sxR"]:checked'); return B.report(t.dataset.t, id, rs ? rs.value : 'Other').then(function () { reported[t.dataset.t + ':' + id] = 1; ls('vx.reported', reported); closeSheet(); toast('Report sent. Thanks for keeping Voxarc useful'); rerender(); }).catch(function (er) { toast(er.message); }); }
     if (a === 'cmenu') return need(function () { sheet('<h3>@' + esc(t.dataset.h) + '</h3><button class="btn ghost" data-sx="report" data-t="comment" data-id="' + esc(id) + '">Report comment</button><button class="btn ghost" data-sx="report" data-t="user" data-id="' + esc(t.dataset.u) + '">Report account</button><button class="btn ghost sx-danger" data-sx="block" data-id="' + esc(t.dataset.u) + '" data-h="' + esc(t.dataset.h) + '">Block @' + esc(t.dataset.h) + '</button><button class="btn ghost" data-closesheet>Cancel</button>'); });
@@ -270,7 +293,7 @@
     if (a === 'signout') return B.signOut().then(function () { me = null; closeSheet(); rerender(); toast('Signed out'); });
     if (a === 'delete') return need(deleteSheet);
     if (a === 'deleteok') { if (v('sxDel').toUpperCase() !== 'DELETE') return toast('Type DELETE to confirm'); return B.deleteAccount().then(function () { me = null; var x = X(); Object.keys(x.S.reposts).forEach(function (k) { x.S.reposts[k].synced = false; }); x.saveReposts(); closeSheet(); rerender(); toast('Your account was deleted'); }).catch(function (er) { toast(er.message); }); }
-    if (a === 'post') { var b = noDash(v('sxCm')).slice(0, 500); if (!b) return; return B.addComment(id, b).then(function () { delete cache[id]; X().refreshReader(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
+    if (a === 'post') { var b = noDash(v('sxCm')).slice(0, 500); if (!b) return; return B.addComment(id, b).then(function () { delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
     if (a === 'delcomment') return B.deleteComment(id).then(function () { cache = {}; X().refreshReader(); toast('Comment deleted'); });
   }, true);
 
@@ -279,6 +302,6 @@
     if (/access_token=/.test(location.hash)) B.takeRedirect(location.hash).then(function () { history.replaceState(null, '', location.pathname); afterAuth('Signed in with Google'); });
     if (isNative && P.App) P.App.addListener('appUrlOpen', function (ev) { if (ev && /auth-callback/.test(ev.url || '')) { if (P.Browser) P.Browser.close().catch(function () {}); B.takeRedirect(ev.url).then(function (okk) { if (okk) afterAuth('Signed in with Google'); }); } });
   }
-  window.VXSocial = { settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; } };
-  setTimeout(function () { refreshMe().then(syncReposts); }, 0);
+  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; } };
+  setTimeout(function () { headerSync(); refreshMe().then(syncReposts); loadCounts(); }, 0);
 })();
