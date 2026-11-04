@@ -4,9 +4,12 @@
   var CFG = {
     remoteFeed: 'https://raw.githubusercontent.com/voxarclab-byte/voxarc-daily-media/main/app/feed.json', // live updates; bundled + cached content is used when unavailable
     privacyUrl: 'https://voxarclab.io/privacy',
-    contactUrl: 'https://voxarclab.io/contact',
+    contactUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/contact.html',
+    webUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/',
+    supportEmail: 'support@voxarc.io',
+    maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
-    feedbackEmail: 'hello@voxarc.io',
+    feedbackEmail: 'support@voxarc.io',
     version: '1.0.0', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
@@ -153,8 +156,9 @@
   function validFeed(f) { return f && Array.isArray(f.items) && f.items.length && f.items.every(function (i) { return i && i.id && i.title && i.body; }); }
   function mergeFeeds(a, b) {
     var m = {}; (a || []).concat(b || []).forEach(function (i) { m[i.id] = m[i.id] && m[i.id].signal && !i.signal ? m[i.id] : i; });
-    return Object.keys(m).map(function (k) { return m[k]; }).sort(function (x, y) { return d(y.published) - d(x.published); });
+    return Object.keys(m).map(function (k) { return m[k]; }).filter(isFresh).sort(function (x, y) { return d(y.published) - d(x.published); });
   }
+  function isFresh(i) { var t = d(i && i.published).getTime(); return isFinite(t) && Date.now() - t <= CFG.maxAgeDays * 86400000; }
   function loadBundled() {
     return fetch('data/feed.json').then(function (r) { return r.json(); }).catch(function () { return null; });
   }
@@ -361,7 +365,7 @@
   }
   function trustHTML(i) {
     var t = trustOf(i); if (!t || !t.name) return '';
-    return '<div class="trust">' + '<span class="tr-src">' + esc(t.name) + (t.verified ? '<span class="tr-ok" role="img" aria-label="Verified official source" title="Official government source">' + ICON.check + '</span>' : '') + '</span>' +
+    return '<div class="trust">' + '<span class="tr-src">Source: ' + esc(t.name) + (t.verified ? '<span class="tr-ok" role="img" aria-label="Verified official source" title="Official government source">' + ICON.check + '</span>' : '') + '</span>' +
       (t.date ? '<span class="tr-date">' + esc(dlDate(t.date)) + '</span>' : '') +
       '<button class="tr-link" data-url="' + esc(t.url) + '" aria-label="Open original document from ' + esc(t.name) + '">Original \u2197</button></div>';
   }
@@ -417,7 +421,7 @@
       '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from saved' : 'Save') + '">' + ICON.bm + '</button></span></div>';
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     var head = '<button class="open" data-open="' + esc(i.id) + '"' + (unread ? ' aria-describedby="unread-l"' : '') + '><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(i.title) + '</h3></button>';
-    var chips = (dlChipHTML(i) ? '<div class="cchips">' + dlChipHTML(i) + '</div>' : '') + trustHTML(i);
+    var chips = (dlChipHTML(i) ? '<div class="cchips">' + dlChipHTML(i) + '</div>' : '') + (trustHTML(i) || srcLineHTML(i));
     var extra = soWhatHTML(i, false) + dataCardHTML(i, false) + expertHTML(i);
     if (hero) return '<div class="card hero' + sel + (S.rendered ? '' : ' in') + '" data-open="' + esc(i.id) + '"' + style + '>' + coverHTML(i, S.sigIds && S.sigIds.indexOf(i.id) >= 0) +
       head + chips + '<p>' + esc(i.summary) + '</p>' + extra + marketHTML(i, false) + meta + '</div>';
@@ -470,9 +474,14 @@
     var u = safeUrl(p.url);
     return '<figure class="phero"><img src="' + esc(p.src) + '" alt=""><figcaption>' + (u ? '<button class="link-btn pcred" data-url="' + esc(u) + '">' + esc(p.credit) + '</button>' : esc(p.credit)) + '</figcaption></figure>';
   }
+  function srcName(i, t) {
+    t = t || trustOf(i); var g = i.signal || {}, s0 = (i.sources || []).filter(function (x) { return x && x.publisher; })[0];
+    return String((t && t.name) || g.source_name || (s0 && s0.publisher) || primaryName(i) || '').slice(0, 80);
+  }
   function srcLineHTML(i, t) {
-    t = t || trustOf(i); var g = i.signal || {}, n = g.n_sources || (i.sources || []).length;
-    return '<p class="srcl">Source: ' + esc((t && t.name) || g.source_name || '') + (t && t.verified ? ' <span class="vok" aria-label="Verified official source">\u2713</span>' : '') + ', ' + esc(i.title) + '</p>' +
+    t = t || trustOf(i); var g = i.signal || {}, n = g.n_sources || (i.sources || []).length, nm = srcName(i, t);
+    if (!nm) return '';
+    return '<p class="srcl">Source: ' + esc(nm) + (t && t.verified ? ' <span class="vok" aria-label="Verified official source">\u2713</span>' : '') + ', ' + esc(i.title) + '</p>' +
       (n > 1 ? '<span class="xsrc">Extracted from ' + n + ' sources</span>' : '');
   }
   function homeCardHTML(i, n) {
@@ -724,10 +733,24 @@
     h += '</div>' + (followsAll() ? '' : '<div class="set-actions"><button class="btn ghost sm" data-followall>Follow all topics</button></div>') + '</div>';
     return h;
   }
+  function renderContact() {
+    return '<div class="settings-inner contact-page"><div class="subbar"><button class="back" data-setback>' + ICON.back + '<span>Settings</span></button></div>' +
+      '<div class="section-h"><h2 id="ct-h" tabindex="-1">Contact us</h2></div>' +
+      '<div class="group"><div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Lab</b><p>Publisher of Voxarc Feed, policy intelligence on the Arctic, AI and critical minerals.</p></div></div>' +
+      '<div class="cell ct-row"><div class="l">Email<small><a class="ct-a" href="mailto:' + CFG.supportEmail + '">' + esc(CFG.supportEmail) + '</a></small></div></div>' +
+      '<div class="cell ct-row"><div class="l">Website<small><a class="ct-a" href="' + CFG.webUrl + '" data-url="' + CFG.webUrl + '">' + esc(CFG.webUrl) + '</a></small></div></div></div>' +
+      '<p class="ct-note">Questions, corrections or support: email us and we usually reply within two business days.</p>' +
+      '<p class="ct-note"><b>Publishers:</b> to ask for your content to be corrected or removed from Voxarc Feed, email ' + esc(CFG.supportEmail) + ' with a link to the item.</p>' +
+      '<div class="foot">Every briefing names its original source and links to it.</div></div>';
+  }
+  function openContact() { if (!wide() && S.current) closeArticle(); S.tab = 'settings'; S.setView = 'contact'; render(); $('#main').scrollTop = 0; var ch = $('#ct-h'); if (ch) try { ch.focus({ preventScroll: true }); } catch (er) {} }
+  window.addEventListener('hashchange', function () { if (location.hash === '#contact') openContact(); });
   function renderSettings() {
     var times = []; for (var hh = 5; hh <= 21; hh++) times.push(hh);
     if (S.setView === 'topics') return renderSettingsTopics();
+    if (S.setView === 'contact') return renderContact();
     var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>';
+    h += '<div class="group-h">Help</div><div class="group"><button class="cell" data-contact><div class="l">Contact us<small>Voxarc Lab support: ' + esc(CFG.supportEmail) + '</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">Your feed</div><div class="group">' +
       '<button class="cell" data-settopics><div class="l">Topics you follow<small>' + esc(followLabel()) + '</small></div><div class="r">' + S.follow.length + ' of ' + CATEGORIES.length + '</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-editprofile><div class="l">Regions and role<small>' + esc(profileSummary()) + '</small></div>' + ICON.chev + '</button></div>';
@@ -745,7 +768,6 @@
       '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read, with your saved briefings and settings kept on this device.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
-      '<button class="cell" data-url="' + CFG.contactUrl + '"><div class="l">Contact and Support</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-mail="Voxarc Feed feedback"><div class="l">Send feedback</div><div class="r">' + esc(CFG.feedbackEmail) + '</div></button>' +
       '<div class="cell"><div class="l">Version</div><div class="r" id="appVersion">' + esc(CFG.version) + '</div></div></div>';
     h += '<div class="foot">Voxarc Feed by Voxarc Lab. Analysis summarizes public sources, which are linked in every briefing. Not legal or investment advice.</div></div>';
@@ -885,7 +907,7 @@
     h += '<div class="rscroll" id="rscroll"><article>' +
       photoHeroHTML(i) + '<div class="kicker">' + esc(kickerOf(i)) + '</div><h1 tabindex="-1" id="rtitle">' + (i.signal ? esc(i.signal.signal_title) : markup(i.titleMarkup || i.title)) + '</h1>' +
       (i.signal ? '<div class="smeta"><span class="hb ' + lvl(i.signal.importance) + '">Impact: ' + esc(i.signal.importance) + '</span><span class="sm-t">\u00B7 ' + esc(i.signal.time_horizon) + ' \u00B7 Risk: ' + esc(i.signal.risk_level) + '</span>' + INFO_BTN + '</div>' +
-        (i.signal.so_what ? '<p class="hc-why big"><b>So what:</b> ' + esc(i.signal.so_what) + '</p>' : '') + srcLineHTML(i) : '') +
+        (i.signal.so_what ? '<p class="hc-why big"><b>So what:</b> ' + esc(i.signal.so_what) + '</p>' : '') + srcLineHTML(i) : srcLineHTML(i)) +
       (primaryName(i) ? '<div class="ps-line">' + primaryChipHTML(i) + '<span>Official document, summarized by Voxarc Lab</span></div>' : '') +
       '<div class="ameta"><span>Voxarc Lab</span><span>·</span><span>' + esc(fmtDate(i.published)) + '</span><span>·</span><span>' + readMins(i) + ' min read</span></div>' +
       '<div class="tagrow">' + (i.topics || []).map(function (t) { return '<span class="tag">' + esc(TOPIC_LABEL[t] || t) + '</span>'; }).join('') + '</div>' +
@@ -903,7 +925,7 @@
     h += '<div class="body">' + bodyHTML(i.body) + '</div>';
     if (i.sources && i.sources.length) h += '<div class="sources"><h5>Sources</h5>' + i.sources.map(function (s) {
       var u = safeUrl(s.url);
-      return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small>' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
+      return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">Source: ' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small>' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
     h += '<div class="share-cta"><button class="btn primary" data-share="' + esc(i.id) + '">Share briefing</button><button class="btn ghost" data-bm="' + esc(i.id) + '">' + (isSaved(i.id) ? 'Saved' : 'Save for later') + '</button></div>';
     h += '<p class="disclaimer">Voxarc Lab analysis of public sources. Check the linked originals before acting. Not legal or investment advice.</p></article></div>';
     return h;
@@ -1112,6 +1134,8 @@
 
   /* ---------- events ---------- */
   document.addEventListener('click', function (e) {
+    var ct = e.target.closest('[data-contact]'); if (ct) { e.preventDefault(); openContact(); return; }
+    if (e.target.closest('a.ct-a[href^="mailto:"]')) return;
     var ob = e.target.closest('[data-ob],[data-obnext],[data-obback],[data-obskip],[data-obdone]');
     if (ob && S.ob) {
       if (ob.dataset.ob) { obToggle(ob.dataset.ob, ob.dataset.v); return; }
@@ -1156,7 +1180,7 @@
     if (t.dataset.tab) { if (S.tab === t.dataset.tab) { $('#main').scrollTop = 0; } S.tab = t.dataset.tab; S.setView = null; if (!wide() && S.current) closeArticle(); render(); return; }
     if (t.dataset.share) { e.stopPropagation(); shareItem(t.dataset.share); return; }
     if (t.hasAttribute('data-back')) { if (history.state && history.state.a) history.back(); else closeArticle(); return; }
-    if (t.dataset.url) { openUrl(t.dataset.url); return; }
+    if (t.dataset.url) { if (t.tagName === 'A') e.preventDefault(); openUrl(t.dataset.url); return; }
     if (t.hasAttribute('data-notif')) { setNotif(!S.prefs.notif); return; }
     if (t.dataset.fs) { S.prefs.fs = +t.dataset.fs; applyFs(); store.set('vx.prefs', S.prefs); render(); return; }
     if (t.hasAttribute('data-clearsaved')) { confirmClearSaved(); return; }
@@ -1289,7 +1313,9 @@
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
-      if (!S.onboarded && S.items.length) startOnboarding(false);
+      var wantContact = location.hash === '#contact';
+      if (!S.onboarded && S.items.length && !wantContact) startOnboarding(false);
+      if (wantContact) { S.tab = 'settings'; S.setView = 'contact'; }
       render();
       var ss = plugin('SplashScreen'); if (ss) requestAnimationFrame(function () { setTimeout(function () { ss.hide({ fadeOutDuration: 200 }).catch(function () {}); }, 50); });
       spotlightIndex();

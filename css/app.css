@@ -582,3 +582,11 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .card .srcl,.hc .srcl,.sgc .srcl{font-size:11px;color:#8A8A8A;margin:0}
 .hdata{grid-template-columns:1fr 1fr}.hd-g{font-size:10px;color:#9A9A9A;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}.nospark{height:28px;margin-top:8px;font-size:10px;color:#666;display:flex;align-items:center}
 .hd .spark rect{fill:#FF6B35}
+
+/* 1.1.1 Play News policy: Contact us page and header entry */
+.ct-btn{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);color:var(--text);font-size:13px;font-weight:600;align-self:center}
+.ct-btn:active{background:var(--panel2)}
+.contact-page .ct-a{color:var(--orange);font-size:15px;text-decoration:none;word-break:break-all}
+.contact-page .ct-row .l small{margin-top:4px}
+.ct-note{margin:14px 16px 0;color:var(--gray);font-size:14px;line-height:1.5}
+.ct-note b{color:var(--text)}
