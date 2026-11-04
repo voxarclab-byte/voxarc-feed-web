@@ -1343,6 +1343,6 @@
       refreshRemote(false); scheduleNotif();
     });
   }
-  window.__vx = { S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts };
+  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts };
   loadAll();
 })();

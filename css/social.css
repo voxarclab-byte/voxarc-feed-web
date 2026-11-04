@@ -43,3 +43,12 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .fa tr:last-child>*{border-bottom:0}
 .fa-v{margin:8px 0 0;font-size:13px;color:var(--gray);line-height:1.45}.fa-v b{color:var(--text);margin-right:4px}
 .fa-link{margin-top:6px;font-size:12px;color:var(--dim);text-decoration:underline}
+/* Reposts on profiles and the Following feed */
+.sx-sec{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 4px;font-size:13px;font-weight:600}.sx-sec span{font-size:11px;font-weight:400;color:var(--dim)}
+.sx-rp{padding:12px 0;border-bottom:1px solid var(--line)}
+.sx-rpa{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gray);text-align:left}.sx-rpa b{color:var(--text)}
+.sx-rpt{font-size:12px;color:var(--dim)}
+.sx .sx-rpc{margin:6px 0;color:var(--text);font-size:15px}
+.sx-rps{display:block;width:100%;margin-top:6px;padding:10px 12px;text-align:left;border:1px solid var(--line);border-left:2px solid var(--orange);border-radius:var(--r-s);background:var(--bg)}
+.sx-rps b{display:block;font-size:14px;line-height:1.35}.sx-rps small{display:block;margin-top:4px;color:var(--dim);font-size:12px;line-height:1.4}
+.sx-rpk{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}

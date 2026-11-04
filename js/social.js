@@ -61,6 +61,9 @@
     react: function (sid, kind) { return kind ? req('/rest/v1/reactions', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: { user_id: uid(), story_id: sid, kind: kind } }) : req('/rest/v1/reactions?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
     save: function (sid, on) { return on ? req('/rest/v1/saves', { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates' }, body: { user_id: uid(), story_id: sid } }) : req('/rest/v1/saves?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
     repost: function (sid, r) { return r ? req('/rest/v1/reposts', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: { user_id: uid(), story_id: sid, comment: r.comment || '' } }) : req('/rest/v1/reposts?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
+    userReposts: function (id) { return req('/rest/v1/reposts?user_id=eq.' + id + '&order=created_at.desc&limit=50&select=story_id,comment,created_at,user_id'); },
+    followingFeed: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (f) { var ids = f.map(function (x) { return x.followee; }); if (!ids.length) return [];
+      return req('/rest/v1/reposts?user_id=in.(' + ids.join(',') + ')&order=created_at.desc&limit=100&select=story_id,comment,created_at,user_id,author:profiles(' + PF + ')'); }) : Promise.resolve([]); },
     myReposts: function () { return req('/rest/v1/reposts?user_id=eq.' + uid() + '&select=story_id,comment,created_at'); },
     deleteAccount: function () { return req('/rest/v1/rpc/delete_my_account', { method: 'POST', body: {} }).then(function () { setSess(null); }); }
   };
@@ -74,6 +77,13 @@
     return d;
   }
   function sv(d) { ls('vx.demo', d); }
+  function seedReposts(d) {
+    if (d.reposts) return; var it = (X() && X().S.items || []).slice(0, 6); if (!it.length) return;
+    var cm = ['Worth reading before the comment window closes.', '', 'This is the number to watch for northern operators.', 'Quiet rule, big downstream effect.'];
+    d.reposts = [['u1', 0, 0, 3], ['u2', 1, 2, 9], ['u1', 2, 3, 20], ['u3', 3, 1, 30]].map(function (x) { var i = it[x[1] % it.length]; return { user_id: x[0], story_id: i.id, comment: cm[x[2]], created_at: new Date(Date.now() - x[3] * 3600000).toISOString() }; });
+    sv(d);
+  }
+  function myLocalReposts() { var r = X().S.reposts; return Object.keys(r).map(function (k) { return { story_id: k, comment: r[k].comment, created_at: r[k].createdAt, user_id: 'me' }; }).sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; }); }
   function ok(v) { return Promise.resolve(v); }
   function seedComments(d, sid) {
     if (d.comments.some(function (c) { return c.story_id === sid; })) return;
@@ -102,10 +112,14 @@
     block: function (id) { var d = db(); if (d.blocks.indexOf(id) < 0) d.blocks.push(id); d.follows = d.follows.filter(function (x) { return !((x[0] === d.me && x[1] === id) || (x[1] === d.me && x[0] === id)); }); sv(d); return ok(); },
     unblock: function (id) { var d = db(); d.blocks = d.blocks.filter(function (x) { return x !== id; }); sv(d); return ok(); },
     blocked: function () { var d = db(); return ok(d.blocks.map(function (b) { return d.users[b]; }).filter(Boolean)); },
+    userReposts: function (id) { var d = db(); return ok(id === d.me ? myLocalReposts() : (d.reposts || []).filter(function (r) { return r.user_id === id; })); },
+    followingFeed: function () { var d = db(), f = d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; });
+      return ok((d.reposts || []).filter(function (r) { return f.indexOf(r.user_id) >= 0; }).map(function (r) { return { story_id: r.story_id, comment: r.comment, created_at: r.created_at, user_id: r.user_id, author: d.users[r.user_id] }; }).sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; })); },
     react: function () { return ok(); }, save: function () { return ok(); }, repost: function () { return ok(); }, myReposts: function () { return ok([]); },
     deleteAccount: function () { var d = db(); delete d.users.me; d.me = null; d.follows = d.follows.filter(function (x) { return x[0] !== 'me' && x[1] !== 'me'; }); d.comments = d.comments.filter(function (c) { return c.user_id !== 'me'; }); sv(d); return ok(); }
   };
   var B = LIVE ? Live : Demo;
+  function demoSeed() { if (!LIVE) { var d = db(); seedReposts(d); } }
 
   /* ---------- state ---------- */
   var me = null, blockedIds = [], cache = {}, reported = ls('vx.reported') || {};
@@ -133,14 +147,16 @@
   }
   function profileSheet(id) {
     var mine = me && id === me.id;
-    Promise.all([B.profile(id), B.counts(id), mine ? Promise.resolve(false) : B.isFollowing(id)]).then(function (r) {
-      var u = r[0] || {}, c = r[1], f = r[2], bl = blockedIds.indexOf(id) >= 0;
+    demoSeed();
+    Promise.all([B.profile(id), B.counts(id), mine ? Promise.resolve(false) : B.isFollowing(id), B.userReposts(id)]).then(function (r) {
+      var u = r[0] || {}, c = r[1], f = r[2], bl = blockedIds.indexOf(id) >= 0, reps = bl ? [] : (r[3] || []);
       sheet('<div class="sx-ph">' + avatar(u, true) + '<div><b class="sx-name">' + esc(u.name) + '</b><span class="sx-handle">@' + esc(u.handle) + '</span></div></div>' +
-        '<div class="sx-counts"><button data-sx="list" data-k="followers" data-id="' + esc(id) + '"><b>' + c.followers + '</b>Followers</button><button data-sx="list" data-k="following" data-id="' + esc(id) + '"><b>' + c.following + '</b>Following</button><div><b>' + Object.keys(X().S.reposts).length * (mine ? 1 : 0) + '</b>' + (mine ? 'My Reposts' : 'Reposts') + '</div></div>' +
-        (mine ? '<button class="btn primary" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
+        '<div class="sx-counts"><button data-sx="list" data-k="followers" data-id="' + esc(id) + '"><b>' + c.followers + '</b>Followers</button><button data-sx="list" data-k="following" data-id="' + esc(id) + '"><b>' + c.following + '</b>Following</button><div><b>' + reps.length + '</b>Reposts</div></div>' +
+        (mine ? '<button class="btn primary" data-sx="ffeed">Following feed</button><button class="btn ghost" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
           : bl ? '<button class="btn ghost" data-sx="unblock" data-id="' + esc(id) + '">Unblock @' + esc(u.handle) + '</button>'
           : '<button class="btn ' + (f ? 'ghost' : 'primary') + '" data-sx="' + (f ? 'unfollow' : 'follow') + '" data-id="' + esc(id) + '">' + (f ? 'Following' : 'Follow') + '</button>' +
             '<div class="sx-2"><button class="btn ghost" data-sx="report" data-t="user" data-id="' + esc(id) + '">Report</button><button class="btn ghost sx-danger" data-sx="block" data-id="' + esc(id) + '" data-h="' + esc(u.handle) + '">Block</button></div>') +
+        '<div class="sx-sec">' + (mine ? 'My Reposts<span>Public on your profile</span>' : 'Reposts') + '</div><div class="sx-list">' + (reps.map(function (x) { return repostItemHTML(x, false); }).join('') || '<p class="sx-fine">No reposts yet.</p>') + '</div>' +
         '<button class="btn ghost" data-closesheet>Close</button>');
     }).catch(function () { toast('Could not load profile'); });
   }
@@ -173,10 +189,25 @@
       '<button class="btn primary sx-dangerbg" data-sx="deleteok">Delete account permanently</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
 
+  function repostItemHTML(r, showAuthor) {
+    var i = X().byId(r.story_id), a = r.author || {}; if (!i) return '';
+    var title = i.signal ? i.signal.signal_title : i.title, crux = i.signal && i.signal.crux ? i.signal.crux : (i.summary || '');
+    return '<div class="sx-rp">' + (showAuthor ? '<button class="sx-rpa" data-sx="profile" data-id="' + esc(r.user_id) + '">' + avatar(a) + '<span><b>' + esc(a.name) + '</b> reposted \u00B7 ' + ago(r.created_at) + '</span></button>' : '<div class="sx-rpt">Reposted \u00B7 ' + ago(r.created_at) + '</div>') +
+      (r.comment ? '<p class="sx-rpc">' + esc(noDash(r.comment)) + '</p>' : '') +
+      '<button class="sx-rps" data-sx="openstory" data-id="' + esc(r.story_id) + '"><span class="sx-rpk">' + esc(i.kicker || 'Signal') + '</span><b>' + esc(noDash(title)) + '</b><small>' + esc(noDash(crux).slice(0, 160)) + '</small></button></div>';
+  }
+  function followingFeedSheet() {
+    B.followingFeed().then(function (a) {
+      a = (a || []).filter(function (r) { return blockedIds.indexOf(r.user_id) < 0 && !reported['user:' + r.user_id]; });
+      sheet('<h3>Following</h3><p>Reposts from people you follow.</p><div class="sx-list">' + (a.map(function (r) { return repostItemHTML(r, true); }).join('') || '<p class="sx-fine">No reposts yet. Follow people from the comments on any signal.</p>') + '</div><button class="btn ghost" data-closesheet>Close</button>');
+    }).catch(function () { toast('Could not load the Following feed'); });
+  }
+
   /* ---------- hooks used by app.js ---------- */
   function settingsHTML() {
     return '<div class="group-h">Account</div><div class="group">' + (me
       ? '<button class="cell" data-sx="profile" data-id="' + esc(me.id) + '">' + avatar(me) + '<div class="l">' + esc(me.name) + '<small>@' + esc(me.handle) + ' \u00B7 Profile, followers, blocked accounts</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
+        '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
       : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>Google or email. Reading stays free without an account.</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>') + '</div>';
   }
@@ -221,6 +252,8 @@
       }).catch(function (er) { toast(er.message || 'Sign in failed'); });
     }
     if (a === 'profile') return profileSheet(id);
+    if (a === 'ffeed') return need(function () { demoSeed(); followingFeedSheet(); });
+    if (a === 'openstory') return X().openArticle(id);
     if (a === 'list') return listSheet(id, t.dataset.k);
     if (a === 'edit') return editSheet();
     if (a === 'saveprofile') { var h = v('sxPh').replace(/[^\w]/g, '').slice(0, 20); if (h.length < 3) return toast('Handle needs 3 or more letters or numbers');
