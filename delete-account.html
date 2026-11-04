@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delete your account | Voxarc Feed by Voxarc Lab</title>
+<meta name="description" content="Delete your Voxarc Feed account and its data">
+<link rel="icon" href="img/mark.png">
+<style>
+body{margin:0;background:#0A0A0A;color:#F5F5F5;font:16px/1.55 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:32px 20px 48px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}.brand img{width:36px}.brand a{color:#F5F5F5;text-decoration:none;font-weight:700;font-size:18px}
+h1{font-size:30px;margin:0 0 8px}
+.card{background:#1A1A1A;border:1px solid #2a2a2a;border-radius:14px;padding:18px 20px;margin:20px 0}
+.row{margin:10px 0}.k{color:#9a9a9a;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+a{color:#FF6B35}
+p.note{color:#bdbdbd}
+input{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:12px;background:#0A0A0A;border:1px solid #2a2a2a;border-radius:10px;color:#F5F5F5;font:inherit}
+button{width:100%;margin:6px 0;padding:12px;border-radius:10px;border:1px solid #2a2a2a;background:#1E1E1E;color:#F5F5F5;font:inherit;cursor:pointer}
+button.p{background:#FF6B35;border-color:#FF6B35;color:#111;font-weight:600}button.d{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
+ul{padding-left:20px;color:#bdbdbd}#msg{color:#FF6B35}
+</style>
+</head>
+<body>
+<main>
+<div class="brand"><img src="img/mark.png" alt=""><a href="./">Voxarc Feed</a></div>
+<h1>Delete your account</h1>
+<p class="note">Voxarc Feed is published by Voxarc Lab. Reading the app never needs an account. If you created one to comment, follow or sync, you can delete it here, in the app (Settings, Account, Delete account) or by email.</p>
+<div class="card">
+<div class="k">What is deleted</div>
+<ul><li>Your profile: name, handle and avatar</li><li>Your comments, follows and followers</li><li>Your reactions, saves and reposts</li><li>Your sign-in record (Google or email)</li></ul>
+<p class="note">Deletion is permanent and done right away. Reports you filed are kept without your identity for up to 90 days for safety review. Content on your own device stays until you clear it or uninstall the app.</p>
+</div>
+<div class="card" id="online">
+<div class="k">Delete now</div>
+<button class="p" id="g">Sign in with Google</button>
+<input id="e" type="email" placeholder="Email" autocomplete="email"><input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+<button id="s">Sign in with email</button>
+<div id="who" hidden><p class="note">Signed in as <b id="wn"></b>. Type DELETE to confirm.</p><input id="c" placeholder="DELETE"><button class="d" id="del">Delete my account permanently</button></div>
+<p id="msg" role="status"></p>
+</div>
+<div class="card">
+<div class="k">Delete by email</div>
+<p class="note">Email <a href="mailto:support@voxarc.io?subject=Delete%20my%20Voxarc%20Feed%20account">support@voxarc.io</a> from the address on your account with the subject "Delete my Voxarc Feed account". We delete it within 30 days and confirm by email.</p>
+</div>
+<p class="note"><a href="./">Back to Voxarc Feed</a> · <a href="contact.html">Contact us</a></p>
+</main>
+<script src="js/social-config.js"></script>
+<script>
+(function () {
+  var C = window.VX_SUPABASE || {}, live = C.url && C.url.indexOf('YOUR-') < 0, tok = null, $ = function (i) { return document.getElementById(i); };
+  function msg(t) { $('msg').textContent = t; }
+  if (!live) { $('online').querySelectorAll('button,input').forEach(function (x) { x.disabled = true; }); msg('Online deletion opens when accounts launch. Until then use email below.'); return; }
+  function h() { return { apikey: C.anonKey, Authorization: 'Bearer ' + (tok || C.anonKey), 'Content-Type': 'application/json' }; }
+  function ready(t) { tok = t; fetch(C.url + '/auth/v1/user', { headers: h() }).then(function (r) { return r.json(); }).then(function (u) { $('wn').textContent = u.email || 'your account'; $('who').hidden = false; }); }
+  var m = /access_token=([^&]+)/.exec(location.hash); if (m) { history.replaceState(null, '', location.pathname); ready(decodeURIComponent(m[1])); }
+  $('g').onclick = function () { location.href = C.url + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(location.origin + location.pathname); };
+  $('s').onclick = function () { fetch(C.url + '/auth/v1/token?grant_type=password', { method: 'POST', headers: h(), body: JSON.stringify({ email: $('e').value.trim(), password: $('pw').value }) }).then(function (r) { return r.json(); }).then(function (j) { if (j.access_token) ready(j.access_token); else msg(j.error_description || j.msg || 'Sign in failed'); }); };
+  $('del').onclick = function () { if ($('c').value.trim().toUpperCase() !== 'DELETE') return msg('Type DELETE to confirm'); fetch(C.url + '/rest/v1/rpc/delete_my_account', { method: 'POST', headers: h(), body: '{}' }).then(function (r) { if (!r.ok) throw 0; $('who').hidden = true; tok = null; msg('Your account and its data were deleted.'); }).catch(function () { msg('Something went wrong. Email support@voxarc.io and we will delete it for you.'); }); };
+})();
+</script>
+</body>
+</html>

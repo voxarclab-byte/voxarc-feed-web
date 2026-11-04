@@ -1,4 +1,4 @@
-/* Voxarc Feed: bundled native app UI. Everything runs on the device; no sign-up of any kind. */
+/* Voxarc Feed: bundled native app UI. Reading needs no account; optional accounts and social features live in js/social.js (1.2.0). */
 (function () {
   'use strict';
   var CFG = {
@@ -417,7 +417,7 @@
     var unread = !S.read[i.id];
     var meta = '<div class="meta">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span>' + esc(fmtDate(i.published)) + ' \u00B7 ' + readMins(i) + ' min read</span><span class="sp"></span>' +
       '<span class="acts">' + reactHTML(i.id, false) +
-      '<button class="act" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + '</button>' +
+      '<button class="act' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-pressed="' + !!repostOf(i.id) + '" aria-label="Repost">' + ICON.repost + '</button>' +
       '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from saved' : 'Save') + '">' + ICON.bm + '</button></span></div>';
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     var head = '<button class="open" data-open="' + esc(i.id) + '"' + (unread ? ' aria-describedby="unread-l"' : '') + '><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(i.title) + '</h3></button>';
@@ -687,7 +687,7 @@
     h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + !liked + '" class="' + (liked ? '' : 'on') + '">Saved \u00B7 ' + S.saved.length + '</button>' +
       '<button role="tab" data-savedview="liked" aria-selected="' + liked + '" class="' + (liked ? 'on' : '') + '">\uD83D\uDC4D Liked \u00B7 ' + nLiked + '</button><button role="tab" data-savedview="reposts" aria-selected="' + reps + '" class="' + (reps ? 'on' : '') + '">My Reposts \u00B7 ' + Object.keys(S.reposts).length + '</button></div>';
     if (reps) return h + (list.length ? list.map(function (i) { var r = repostOf(i.id); return '<div class="rp-h">' + ICON.repost + '<span>You reposted \u00B7 ' + esc(fmtDate(r.createdAt)) + '</span></div>' + (r.comment ? '<p class="rp-c">' + esc(r.comment) + '</p>' : '') + (i.signal ? sigCardHTML(i) : cardHTML(i, false)); }).join('')
-      : '<div class="empty"><h3>No reposts yet</h3><p>Tap Repost on any story and choose Repost in Voxarc. Reposts are kept on this device for now.</p></div>');
+      : '<div class="empty"><h3>No reposts yet</h3><p>Tap Repost on any story and choose Repost in Voxarc. Sign in to keep them in sync across devices.</p></div>');
     if (!list.length) return h + (liked
       ? '<div class="empty"><div class="em-big">\uD83D\uDC4D</div><h3>No liked briefings yet</h3><p>Tap Like on any briefing to find it here. Reactions are stored only on this device.</p><button class="btn ghost sm" data-tab="feed">Browse the feed</button></div>'
       : '<div class="empty">' + ICON.saved + '<h3>Nothing saved yet</h3><p>Tap the bookmark on any briefing to keep it here. Saved briefings are stored on this device and work offline.</p><button class="btn ghost sm" data-tab="feed">Browse the feed</button></div>');
@@ -749,7 +749,7 @@
     var times = []; for (var hh = 5; hh <= 21; hh++) times.push(hh);
     if (S.setView === 'topics') return renderSettingsTopics();
     if (S.setView === 'contact') return renderContact();
-    var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>';
+    var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>' + (window.VXSocial ? window.VXSocial.settingsHTML() : '');
     h += '<div class="group-h">Help</div><div class="group"><button class="cell" data-contact><div class="l">Contact us<small>Voxarc Lab support: ' + esc(CFG.supportEmail) + '</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">Your feed</div><div class="group">' +
       '<button class="cell" data-settopics><div class="l">Topics you follow<small>' + esc(followLabel()) + '</small></div><div class="r">' + S.follow.length + ' of ' + CATEGORIES.length + '</div>' + ICON.chev + '</button>' +
@@ -765,7 +765,7 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read, with your saved briefings and settings kept on this device.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read. Accounts are optional and only needed to comment, follow and sync.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-mail="Voxarc Feed feedback"><div class="l">Send feedback</div><div class="r">' + esc(CFG.feedbackEmail) + '</div></button>' +
@@ -911,7 +911,7 @@
       (primaryName(i) ? '<div class="ps-line">' + primaryChipHTML(i) + '<span>Official document, summarized by Voxarc Lab</span></div>' : '') +
       '<div class="ameta"><span>Voxarc Lab</span><span>·</span><span>' + esc(fmtDate(i.published)) + '</span><span>·</span><span>' + readMins(i) + ' min read</span></div>' +
       '<div class="tagrow">' + (i.topics || []).map(function (t) { return '<span class="tag">' + esc(TOPIC_LABEL[t] || t) + '</span>'; }).join('') + '</div>' +
-      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + signalDetailHTML(i);
+      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + signalDetailHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
     if (i.stat && i.stat.value) h += '<div class="statbox"><b>' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
     h += soWhatHTML(i, true);
     var dls = deadlinesOf(i, true);
@@ -1061,7 +1061,7 @@
   function toggleSave(id) {
     var k = S.saved.indexOf(id);
     if (k >= 0) S.saved.splice(k, 1); else S.saved.push(id);
-    store.set('vx.saved', S.saved); haptic(); toast(k >= 0 ? 'Removed from Saved' : 'Saved for offline reading');
+    store.set('vx.saved', S.saved); haptic(); if (window.VXSocial) window.VXSocial.onSave(id, k < 0); toast(k >= 0 ? 'Removed from Saved' : 'Saved for offline reading');
     render(); refreshReader();
   }
   function refreshReader() { if (S.current) { var sc = $('#rscroll'), y = sc ? sc.scrollTop : 0; openArticle(S.current, true); if ($('#rscroll')) $('#rscroll').scrollTop = y; } }
@@ -1069,7 +1069,7 @@
     if (!byId(id)) return;
     var off = reactionOf(id) === r;
     if (off) delete S.reactions[id]; else S.reactions[id] = { r: r, t: Date.now() };
-    store.set('vx.reactions', S.reactions); haptic();
+    store.set('vx.reactions', S.reactions); haptic(); if (window.VXSocial) window.VXSocial.onReact(id, off ? null : r);
     var m = $('#main'), y = m.scrollTop; render(); m.scrollTop = y; refreshReader();
   }
   function linkOf(i) { return safeUrl(i.signal && i.signal.source_url) || (trustOf(i) || {}).url || CFG.siteUrl; }
@@ -1085,11 +1085,11 @@
       '<button class="btn primary" data-repurl="' + esc(li) + '">Repost to LinkedIn</button><button class="btn primary" data-repurl="' + esc(x) + '">Repost to X</button>' +
       '<button class="btn ghost" data-repshare="' + esc(id) + '">Other apps</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
-  function shareItem(id) {
+  function shareItem(id, comment) {
     var i = byId(id); if (!i) return;
     var lead = (i.stat && i.stat.value ? i.stat.value + ': ' + i.stat.label : (i.summary || '')).replace(/\s+/g, ' ');
     if (lead.length > 180) lead = lead.slice(0, 177).replace(/\s+\S*$/, '') + '...';
-    var text = i.title + '\n\n' + lead + '\n\nVoxarc Lab policy signal, read more in Voxarc Feed.';
+    var text = (comment ? comment + '\n\n' : '') + (i.signal && i.signal.crux ? String(i.signal.crux).replace(/\s*[\u2014\u2013]\s*/g, ', ') : i.title + '\n\n' + lead) + '\n\nVoxarc Lab policy signal, read more in Voxarc Feed.';
     haptic();
     var sh = plugin('Share');
     if (sh) return sh.share({ title: i.title, text: text, url: linkOf(i), dialogTitle: 'Share briefing' }).catch(function () {});
@@ -1161,11 +1161,11 @@
     if (t.dataset.repin) { var cm = ($('#repc') || {}).value || ''; cm = cm.replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280);
       // Local-only for now. Shape mirrors a future shared reposts table: one row per user and story.
       S.reposts[t.dataset.repin] = { v: 1, storyId: t.dataset.repin, comment: cm, createdAt: new Date().toISOString(), userId: 'local', synced: false };
-      saveReposts(); closeSheet(); haptic(); render(); refreshReader(); toast('Reposted in Voxarc'); return; }
-    if (t.dataset.repundo) { delete S.reposts[t.dataset.repundo]; saveReposts(); closeSheet(); render(); refreshReader(); toast('Repost removed'); return; }
+      saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repin, S.reposts[t.dataset.repin]); closeSheet(); haptic(); render(); refreshReader(); toast('Reposted in Voxarc'); return; }
+    if (t.dataset.repundo) { delete S.reposts[t.dataset.repundo]; saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repundo, null); closeSheet(); render(); refreshReader(); toast('Repost removed'); return; }
     if (t.dataset.repost) { e.stopPropagation(); repostSheet(t.dataset.repost); return; }
     if (t.dataset.repurl) { closeSheet(); openUrl(t.dataset.repurl); return; }
-    if (t.dataset.repshare) { closeSheet(); shareItem(t.dataset.repshare); return; }
+    if (t.dataset.repshare) { var rc = (($('#repc') || {}).value || '').replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280), rid = t.dataset.repshare; closeSheet(); if (!S.reposts[rid]) { S.reposts[rid] = { v: 1, storyId: rid, comment: rc, createdAt: new Date().toISOString(), userId: 'local', synced: false, via: 'share' }; saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(rid, S.reposts[rid]); render(); } shareItem(rid, rc); return; }
     if (t.dataset.sf) { S[t.dataset.sf] = t.dataset.sv; haptic(); render(); return; }
     if (t.id === 'sheet') { if (e.target === t) closeSheet(); return; }
     if (t.dataset.react) { e.stopPropagation(); toggleReact(t.dataset.rid, t.dataset.react); return; }
@@ -1325,5 +1325,6 @@
       refreshRemote(false); scheduleNotif();
     });
   }
+  window.__vx = { S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts };
   loadAll();
 })();
