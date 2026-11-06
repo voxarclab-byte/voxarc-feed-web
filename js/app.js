@@ -12,7 +12,7 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.0.0', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.2', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
@@ -68,9 +68,8 @@
   var NOTIF_ID = 1001;
   // On-device reactions only: stored with Preferences/localStorage, never sent anywhere.
   var REACTIONS = [
-    { id: 'like', emoji: '\uD83D\uDC4D', label: 'Like' },
-    { id: 'dislike', emoji: '\uD83D\uDC4E', label: 'Dislike' },
-    { id: 'useful', emoji: '\uD83D\uDCA1', label: 'Useful' }
+    { id: 'useful', emoji: '\uD83D\uDCA1', label: 'Useful' },
+    { id: 'not_useful', emoji: '\uD83D\uDC4E', label: 'Not useful' }
   ];
 
   var Cap = window.Capacitor;
@@ -79,11 +78,11 @@
   function plugin(n) { return isNative && P[n] ? P[n] : null; }
 
   var S = {
-    items: [], reposts: {}, sigSort: 'latest', fImp: 'all', fHz: 'all', trends: null, tab: 'feed', topic: 'all', query: '', searchOpen: false,
-    saved: [], read: {}, reactions: {}, savedView: 'saved', current: null, online: true,
+    items: [], reposts: {}, sigSort: 'top', fImp: 'all', fHz: 'all', trends: null, tab: 'feed', topic: 'all', query: '', searchOpen: false,
+    saved: [], read: {}, reactions: {}, watchlist: {}, watchSeen: {}, privateNotes: {}, privacyPublicShare: false, savedView: 'saved', current: null, online: true, dense: false, fJuris: 'all', fMineral: 'all', fStage: 'all', fImpact: 'all', fScore: 'all', fHorizon: 'all', fGeo: 'all', fIndustry: 'all', namedViews: [],
     prefs: { fs: 17, notif: false, hour: 7, minute: 0 }, feedSource: 'bundled', updated: null,
     booting: true, loadError: false, onboarded: true, profile: null, ob: null, rendered: false,
-    follow: ['arctic', 'ai', 'minerals', 'geo'], cards: [], setView: null
+    follow: ['arctic', 'ai', 'minerals', 'geo'], cards: [], setView: null, tipDone: false
   };
 
   /* ---------- storage (Preferences on device, localStorage on web) ---------- */
@@ -174,7 +173,7 @@
       .then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) { return JSON.parse(t); })
       .then(function (f) {
         clearTimeout(t); if (!validFeed(f)) throw 0;
-        var before = S.items.length, had = {}; S.items.forEach(function (x) { had[x.id] = 1; }); S.items = mergeFeeds(S.items, f.items);
+        var before = S.items.length, had = {}; S.items.forEach(function (x) { had[x.id] = 1; }); S.items = mergeFeeds(S.items, f.items).filter(isPublished);
         topicAlert(f.items.filter(function (x) { return x && !had[x.id] && inFollow(x); })); S.updated = new Date().toISOString(); if (f.generated && (!S.generated || f.generated > S.generated)) S.generated = f.generated; if (f.signalTrends) S.trends = f.signalTrends;
         if (Array.isArray(f.dataCards) && f.dataCards.length) S.cards = f.dataCards;
         store.set('vx.feedCache', { items: S.items, updated: S.updated, dataCards: S.cards, generated: S.generated, signalTrends: S.trends });
@@ -319,7 +318,7 @@
   function soWhatHTML(i, full) {
     var w = soWhatOf(i); if (!w) return '';
     var rows = [['What changed', w.changed], ['Who it affects', w.who], ['What to watch', w.watch]];
-    return '<div class="sowhat' + (full ? ' full' : '') + '" role="group" aria-label="So what">' + (full ? '<h5>So what</h5>' : '<div class="sw-k">So what</div>') +
+    return '<div class="sowhat' + (full ? ' full' : '') + '" role="group" aria-label="So what">' + (full ? '<h5>Action</h5>' : '<div class="sw-k">Action</div>') +
       rows.map(function (r) { return '<div class="sw-row"><span class="sw-l">' + r[0] + '</span><span class="sw-t">' + esc(r[1]) + '</span></div>'; }).join('') + '</div>';
   }
   var DL_TYPES = { comment: 1, consultation: 1, funding: 1, deadline: 1 }; // event and effective dates are shown in the reader only
@@ -401,12 +400,36 @@
 
   /* ---------- rendering ---------- */
   function filtered(list) {
+    list = (list || []).filter(isPublished);
     var q = S.query.trim().toLowerCase();
     return list.filter(function (i) {
       if (i.signal && i.signal.duplicate_of) return false;
       var g = i.signal;
       if (S.fImp !== 'all' && (!g || g.importance !== S.fImp)) return false;
+      if (S.fImpact !== 'all' && (!g || g.importance !== S.fImpact)) return false;
       if (S.fHz !== 'all' && (!g || g.time_horizon !== S.fHz)) return false;
+      var pol = (g && g.policy) || {};
+      if (S.fJuris !== 'all' && pol.jurisdiction !== S.fJuris) return false;
+      if (S.fStage !== 'all' && pol.procedural_stage !== S.fStage) return false;
+      if (S.fMineral !== 'all') {
+        var hay2 = [i.title, i.summary, i.body, (g && g.signal_title) || '', (pol && pol.body) || ''].join(' ').toLowerCase();
+        if (hay2.indexOf(S.fMineral) < 0) return false;
+      }
+      var hz = (pol && pol.time_horizon) || (g && g.time_horizon) || '';
+      if (S.fHorizon !== 'all' && hz !== S.fHorizon) return false;
+      if (S.fHz !== 'all' && hz !== S.fHz) return false;
+      if (S.fScore !== 'all') {
+        var sc = (pol && pol.impact_score_10 != null) ? +pol.impact_score_10 : ((g && g.impact_score != null) ? +g.impact_score / 10 : null);
+        if (sc == null || sc < +S.fScore) return false;
+      }
+      if (S.fGeo !== 'all') {
+        var geos = (pol && pol.geo_impact) || (g && g.affected_regions) || [];
+        if (geos.indexOf(S.fGeo) < 0) return false;
+      }
+      if (S.fIndustry !== 'all') {
+        var inds = (pol && pol.industry_impact) || [];
+        if (inds.indexOf(S.fIndustry) < 0) return false;
+      }
       if (S.topic !== 'all' && (i.topics || []).indexOf(S.topic) < 0) return false;
       if (S.topic === 'all' && !q && !inFollow(i)) return false;
       if (!q) return true;
@@ -419,10 +442,9 @@
   function cardHTML(i, hero, n) {
     var sel = S.current === i.id && wide() ? ' sel' : '';
     var unread = !S.read[i.id];
-    var meta = '<div class="meta">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span>' + esc(fmtDate(i.published)) + ' \u00B7 ' + readMins(i) + ' min read</span><span class="sp"></span>' +
-      '<span class="acts">' + reactHTML(i.id, false) +
-      '<button class="act' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-pressed="' + !!repostOf(i.id) + '" aria-label="Repost">' + ICON.repost + '</button>' +
-      '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from saved' : 'Save') + '">' + ICON.bm + '</button></span></div>';
+    var meta = '<div class="meta">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span>' + esc(fmtDate(i.published)) + ' \u00B7 ' + readMins(i) + ' </span><span class="sp"></span>' +
+      '<span class="acts">' +
+      '<button class="bm' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + !!(isSaved(i.id) || watchOf(i.id)) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button></span></div>';
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     var head = '<button class="open" data-open="' + esc(i.id) + '"' + (unread ? ' aria-describedby="unread-l"' : '') + '><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(i.title) + '</h3></button>';
     var chips = (dlChipHTML(i) ? '<div class="cchips">' + dlChipHTML(i) + '</div>' : '') + (trustHTML(i) || srcLineHTML(i));
@@ -456,13 +478,12 @@
   function repostOf(id) { return S.reposts[id] || null; }
   function saveReposts() { store.set('vx.reposts', S.reposts); }
   function actRowHTML(i) {
-    var nc = window.VXSocial ? window.VXSocial.count(i.id) : 0;
-    return '<div class="arow" role="group" aria-label="Actions">' + reactHTML(i.id, false) +
-      '<button class="act cmt" data-cm="' + esc(i.id) + '" aria-label="Comments, ' + nc + '">' + ICON.cmt + (nc ? '<span class="cn">' + nc + '</span>' : '') + '</button>' +
-      '<button class="act" data-share=""' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
-      '<button class="act' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-pressed="' + !!repostOf(i.id) + '" aria-label="Repost">' + ICON.repost + '</button>' +
-      '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from Watchlist' : 'Save to Watchlist') + '">' + ICON.bm + '</button>' +
-      '<button class="act more" data-sx="sigmenu" data-id="' + esc(i.id) + '" aria-label="More options">\u22EF</button></div>';
+    // 1.3.0: main signal cards have no reaction, comment or repost row. Watchlist + overflow only.
+    var on = !!watchOf(i.id) || isSaved(i.id);
+    return '<div class="arow" role="group" aria-label="Actions">' +
+      '<button class="bm' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>' +
+      '<button class="act" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
+      '<button class="act more" data-sx="sigmenu" data-id="' + esc(i.id) + '" aria-label="More options">⋯</button></div>';
   }
   var TOPIC_ART = {
     minerals: '<rect width="120" height="150" fill="#3a2e24"/><path d="M0 70 30 50 55 64 85 40 120 58V150H0z" fill="#5a4636"/><path d="M0 100 40 84 80 98 120 82V150H0z" fill="#2a211a"/><rect x="40" y="88" width="34" height="26" fill="#6b6f73"/><rect x="48" y="70" width="6" height="20" fill="#8a8f94"/><rect x="62" y="76" width="5" height="14" fill="#8a8f94"/><circle cx="96" cy="28" r="10" fill="#FF6B35" opacity=".55"/>',
@@ -532,55 +553,530 @@
   function fresh(i) { return fmtDate(i.published); }
   function pillHTML(i, tier) { var s0 = subsetsOf(i)[0]; return '<span class="bp">' + esc(tier) + '</span>' + (s0 ? '<span class="bp sub">' + esc(s0) + '</span>' : '') + '<span class="bp ai" title="Summary and ratings are AI-assisted and checked against the linked sources">AI-assisted</span>'; }
   function hasTables(i) { var ts = Array.isArray(i.tables) ? i.tables : (S.tablesById && S.tablesById[i.id]) || []; return ts.some(function (t) { return t && Array.isArray(t.columns) && Array.isArray(t.rows) && t.rows.length > 0; }); }
+
+  function isPublished(i) {
+    var p = polOf(i);
+    // Publish gate: only published signals appear on the desk. Held / quarantined stay out.
+    if (p && p.publish_status) return p.publish_status === 'published';
+    // Legacy rows without publish_status: treat as published only if not flagged for review.
+    if (p && p.review_status === 'needs_human_review') return false;
+    return true;
+  }
+  function polOf(i) { var g = sigOf(i); return (g && g.policy) || {}; }
+  function anchorsOf(i) {
+    var p = polOf(i), a = p.quantitative_anchors;
+    if (Array.isArray(a) && a.length) return a.slice(0, 2);
+    var k = keyFact(i); if (k && !k.fact && k.v) return [{ value: k.v, label: k.l || '', unit: '' }];
+    return [];
+  }
+  function hasPaidDetail(i) {
+    var p = polOf(i);
+    if (hasTables(i)) return true;
+    if (p.history_table && (p.history_table.rows || []).length) return true;
+    var rich = [p.instrument_type, p.procedural_stage, p.hs_code, p.eccn, p.effective_date, p.compliance_window, p.docket_url].filter(Boolean);
+    return rich.length >= 2;
+  }
+  function stageHTML(p) {
+    if (!p || !p.procedural_stage) return '';
+    return '<span class="pi-stage ' + esc(p.procedural_stage) + '">' + esc(p.procedural_stage) + '</span>';
+  }
+  function anchorChange(x) {
+    var lab = String((x && (x.label || x.change)) || '');
+    var m = lab.match(/([+\-]?\d+(?:\.\d+)?)\s*%/);
+    if (m) { var n = parseFloat(m[1]); return { arrow: n < 0 ? '\u2193' : n > 0 ? '\u2191' : '\u2192', cls: n < 0 ? 'neg' : n > 0 ? 'pos' : '', text: m[0] }; }
+    if (/down|fell|decline|drop/i.test(lab)) return { arrow: '\u2193', cls: 'neg', text: '' };
+    if (/up|rose|rise|growth|increase/i.test(lab)) return { arrow: '\u2191', cls: 'pos', text: '' };
+    return null;
+  }
+  function seriesFor(i) {
+    var p = polOf(i), ht = p.history_table;
+    if (ht && Array.isArray(ht.rows) && ht.rows.length >= 2) {
+      return ht.rows.map(function (r) { var c = (r.cells || [])[1]; var n = parseFloat(String(c || '').replace(/[^0-9.\-]/g, '')); return isFinite(n) ? n : null; }).filter(function (n) { return n != null; });
+    }
+    var ts = Array.isArray(i.tables) ? i.tables : [];
+    for (var t = 0; t < ts.length; t++) {
+      var rows = ts[t].rows || []; if (rows.length < 2) continue;
+      var ser = rows.map(function (r) { var c = (r.cells || [])[1]; var n = parseFloat(String(c || '').replace(/[^0-9.\-]/g, '')); return isFinite(n) ? n : null; }).filter(function (n) { return n != null; });
+      if (ser.length >= 2) return ser;
+    }
+    return [];
+  }
+  function anchorsHTML(i) {
+    var a = anchorsOf(i); if (!a.length) return '';
+    var ser = seriesFor(i);
+    return '<div class="pi-anch" aria-label="Key figures">' + a.slice(0, 2).map(function (x, idx) {
+      var ch = anchorChange(x);
+      var spark = (idx === 0 && ser.length >= 2) ? sparkSVG(ser) : '';
+      return '<div class="pi-a"><div class="pi-a-top"><b class="tabnum">' + esc(String(x.value || '') + (x.unit ? ' ' + x.unit : '')) + '</b>' +
+        (ch ? '<span class="pi-arr ' + ch.cls + '" aria-hidden="true">' + ch.arrow + '</span>' : '') + '</div>' +
+        (ch && ch.text ? '<span class="pi-ch ' + ch.cls + '">' + esc(ch.text) + '</span>' : (x.label ? '<span class="pi-ch">' + esc(String(x.label).slice(0, 48)) + '</span>' : '')) +
+        spark + '</div>';
+    }).join('') + '</div>';
+  }
+  function jurisFlag(j) {
+    j = String(j || '');
+    var map = { 'United States': '\uD83C\uDDFA\uD83C\uDDF8', 'China': '\uD83C\uDDE8\uD83C\uDDF3', 'European Union': '\uD83C\uDDEA\uD83C\uDDFA', 'Canada': '\uD83C\uDDE8\uD83C\uDDE6', 'Japan': '\uD83C\uDDEF\uD83C\uDDF5', 'United Kingdom': '\uD83C\uDDEC\uD83C\uDDE7', 'Australia': '\uD83C\uDDE6\uD83C\uDDFA', 'India': '\uD83C\uDDEE\uD83C\uDDF3', 'Russia': '\uD83C\uDDF7\uD83C\uDDFA', 'Greenland': '\uD83C\uDDEC\uD83C\uDDF1', 'Hong Kong': '\uD83C\uDDED\uD83C\uDDF0' };
+    return map[j] || '\uD83C\uDF0D';
+  }
+  function sourceAgo(i) {
+    var p = polOf(i), iso = p.source_published_at || i.published;
+    var t = d(iso).getTime(); if (!isFinite(t)) return '';
+    var ms = Date.now() - t; if (ms < 0) ms = 0;
+    var h = Math.floor(ms / 3600000), day = Math.floor(ms / 86400000);
+    if (h < 1) return 'Source published just now';
+    if (h < 48) return 'Source published ' + h + 'h ago';
+    if (day < 14) return 'Source published ' + day + 'd ago';
+    return 'Source published ' + fmtDate(iso);
+  }
+  function impactBadge(i) {
+    var p = polOf(i), g = sigOf(i);
+    var imp = p.importance_tier || g.importance || '';
+    var sc = p.impact_score_10; if (sc == null && g.impact_score != null) sc = (+g.impact_score) / 10;
+    if (!imp && sc == null) return '';
+    var label = imp ? esc(imp) : '';
+    if (sc != null && isFinite(+sc)) label += (label ? ' ' : '') + (+sc).toFixed(1) + '/10';
+    return '<span class="pi-badge ' + esc((imp || '').toLowerCase()) + ' tabnum" title="Importance band and impact score /10 (separate from instrument tier 1-4)">' + label + '</span>';
+  }
+  function horizonOf(i) {
+    var p = polOf(i), g = sigOf(i);
+    return p.time_horizon || g.time_horizon || '';
+  }
+  function scoreOf10(i) {
+    var p = polOf(i), g = sigOf(i);
+    if (p.impact_score_10 != null) return +p.impact_score_10;
+    if (g.impact_score != null) return +g.impact_score / 10;
+    return null;
+  }
+  function statusStripHTML(i) {
+    var p = polOf(i), bits = [];
+    if (p.jurisdiction) bits.push('<span class="pi-st-j" title="' + esc(p.jurisdiction) + '">' + jurisFlag(p.jurisdiction) + '</span>');
+    if (p.procedural_stage) bits.push(stageHTML(p));
+    var hz = horizonOf(i); if (hz) bits.push('<span class="pi-st-h">' + esc(hz) + '</span>');
+    if (p.effective_date) {
+      var ed = p.effective_date.length === 10 ? p.effective_date + 'T12:00:00Z' : p.effective_date;
+      bits.push('<span class="pi-st-e tabnum">Effective ' + esc(fmtDate(ed)) + '</span>');
+    }
+    var ago = sourceAgo(i); if (ago) bits.push('<span class="pi-st-a">' + esc(ago) + '</span>');
+    var official = p.primary_source_type && String(p.primary_source_type).indexOf('Secondary') < 0;
+    if (official) bits.push('<span class="vok" aria-label="Verified official source">\u2713</span>');
+    var srcN = p.primary_source_type || srcName(i);
+    if (srcN && String(srcN).indexOf('Secondary') < 0) bits.push('<span class="pi-st-src">' + esc(srcN) + '</span>');
+    return bits.length ? '<div class="pi-strip">' + bits.join('') + '</div>' : '';
+  }
+  function sublineOf(i) {
+    var p = polOf(i); return p.impact_subline || impactLine(i);
+  }
+  function primaryCueHTML(i) {
+    var p = polOf(i), g = sigOf(i), ps = kf(i, 'primary_source') || g.primary_source || {};
+    var name = p.primary_source_type || (ps && ps.name) || srcName(i);
+    if (!name) return '';
+    var official = name && String(name).indexOf('Secondary') < 0;
+    return '<p class="pi-src">Primary source: ' + esc(name) + (official ? ' <span class="vok" aria-label="Verified official source">\u2713</span>' : '') + '</p>';
+  }
+  function mechTitle(i) {
+    var p = polOf(i), g = sigOf(i);
+    return p.mechanism_headline || g.signal_title || i.title;
+  }
+  function impactLine(i) {
+    var g = sigOf(i), p = polOf(i);
+    return g.so_what || p.body || g.crux || i.summary || '';
+  }
+  function watchOf(id) { return (S.watchlist || {})[id] || null; }
+  function saveWatch() { store.set('vx.watchlist', S.watchlist || {}); }
+  function noteOf(id) { return (S.privateNotes || {})[id] || null; }
+  function saveNotes() { store.set('vx.privateNotes', S.privateNotes || {}); }
+  function provenanceLabel(i) {
+    var p = polOf(i), st = p.provenance_status || '';
+    if (st === 'OFFICIAL_GAZETTE_VERIFIED') return 'Official gazette verified';
+    if (st === 'OFFICIAL_NON_GAZETTE') return 'Official source';
+    if (st === 'SECONDARY_REPORTING_PRIMARY_PENDING' || (p.primary_source_type && String(p.primary_source_type).indexOf('Secondary') >= 0)) return 'Secondary reporting, primary pending';
+    return '';
+  }
+  function confBadge(i) {
+    var p = polOf(i), c = (p.confidence_rating || confLabel(p.confidence) || '').toUpperCase();
+    if (!c) return '';
+    return '<span class="pi-conf ' + esc(c.toLowerCase()) + '" title="' + esc(c.charAt(0) + c.slice(1).toLowerCase()) + ' confidence">' + esc(c.charAt(0) + c.slice(1).toLowerCase()) + ' conf.</span>';
+  }
+  function tierBadge(i) {
+    var p = polOf(i), t = p.impact_tier;
+    if (t == null) return '';
+    var names = {1:'Monitoring',2:'Proposal',3:'Direct restriction',4:'Systemic disruption'};
+    return '<span class="pi-tier t' + (+t) + '" title="' + esc(p.tier_rationale || '') + '">Tier ' + (+t) + ' · ' + esc(names[t] || '') + '</span>';
+  }
+  function hsCue(i) {
+    var p = polOf(i);
+    if (p.hs_code) return '<span class="pi-hs">HS ' + esc(p.hs_code) + '</span>';
+    return '<span class="pi-hs unver">HS Unverified</span>';
+  }
+  function policyFieldsHTML(i) {
+    var p = polOf(i); if (!p || !Object.keys(p).length) return '';
+    function row(l, v) { if (v == null || v === '') return ''; return '<div class="pi-row"><span class="pi-l">' + l + '</span><span class="pi-v tabnum">' + v + '</span></div>'; }
+    var srcName = p.primary_source_type || '';
+    var docketLabel = 'View on ' + (srcName && srcName.indexOf('Secondary') < 0 ? srcName : 'source');
+    var docket = p.docket_url && safeUrl(p.docket_url) ? '<button class="link-btn docket" data-url="' + esc(p.docket_url) + '">' + esc(docketLabel) + '</button>' : '';
+    var h = '<section class="sd pi-exp" aria-label="Instrument summary"><div class="sd-h"><span>Instrument summary</span>' + stageHTML(p) + '</div>' +
+      '<h2 class="sd-t">' + esc(mechTitle(i)) + '</h2>' +
+      '<div class="pi-grid">' +
+        row('Body', esc((srcName && srcName.indexOf('Secondary') < 0 ? srcName : '') || p.jurisdiction || '')) +
+        row('Instrument', esc(p.instrument_type || '')) +
+        row('Stage', esc(p.procedural_stage || '')) +
+        row('HS', esc(p.hs_code || '')) +
+        row('ECCN', esc(p.eccn || '')) +
+        row('Effective', esc(p.effective_date || '')) +
+      '</div>' + (docket ? '<div class="pi-docket">' + docket + '</div>' : '') +
+      stageTimelineHTML(i) +
+      (p.key_clause ? '<blockquote class="pi-clause">\u201C' + esc(p.key_clause) + '\u201D</blockquote>' : '') +
+      historyChartHTML(i) +
+      policyAuditHTML(i) + '</section>';
+    return h;
+  }
+  function stageTimelineHTML(i) {
+    var p = polOf(i), stages = ['draft', 'consultation', 'enacted', 'enforcement'];
+    var cur = (p.procedural_stage || '').toLowerCase();
+    var idx = stages.indexOf(cur);
+    var eff = p.effective_date ? fmtDate(p.effective_date.length === 10 ? p.effective_date + 'T12:00:00Z' : p.effective_date) : '';
+    var pub = p.source_published_at ? fmtDate(p.source_published_at) : fmtDate(i.published);
+    return '<div class="pi-tl" role="list" aria-label="Stage timeline">' + stages.map(function (s, n) {
+      var on = n === idx, done = idx >= 0 && n < idx;
+      var date = '';
+      if (s === 'consultation' && on) date = pub;
+      if (s === 'enacted' && (on || done) && eff) date = eff;
+      if (s === cur && !date) date = pub;
+      return '<div class="pi-tl-s' + (on ? ' on' : '') + (done ? ' done' : '') + '" role="listitem"><span class="pi-tl-dot"></span><span class="pi-tl-l">' + esc(s) + '</span>' + (date ? '<span class="pi-tl-d tabnum">' + esc(date) + '</span>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+  function historyChartHTML(i) {
+    var ser = seriesFor(i); if (ser.length < 2) return '';
+    var p = polOf(i), title = (p.history_table && p.history_table.title) || 'History';
+    return '<div class="pi-hist"><h5>' + esc(title) + '</h5>' + sparkSVG(ser) + '</div>';
+  }
+  function confLabel(c) {
+    c = +c; if (!isFinite(c)) return '';
+    if (c >= 75) return 'High'; if (c >= 50) return 'Medium'; return 'Low';
+  }
+  function policyAuditHTML(i) {
+    var p = polOf(i), g = sigOf(i);
+    var conf = p.confidence != null ? p.confidence : g.confidence_score;
+    var verified = p.source_published_at || i.published;
+    var nCorr = (p.corrections_log || []).length;
+    var sc = p.impact_score_10, rubric = p.impact_rubric || {}, scConf = p.impact_score_confidence || confLabel(conf);
+    var prov = provenanceLabel(i);
+    var h = '<div class="pi-audit" aria-label="Audit trail"><span class="pi-au-line">' +
+      (prov ? esc(prov) + ' \u00B7 ' : '') +
+      'Confidence: ' + esc((p.confidence_rating || confLabel(conf) || 'n/a')) +
+      (p.impact_tier != null ? ' \u00B7 Tier ' + (+p.impact_tier) : '') +
+      (p.review_status ? ' \u00B7 Review: ' + esc(p.review_status) : '') +
+      (p.source_hash ? ' \u00B7 Hash ' + esc(String(p.source_hash).slice(0, 10)) : (p.source_hash_status === 'unverified_migrated' ? ' \u00B7 Hash unverified (migrated)' : '')) + (p.source_hash_basis ? ' \u00B7 ' + esc(p.source_hash_basis) : '') +
+      ' \u00B7 Last verified ' + esc(fmtDate(verified)) +
+      ' \u00B7 ' + nCorr + ' correction' + (nCorr === 1 ? '' : 's') + '</span>';
+    if (sc != null) {
+      h += '<div class="pi-rubric"><div class="pi-rubric-h">Impact score <b class="tabnum">' + (+sc).toFixed(1) + '/10</b> <span class="pi-rubric-c">(' + esc(scConf) + ' confidence)</span></div><ul>';
+      var labels = { severity: 'Severity', geo_breadth: 'Countries affected', industry_breadth: 'Industries affected', proximity: 'Effective-date proximity', stage: 'Procedural stage' };
+      Object.keys(labels).forEach(function (k) {
+        var v = rubric[k];
+        h += '<li><span>' + labels[k] + '</span><b class="tabnum">' + (v == null ? 'n/a' : (+v).toFixed(2)) + '</b></li>';
+      });
+      h += '</ul><p class="sd-note">High 7 to 10 \u00B7 Medium 4 to 6.9 \u00B7 Low under 4. Missing inputs lower confidence.</p></div>';
+    }
+    h += '<p class="sd-note">For information only. Not legal advice. No warranty or obligation; non-binding.</p></div>';
+    return h;
+  }
+  function policyActionsHTML(i) {
+    var on = !!watchOf(i.id);
+    return '<div class="pi-actions pinbar" role="toolbar" aria-label="Desk actions">' +
+      '<button type="button" class="btn orange" data-pdf="' + esc(i.id) + '">Export PDF</button>' +
+      '<button type="button" class="btn ghost' + (on ? ' wl-on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '">' + (on ? 'Watching' : 'Watch') + '</button>' +
+      '<button type="button" class="btn ghost" data-moredesk="' + esc(i.id) + '" aria-haspopup="dialog">More</button></div>';
+  }
+  function moreDeskSheet(id) {
+    var i = byId(id); if (!i) return;
+    var hasNote = !!noteOf(id);
+    sheet('<h3>More actions</h3><p class="sd-note">Desk tools for this signal. Private by default.</p>' +
+      '<button type="button" class="btn ghost block" data-flag="' + esc(id) + '">Flag to Legal / Procurement</button>' +
+      '<button type="button" class="btn ghost block" data-forward="' + esc(id) + '">Forward to Team</button>' +
+      '<button type="button" class="btn ghost block" data-privnote="' + esc(id) + '">' + (hasNote ? 'Edit Private Note' : 'Private Note') + '</button>' +
+      '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
+  }
+  function impactChipsHTML(i) {
+    var p = polOf(i), h = '';
+    var geos = p.geo_impact || [];
+    var inds = p.industry_impact || [];
+    if (geos.length) {
+      h += '<div class="pi-chips" aria-label="Geographic impact"><h5>Geographic impact</h5><div class="pi-chiprow">' +
+        geos.map(function (g) { return '<span class="pi-chip">' + jurisFlag(g) + ' ' + esc(g) + '</span>'; }).join('') + '</div></div>';
+    }
+    if (inds.length) {
+      h += '<div class="pi-chips" aria-label="Industry impact"><h5>Industry impact</h5><div class="pi-chiprow">' +
+        inds.map(function (g) { return '<span class="pi-chip">' + esc(g) + '</span>'; }).join('') + '</div></div>';
+    }
+    return h;
+  }
+  function detailSocialHTML(i) {
+    // 1.3.2: duplicate desk row removed; Export PDF / Watch / More live in the fixed dock.
+    return '';
+  }
+
+
+  function forwardTeam(id) {
+    var i = byId(id); if (!i) return;
+    var p = polOf(i);
+    var text = 'Forward to Team (private)\n\n' + mechTitle(i) + '\n' +
+      (p.operational_directive || impactLine(i) || '') + '\n' +
+      (p.docket_url ? 'Docket: ' + p.docket_url + '\n' : '') +
+      (p.provenance_status ? 'Provenance: ' + provenanceLabel(i) + '\n' : '') +
+      '\nInformational only. Not legal or trade-compliance advice.\n— Voxarc Lab Signal Desk';
+    if (!(S.privacyPublicShare)) {
+      // private default: share sheet / mail only, never auto-post
+    }
+    if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Share) {
+      Capacitor.Plugins.Share.share({ title: 'Voxarc Lab: ' + mechTitle(i), text: text, dialogTitle: 'Forward to Team' });
+    } else if (navigator.share) {
+      navigator.share({ title: 'Voxarc Lab', text: text }).catch(function () {});
+    } else {
+      window.open('mailto:?subject=' + encodeURIComponent('Voxarc Lab: ' + mechTitle(i)) + '&body=' + encodeURIComponent(text));
+    }
+    toast('Forward ready (private share sheet)');
+  }
+  function privateNoteSheet(id) {
+    var cur = noteOf(id);
+    sheet('<h3>Private Note</h3><p>Private by default. On this device until you sign in; if signed in, synced to your account private_notes row (not public). Not a team-visible comment.</p>' +
+      '<textarea id="privNote" class="repc" maxlength="2000" placeholder="Private analysis note">' + esc((cur && cur.body) || '') + '</textarea>' +
+      '<button class="btn primary" data-notesave="' + esc(id) + '">Save Private Note</button><button class="btn ghost" data-closesheet>Cancel</button>');
+  }
+  function savePrivateNote(id) {
+    var body = (($('#privNote') || {}).value || '').replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 2000);
+    S.privateNotes = S.privateNotes || {};
+    if (!body) { delete S.privateNotes[id]; saveNotes(); closeSheet(); toast('Private note cleared'); render(); if (S.current === id) refreshReader(); return; }
+    S.privateNotes[id] = { body: body, updatedAt: new Date().toISOString() };
+    saveNotes(); closeSheet(); toast('Private note saved'); haptic(); render(); if (S.current === id) refreshReader();
+  }
+
+  function exportPdf(id) {
+    var i = byId(id); if (!i) return;
+    var p = polOf(i), g = sigOf(i);
+    var el = document.getElementById('printBrief');
+    if (!el) { el = document.createElement('div'); el.id = 'printBrief'; document.body.appendChild(el); }
+    var rows = [
+      ['Instrument', p.instrument_type], ['Stage', p.procedural_stage], ['Jurisdiction', p.jurisdiction],
+      ['HS code', p.hs_code], ['ECCN', p.eccn], ['Effective', p.effective_date],
+      ['Primary source', p.primary_source_type], ['Docket', p.docket_url], ['Confidence', p.confidence]
+    ].filter(function (x) { return x[1]; }).map(function (x) { return '<div class="print-sec"><h5>' + esc(x[0]) + '</h5><div>' + esc(String(x[1])) + '</div></div>'; }).join('');
+    el.innerHTML = '<div class="print-brand"><span>Voxarc Lab</span><b>Signal Brief</b></div>' +
+      '<h1 class="print-h">' + esc(mechTitle(i)) + '</h1>' +
+      '<p class="print-meta">' + esc(fmtDate(i.published)) + (p.jurisdiction ? ' · ' + esc(p.jurisdiction) : '') + '</p>' +
+      '<div class="print-sec"><h5>What changed</h5><div>' + esc(p.body || g.crux || i.summary) + '</div></div>' +
+      '<div class="print-sec"><h5>Impact</h5><div>' + esc(impactLine(i)) + '</div></div>' + rows +
+      '<p class="print-foot">Prepared by Voxarc Lab. For information only. Not legal advice. No warranty or obligation; non-binding. Black and orange brand brief.</p>';
+    try { window.print(); } catch (e) {}
+    // Also offer share of the text brief
+    var text = 'Voxarc Lab Signal Brief\n' + mechTitle(i) + '\n\n' + (p.body || g.crux || '') + '\n\nImpact: ' + impactLine(i) +
+      (p.docket_url ? '\nDocket: ' + p.docket_url : '') + '\n\nFor information only. Not legal advice. No warranty or obligation; non-binding.';
+    if (navigator.share) { try { navigator.share({ title: mechTitle(i), text: text }); } catch (e2) {} }
+    toast('PDF brief ready (print or share)');
+  }
+  function flagLegal(id) {
+    var i = byId(id); if (!i) return;
+    var p = polOf(i);
+    sheet('<h3>Flag to Legal / Procurement</h3><p>Add a short note. We open your mail or share sheet with the signal summary.</p>' +
+      '<textarea id="flagNote" class="repc" maxlength="500" placeholder="Why this matters for Legal or Procurement"></textarea>' +
+      '<button class="btn primary" data-flaggo="' + esc(id) + '">Share flag</button><button class="btn ghost" data-closesheet>Cancel</button>');
+  }
+  function flagGo(id) {
+    var i = byId(id); if (!i) return;
+    var note = (($('#flagNote') || {}).value || '').replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 500);
+    var p = polOf(i);
+    var text = 'Flag for Legal / Procurement\n\n' + mechTitle(i) + '\n' + (p.jurisdiction ? 'Jurisdiction: ' + p.jurisdiction + '\n' : '') +
+      (p.hs_code ? 'HS: ' + p.hs_code + '\n' : '') + (p.eccn ? 'ECCN: ' + p.eccn + '\n' : '') +
+      (p.docket_url ? 'Docket: ' + p.docket_url + '\n' : '') + '\nNote: ' + (note || '(none)') +
+      '\n\nFor information only. Not legal advice. No warranty or obligation; non-binding.\n— Voxarc Lab';
+    closeSheet();
+    if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Share) {
+      Capacitor.Plugins.Share.share({ title: 'Voxarc Lab flag: ' + mechTitle(i), text: text, dialogTitle: 'Flag to Legal / Procurement' });
+    } else if (navigator.share) {
+      navigator.share({ title: 'Voxarc Lab flag', text: text }).catch(function () {});
+    } else {
+      var mail = 'mailto:?subject=' + encodeURIComponent('Voxarc Lab flag: ' + mechTitle(i)) + '&body=' + encodeURIComponent(text);
+      window.open(mail);
+    }
+    toast('Flag ready to send');
+  }
+  function toggleWatch(id) {
+    S.watchlist = S.watchlist || {};
+    var i = byId(id), p = polOf(i || {});
+    if (S.watchlist[id]) { delete S.watchlist[id]; saveWatch(); toast('Removed from Watchlist'); render(); if (S.current === id) refreshReader(); return; }
+    S.watchlist[id] = {
+      v: 1, storyId: id, hs_code: p.hs_code || null, eccn: p.eccn || null, jurisdiction: p.jurisdiction || null,
+      title: mechTitle(i), createdAt: new Date().toISOString()
+    };
+    saveWatch();
+    // Reuse local notification path when permission already granted / via Daily Brief settings
+    try {
+      if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications && (p.hs_code || p.eccn || p.jurisdiction)) {
+        var body = 'Watching ' + [p.hs_code && ('HS ' + p.hs_code), p.eccn && ('ECCN ' + p.eccn), p.jurisdiction].filter(Boolean).join(', ');
+        Capacitor.Plugins.LocalNotifications.schedule({ notifications: [{ id: Math.abs(hashCode(id)) % 100000 + 20000, title: 'Voxarc Lab Watchlist', body: body, schedule: { at: new Date(Date.now() + 1500) } }] });
+      }
+    } catch (e) {}
+    toast('Added to Watchlist'); haptic(); render(); if (S.current === id) refreshReader();
+  }
+  function hashCode(str) { var h = 0; for (var i = 0; i < str.length; i++) h = ((h << 5) - h) + str.charCodeAt(i) | 0; return h; }
   function briefRowHTML(i) {
-    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span>' + (hasTables(i) ? '<button class="bunlock" data-unlock="' + esc(i.id) + '" aria-label="Unlock full analysis, free for a limited time"><span>Unlock full analysis</span><small>Free for a limited time</small></button>' : '') + '</div>' + actRowHTML(i);
+    var on = !!watchOf(i.id);
+    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span>' + (hasPaidDetail(i) ? '<button class="bunlock" data-dossier="' + esc(i.id) + '" aria-label="Open Full Dossier"><span>Full Dossier</span><small>Regulatory Dossier</small></button>' : '') + '</div>' +
+      '<div class="arow" role="group" aria-label="Actions">' +
+      '<button class="bm' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>' +
+      '<button class="act more" data-sx="sigmenu" data-id="' + esc(i.id) + '" aria-label="More options">\u22EF</button></div>';
   }
-  function critCardHTML(i) {
-    var g = sigOf(i), k = keyFact(i);
-    return '<article class="bcard crit" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'Critical Shift') + '</span></div>' +
-      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum' + (k.fact ? ' fact' : '') + '">' + esc(k.v) + '</div>' + (k.l && !k.fact ? '<div class="bnl">' + esc(k.l) + '</div>' : '') + '<h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
-      '<p class="bimp">' + esc(g.so_what || g.crux || i.summary) + '</p>' + briefRowHTML(i) + '</article>';
+  function piCardHTML(i, tier) {
+    var p = polOf(i);
+    var action = p.operational_directive || sublineOf(i);
+    var impact = sublineOf(i);
+    var prov = provenanceLabel(i);
+    var same = impact && action && String(impact).slice(0,120) === String(action).slice(0,120);
+    if (S.dense) {
+      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '"><div class="pi-dense-row">' +
+        impactBadge(i) + tierBadge(i) +
+        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
+        '</div>' + statusStripHTML(i) + '</article>';
+    }
+    return '<article class="bcard pi" data-open="' + esc(i.id) + '">' +
+      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div></div>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
+      (impact ? '<p class="pi-impact">' + esc(String(impact).slice(0, 160)) + '</p>' : '') +
+      ((!same && action) ? '<p class="bimp"><b>Directive:</b> ' + esc(String(action).slice(0, 160)) + '</p>' : '') +
+      anchorsHTML(i) +
+      '<div class="pi-cues">' + hsCue(i) + (prov ? '<span class="pi-prov">' + esc(prov) + '</span>' : '') + primaryCueHTML(i) + '</div>' +
+      statusStripHTML(i) +
+      (hasPaidDetail(i) ? '<div class="bfoot"><button class="bunlock" data-dossier="' + esc(i.id) + '" aria-label="Open Full Dossier"><span>Full Dossier</span><small>Regulatory Dossier</small></button></div>' : '') +
+      '</article>';
   }
-  function intelCardHTML(i) {
-    var g = sigOf(i);
-    return '<article class="bcard intel" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'Intel Brief') + '</span></div>' +
-      '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bhead">' + esc(g.signal_title || i.title) + '</h3></button>' +
-      '<p class="bnarr">' + esc(g.crux || i.summary) + '</p><p class="bimp">' + esc(g.so_what || '') + '</p>' + briefRowHTML(i) + '</article>';
+  function critCardHTML(i) { return piCardHTML(i, 'crit'); }
+  function intelCardHTML(i) { return piCardHTML(i, 'intel'); }
+  function radarCardHTML(i) { return piCardHTML(i, 'radar'); }
+  function filterDefs() {
+    return [
+      { k: 'fImpact', label: 'Importance' },
+      { k: 'fHorizon', label: 'Horizon' },
+      { k: 'fScore', label: 'Score' },
+      { k: 'fJuris', label: 'Jurisdiction' },
+      { k: 'fGeo', label: 'Geography' },
+      { k: 'fIndustry', label: 'Industry' },
+      { k: 'fMineral', label: 'Mineral' },
+      { k: 'fStage', label: 'Stage' }
+    ];
   }
-  function radarCardHTML(i) {
-    var g = sigOf(i), dl = deadlinesOf(i)[0];
-    return '<article class="bcard radar" data-open="' + esc(i.id) + '"><div class="btop"><span class="btopic">' + esc(TOPIC_LABEL[category(i)] || 'Policy') + '</span><span class="bpills">' + pillHTML(i, 'On the Radar') + '</span></div>' +
-      '<button class="open" data-open="' + esc(i.id) + '"><div class="bnum sm' + (dl ? '' : ' fact') + '">' + esc(dl ? dlDate(dl.date) : (g.time_horizon || 'Watch')) + '</div><h3 class="bwhat">' + esc(g.signal_title || i.title) + '</h3></button>' +
-      '<p class="bimp">' + esc(dl ? dl.label + ', ' + inDays(dl.date) : (g.watch_next || g.so_what || '')) + '</p>' + briefRowHTML(i) + '</article>';
+  function activeFilterCount() {
+    return filterDefs().filter(function (d) { return S[d.k] && S[d.k] !== 'all'; }).length;
+  }
+  function filterValLabel(key, val) {
+    if (key === 'fScore') return val + '+';
+    if (key === 'fHorizon') return ({ 'Near term': 'Near', 'Medium term': 'Medium', 'Long term': 'Long' })[val] || val;
+    if (key === 'fJuris' || key === 'fGeo') return String(val).replace('United States', 'US').replace('European Union', 'EU').replace('United Kingdom', 'UK');
+    if (key === 'fMineral') return val.charAt(0).toUpperCase() + val.slice(1);
+    return val;
+  }
+  function persistFilters() {
+    store.set('vx.filters', { fJuris: S.fJuris, fMineral: S.fMineral, fStage: S.fStage, fImpact: S.fImpact, fScore: S.fScore, fHorizon: S.fHorizon, fGeo: S.fGeo, fIndustry: S.fIndustry, dense: S.dense });
+  }
+  function resetAllFilters() {
+    filterDefs().forEach(function (d) { S[d.k] = 'all'; });
+    persistFilters();
+  }
+  function filterChip(key, val, label) {
+    var on = S[key] === val;
+    return '<button type="button" class="fchip' + (on ? ' on' : '') + '" data-ff="' + key + '" data-fv="' + esc(val) + '" aria-pressed="' + on + '">' + esc(label) + '</button>';
+  }
+  function filterOptionsHTML() {
+    var juris = {}, geos = {}, inds = {}, stages = {};
+    S.items.forEach(function (i) {
+      var p = polOf(i);
+      if (p.jurisdiction) juris[p.jurisdiction] = 1;
+      (p.geo_impact || []).forEach(function (g) { geos[g] = 1; });
+      (p.industry_impact || []).forEach(function (g) { inds[g] = 1; });
+      if (p.procedural_stage) stages[p.procedural_stage] = 1;
+    });
+    var minerals = ['lithium', 'rare earth', 'copper', 'gallium', 'nickel', 'helium', 'cobalt', 'graphite'];
+    function row(label, body) { return '<div class="ff-row"><span class="ff-l">' + label + '</span>' + body + '</div>'; }
+    return row('Importance', filterChip('fImpact', 'all', 'All') + filterChip('fImpact', 'High', 'High') + filterChip('fImpact', 'Medium', 'Medium') + filterChip('fImpact', 'Low', 'Low')) +
+      row('Horizon', filterChip('fHorizon', 'all', 'All') + filterChip('fHorizon', 'Near term', 'Near') + filterChip('fHorizon', 'Medium term', 'Medium') + filterChip('fHorizon', 'Long term', 'Long')) +
+      row('Score', filterChip('fScore', 'all', 'All') + filterChip('fScore', '7', '7+') + filterChip('fScore', '4', '4+')) +
+      row('Jurisdiction', filterChip('fJuris', 'all', 'All') + Object.keys(juris).sort().map(function (j) { return filterChip('fJuris', j, filterValLabel('fJuris', j)); }).join('')) +
+      row('Geography', filterChip('fGeo', 'all', 'All') + Object.keys(geos).sort().map(function (j) { return filterChip('fGeo', j, filterValLabel('fGeo', j)); }).join('')) +
+      row('Industry', filterChip('fIndustry', 'all', 'All') + Object.keys(inds).sort().map(function (j) { return filterChip('fIndustry', j, j); }).join('')) +
+      row('Mineral', filterChip('fMineral', 'all', 'All') + minerals.map(function (m) { return filterChip('fMineral', m, filterValLabel('fMineral', m)); }).join('')) +
+      row('Stage', filterChip('fStage', 'all', 'All') + ['draft', 'consultation', 'enacted', 'enforcement'].filter(function (s) { return stages[s]; }).map(function (s) { return filterChip('fStage', s, s); }).join(''));
+  }
+  function openFiltersSheet() {
+    var n = activeFilterCount();
+    sheet('<div class="ff-sheet"><h3 id="ff-sheet-title">Filters' + (n ? ' · ' + n + ' active' : '') + '</h3>' +
+      '<div class="ff-sheet-body" role="group" aria-labelledby="ff-sheet-title">' + filterOptionsHTML() + '</div>' +
+      '<div class="ff-sheet-actions">' +
+      '<button type="button" class="btn ghost" data-ffreset="1"' + (n ? '' : ' disabled') + '>Reset</button>' +
+      '<button type="button" class="btn primary" data-closesheet>Done</button>' +
+      '<button type="button" class="btn ghost" data-dense="1" aria-pressed="' + !!S.dense + '">' + (S.dense ? 'Comfortable density' : 'Dense list') + '</button>' +
+      '<button type="button" class="btn ghost" data-saveview="1">Save view</button></div></div>');
+    var card = document.querySelector('#sheet .sheet-card'); if (card) try { card.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function filterBarHTML() {
+    var n = activeFilterCount();
+    var active = filterDefs().filter(function (d) { return S[d.k] && S[d.k] !== 'all'; });
+    var chips = active.map(function (d) {
+      return '<button type="button" class="fchip on ff-active" data-ff="' + d.k + '" data-fv="all" aria-label="Clear ' + esc(d.label) + ' filter">' + esc(d.label) + ': ' + esc(filterValLabel(d.k, S[d.k])) + ' ×</button>';
+    }).join('');
+    var h = '<div class="ffilters ff-compact" role="toolbar" aria-label="Filters">' +
+      '<div class="ff-compact-row">' + chips +
+      '<button type="button" class="fchip ff-open' + (n ? ' on' : '') + '" data-opensfilters="1" aria-haspopup="dialog" aria-expanded="false">Filters' + (n ? ' (' + n + ')' : '') + '</button>' +
+      '<button type="button" class="fchip densetog' + (S.dense ? ' on' : '') + '" data-dense="1" aria-pressed="' + !!S.dense + '">' + (S.dense ? 'Comfortable' : 'Dense') + '</button>' +
+      '<button type="button" class="fchip" data-saveview="1">Save view</button></div>';
+    if ((S.namedViews || []).length) {
+      h += '<div class="ff-compact-row ff-saved"><span class="ff-l">Saved</span>' + S.namedViews.map(function (v, idx) {
+        return '<button type="button" class="fchip" data-loadview="' + idx + '">' + esc(v.name) + '</button>';
+      }).join('') + '</div>';
+    }
+    return h + '</div>';
+  }
+  function applyPiFilters(list) {
+    return list.filter(function (i) {
+      var p = polOf(i), g = sigOf(i);
+      if (S.fJuris !== 'all' && p.jurisdiction !== S.fJuris) return false;
+      if (S.fStage !== 'all' && p.procedural_stage !== S.fStage) return false;
+      if (S.fImpact !== 'all' && (p.importance_tier || g.importance) !== S.fImpact) return false;
+      if (S.fHorizon !== 'all' && (p.time_horizon || g.time_horizon) !== S.fHorizon) return false;
+      if (S.fScore !== 'all') {
+        var sc = scoreOf10(i); if (sc == null || sc < +S.fScore) return false;
+      }
+      if (S.fGeo !== 'all' && (p.geo_impact || []).indexOf(S.fGeo) < 0) return false;
+      if (S.fIndustry !== 'all' && (p.industry_impact || []).indexOf(S.fIndustry) < 0) return false;
+      if (S.fMineral !== 'all') {
+        var hay = [mechTitle(i), p.body, i.title, i.summary, i.body].join(' ').toLowerCase();
+        if (hay.indexOf(S.fMineral) < 0) return false;
+      }
+      return true;
+    });
   }
   function briefHTML(list) {
+    list = applyPiFilters(list);
     var T = briefTiers(list);
     function sec(id, title, sub, body) { return '<section class="btier" aria-labelledby="bt-' + id + '"><div class="bth"><h2 id="bt-' + id + '">' + title + '</h2><span>' + sub + '</span></div>' + body + '</section>'; }
-    return '<header class="tb brief-h"><div class="bk">Signal Brief</div><h1 id="sig-h" tabindex="-1">Today\u2019s Signal Brief</h1><p>' + esc(asOfText()) + '</p></header>' +
-      sec('crit', 'Critical Shifts', 'High impact, near term', T.crit.map(critCardHTML).join('') || '<p class="bempty">No critical shifts right now.</p>') +
-      sec('intel', 'Intel Brief', 'The story that matters most', T.intel ? intelCardHTML(T.intel) : '') +
-      sec('radar', 'On the Radar', 'Dated and early-stage', T.radar.map(radarCardHTML).join('')) +
-      '<button class="bmore" data-tab="signals">All signals</button>';
+    var cards = [].concat(T.crit || [], T.intel ? [T.intel] : [], T.radar || []);
+    // Deduplicate while preserving order
+    var seen = {}, flat = [];
+    cards.forEach(function (i) { if (i && !seen[i.id]) { seen[i.id] = 1; flat.push(i); } });
+    flat.sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
+    return '<header class="tb brief-h"><div class="bk">Signal Desk</div><h1 id="sig-h" tabindex="-1">Official Dockets</h1><p>' + esc(asOfText()) + '</p></header>' + filterBarHTML() +
+      '<section class="btier" aria-labelledby="bt-feed"><div class="bth"><h2 id="bt-feed">Signals</h2><span>' + flat.length + ' matching</span></div>' +
+      (flat.length ? flat.map(function (i) { return piCardHTML(i); }).join('') : '<p class="bempty">No signals match these filters.</p>') +
+      '</section><button class="bmore" data-tab="signals">All signals</button>';
   }
+
   // Detail: audit trail and social summary (one tap deeper than the home card)
-  function auditHTML(i) {
-    var g = sigOf(i), k = keyFact(i), ps = kf(i, 'primary_source'), rb = kf(i, 'reported_by');
-    var psH = ps && ps.name ? (safeUrl(ps.url) ? '<a href="#" data-url="' + esc(ps.url) + '">' + esc(ps.name) + '</a>' : esc(ps.name)) + (ps.kind ? '<small>' + esc(ps.kind) + '</small>' : '') : 'Not identified' + (rb ? ', reported by ' + esc(rb) : '');
-    var reps = S.reposts[i.id] ? 1 : 0, rx = reactionOf(i.id);
-    function row(l, v) { return '<div class="au-r"><span>' + l + '</span><b>' + v + '</b></div>'; }
-    return '<section class="audit" aria-label="Audit trail"><h5>Audit trail</h5>' +
-      row('Primary source', psH) + (ps && rb ? row('Reported by', esc(rb)) : '') + row('Date', esc(g.published_date || String(i.published || '').slice(0, 10) || 'n/a')) +
-      row('Key number', '<em>' + esc(k.fact ? 'n/a' : k.v) + '</em>') + row('Confidence', g.confidence_score != null ? esc(g.confidence_score) + ' of 100' : 'n/a') +
-      row('Method', esc('Voxarc Lab read of ' + (g.n_sources || (i.sources || []).length || 1) + ' source' + ((g.n_sources || 1) === 1 ? '' : 's') + ', official first; ratings are editorial')) +
-      '<div class="au-soc">' + (rx ? 'You reacted ' + rx + ' \u00B7 ' : '') + (reps ? 'You reposted this \u00B7 ' : '') + 'Comments and reposts from the community are below</div></section>';
-  }
+  function auditHTML(i) { return policyAuditHTML(i); }
   function homeCardHTML(i, n) {
     var g = i.signal || {}, t = trustOf(i), x = expertNoteOf(i);
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     return '<div class="card hc' + (S.rendered ? '' : ' in') + '" data-open="' + esc(i.id) + '"' + style + '><div class="hc-row">' + thumbHTML(i) + '<div class="hc-b">' +
-      '<button class="open" data-open="' + esc(i.id) + '"><h3>' + esc(g.signal_title || i.title) + '</h3></button>' +
+      '<button class="open" data-open="' + esc(i.id) + '"><h3>' + esc(mechTitle(i)) + '</h3></button>' +
       (g.importance ? '<div class="smeta"><span class="hb ' + lvl(g.importance) + '">Impact: ' + esc(g.importance) + '</span><span class="sm-t">\u00B7 ' + esc(g.time_horizon) + ' \u00B7 Risk: ' + esc(g.risk_level) + '</span>' + INFO_BTN + '</div>' : '') +
-      '<p class="hc-why"><b>So what:</b> ' + esc(g.so_what || g.crux || i.summary) + '</p>' +
+      '<p class="hc-why"><b>Action:</b> ' + esc(g.so_what || g.crux || i.summary) + '</p>' +
       srcLineHTML(i, t) +
       (x ? '<span class="vchip xn">Expert note</span>' : '') + marketHTML(i, false) +
       '</div></div>' + indHTML(g) + actRowHTML(i) + '</div>';
@@ -638,8 +1134,8 @@
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     return '<div class="card sgc' + (S.rendered ? '' : ' in') + '" data-open="' + esc(i.id) + '"' + style + '>' +
       '<div class="sg-top">' + sigBadge(g) + '<span class="sg-hz">Horizon: ' + esc(g.time_horizon) + '</span>' + INFO_BTN + '<span class="sp"></span><span class="sg-date">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + esc(fmtDate(i.published)) + '</span></div>' +
-      '<button class="open" data-open="' + esc(i.id) + '"><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(g.signal_title) + '</h3></button>' +
-      '<p class="sg-crux">' + esc(g.crux) + '</p>' + (g.so_what ? '<p class="hc-why"><b>So what:</b> ' + esc(g.so_what) + '</p>' : '') + srcLineHTML(i) +
+      '<button class="open" data-open="' + esc(i.id) + '"><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(mechTitle(i)) + '</h3></button>' +
+      '<p class="sg-crux">' + esc(g.crux) + '</p>' + (g.so_what ? '<p class="hc-why"><b>Action:</b> ' + esc(g.so_what) + '</p>' : '') + srcLineHTML(i) +
       indHTML(g) +
       '<div class="sg-ro"><span class="sg-l">Risk:</span><span class="sg-lv ' + lvl(g.risk_level) + '">' + esc(g.risk_level) + '</span><span class="sg-l">Opportunity:</span><span class="sg-lv opp ' + lvl(g.opportunity_level) + '">' + esc(g.opportunity_level) + '</span></div>' + actRowHTML(i) + '</div>';
   }
@@ -657,9 +1153,10 @@
   }
   function sigControlsHTML() {
     function seg(key, val, label) { var on = S[key] === val; return '<button class="chip sm' + (on ? ' active' : '') + '" aria-pressed="' + on + '" data-sf="' + key + '" data-sv="' + esc(val) + '">' + esc(label) + '</button>'; }
-    return '<div class="sg-ctl"><div class="sg-ctl-r"><span class="sg-cl">Sort</span>' + seg('sigSort', 'latest', 'Latest') + seg('sigSort', 'top', 'Top Signals') + '</div>' +
-      '<div class="sg-ctl-r"><span class="sg-cl">Impact</span>' + ['all', 'High', 'Medium', 'Low'].map(function (v) { return seg('fImp', v, v === 'all' ? 'All' : v); }).join('') + '</div>' +
-      '<div class="sg-ctl-r"><span class="sg-cl">Horizon</span>' + [['all', 'All'], ['Near term', 'Near'], ['Medium term', 'Medium'], ['Long term', 'Long']].map(function (v) { return seg('fHz', v[0], v[1]); }).join('') + '</div></div>';
+    return '<div class="sg-ctl"><div class="sg-ctl-r"><span class="sg-cl">Sort</span>' + seg('sigSort', 'top', 'Importance') + seg('sigSort', 'latest', 'Freshness') + seg('sigSort', 'score', 'Score') + '</div>' +
+      '<div class="sg-ctl-r"><span class="sg-cl">Importance</span>' + ['all', 'High', 'Medium', 'Low'].map(function (v) { return seg('fImpact', v, v === 'all' ? 'All' : v); }).join('') + '</div>' +
+      '<div class="sg-ctl-r"><span class="sg-cl">Horizon</span>' + [['all', 'All'], ['Near term', 'Near'], ['Medium term', 'Medium'], ['Long term', 'Long']].map(function (v) { return seg('fHz', v[0], v[1]); }).join('') + '</div>' +
+      '<div class="sg-ctl-r"><span class="sg-cl">Score</span>' + [['all', 'All'], ['7', '7+'], ['4', '4+'], ['0', 'Any']].map(function (v) { return seg('fScore', v[0], v[1]); }).join('') + '</div></div>';
   }
   function signalDetailHTML(i) {
     var g = i.signal; if (!g) return '';
@@ -684,7 +1181,7 @@
     ts = ts.filter(function (t) { return t && Array.isArray(t.columns) && Array.isArray(t.rows) && t.rows.length; });
     if (!ts.length) return '';
     function na(v) { v = v == null || v === '' ? 'n/a' : String(v).replace(/\s*[\u2014\u2013]\s*/g, ', '); return v === '\u2014' ? 'n/a' : v; }
-    return '<section class="fa" aria-label="Full analysis"><div class="fa-h"><h5>Full analysis</h5><span class="fa-pill">Free for a limited time</span></div><p class="fa-note">Full analysis is free for a limited time during early access.</p>' + ts.map(function (t) {
+    return '<section class="fa" aria-label="Full analysis"><div class="fa-h"><h5>Full analysis</h5><span class="fa-pill">Regulatory Dossier</span></div><p class="fa-note">Full analysis is free for a limited time during early access.</p>' + ts.map(function (t) {
       var n = t.columns.length - 1, k = t.keyCol;
       return '<div class="fa-t"><div class="fa-tt">' + esc(t.title) + (t.subset ? '<span class="fa-sub">' + esc(t.subset) + '</span>' : '') + '</div>' +
         '<div class="fa-scroll" tabindex="0" role="region" aria-label="' + esc(t.title) + ', scroll sideways"><table><thead><tr>' + t.columns.map(function (c) { return '<th scope="col">' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
@@ -771,34 +1268,33 @@
       if (!S.query) h += '<div class="following"><span>Following ' + esc(followsAll() ? 'all ' + CATEGORIES.length + ' topics' : followLabel()) + '</span><button class="link-btn" data-managetopics>Edit topics</button></div>';
       h += '<span id="unread-l" hidden>Unread</span>';
     }
-    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No briefings found</h3><p>' + (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or follow more topics in Settings.') + '</p>' +
+    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No signals found</h3><p>' + (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or follow more topics in Settings.') + '</p>' +
       (S.query ? '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' : '') + '</div>';
-    if (!desk && !S.query) list = S.sigSort === 'top' ? list.slice().sort(function (a, b) { return ((b.signal || {}).impact_score || 0) - ((a.signal || {}).impact_score || 0); }) : focusOrder(list);
+    if (!desk && !S.query) list = S.sigSort === 'top' ? list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); }) : focusOrder(list);
     list.forEach(function (i, n) { h += i.signal ? sigCardHTML(i, n) : cardHTML(i, n === 0 && !S.query && !desk, n); });
     return h;
   }
   function renderSaved() {
-    var liked = S.savedView === 'liked', reps = S.savedView === 'reposts', list;
-    if (reps) {
-      list = S.items.filter(function (i) { return repostOf(i.id); });
-      list.sort(function (a, b) { return repostOf(b.id).createdAt < repostOf(a.id).createdAt ? -1 : 1; });
-    } else if (liked) {
-      list = S.items.filter(function (i) { return reactionOf(i.id) === 'like'; });
-      list.sort(function (a, b) { return (S.reactions[b.id].t || 0) - (S.reactions[a.id].t || 0); });
+    var notes = S.savedView === 'notes', list;
+    if (notes) {
+      list = S.items.filter(function (i) { return noteOf(i.id); });
+      list.sort(function (a, b) { return ((noteOf(b.id) || {}).updatedAt || '') < ((noteOf(a.id) || {}).updatedAt || '') ? -1 : 1; });
     } else {
-      list = S.items.filter(function (i) { return isSaved(i.id); });
-      list.sort(function (a, b) { return S.saved.indexOf(b.id) - S.saved.indexOf(a.id); });
+      list = S.items.filter(function (i) { return isSaved(i.id) || watchOf(i.id); });
+      list.sort(function (a, b) {
+        var wa = watchOf(a.id), wb = watchOf(b.id);
+        if (wa && wb) return (wb.createdAt || '') < (wa.createdAt || '') ? -1 : 1;
+        if (wa) return -1; if (wb) return 1;
+        return S.saved.indexOf(b.id) - S.saved.indexOf(a.id);
+      });
     }
-    var nLiked = S.items.filter(function (i) { return reactionOf(i.id) === 'like'; }).length;
-    var h = '<div class="section-h"><h2>Watchlist' + (liked ? ' \u00B7 Liked' : '') + '</h2><span>' + list.length + ' on this device</span></div>';
-    h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + !liked + '" class="' + (liked ? '' : 'on') + '">Saved \u00B7 ' + S.saved.length + '</button>' +
-      '<button role="tab" data-savedview="liked" aria-selected="' + liked + '" class="' + (liked ? 'on' : '') + '">\uD83D\uDC4D Liked \u00B7 ' + nLiked + '</button><button role="tab" data-savedview="reposts" aria-selected="' + reps + '" class="' + (reps ? 'on' : '') + '">My Reposts \u00B7 ' + Object.keys(S.reposts).length + '</button></div>';
-    if (reps) return h + (list.length ? list.map(function (i) { var r = repostOf(i.id); return '<div class="rp-h">' + ICON.repost + '<span>You reposted \u00B7 ' + esc(fmtDate(r.createdAt)) + '</span></div>' + (r.comment ? '<p class="rp-c">' + esc(r.comment) + '</p>' : '') + (i.signal ? sigCardHTML(i) : cardHTML(i, false)); }).join('')
-      : '<div class="empty"><h3>No reposts yet</h3><p>Tap Repost on any story and choose Repost in Voxarc. Sign in to keep them in sync across devices.</p></div>');
-    if (!list.length) return h + (liked
-      ? '<div class="empty"><div class="em-big">\uD83D\uDC4D</div><h3>No liked briefings yet</h3><p>Tap Like on any briefing to find it here. Reactions are stored only on this device.</p><button class="btn ghost sm" data-tab="feed">Browse the feed</button></div>'
-      : '<div class="empty">' + ICON.saved + '<h3>Nothing saved yet</h3><p>Tap the bookmark on any briefing to keep it here. Saved briefings are stored on this device and work offline.</p><button class="btn ghost sm" data-tab="feed">Browse the feed</button></div>');
-    return h + list.map(function (i) { return cardHTML(i, false); }).join('');
+    var h = '<div class="section-h"><h2>Watchlist' + (notes ? ' \u00B7 Private Notes' : '') + '</h2><span>' + list.length + ' on this device \u00B7 private by default</span></div>';
+    h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + (!notes) + '" class="' + (notes ? '' : 'on') + '">Watching \u00B7 ' + Object.keys(S.watchlist || {}).length + '</button>' +
+      '<button role="tab" data-savedview="notes" aria-selected="' + notes + '" class="' + (notes ? 'on' : '') + '">Private Notes \u00B7 ' + Object.keys(S.privateNotes || {}).length + '</button></div>';
+    if (notes) return h + (list.length ? list.map(function (i) { var n = noteOf(i.id); return '<div class="rp-h"><span>Private Note \u00B7 ' + esc(fmtDate(n.updatedAt)) + '</span></div><p class="rp-c">' + esc(n.body) + '</p>' + (i.signal ? piCardHTML(i) : cardHTML(i, false)); }).join('')
+      : '<div class="empty"><h3>No private notes yet</h3><p>Add a Private Note from a Regulatory Dossier. Device-local until sign-in; then account-private (RLS), never a public comment.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>');
+    if (!list.length) return h + '<div class="empty">' + ICON.saved + '<h3>Nothing watched yet</h3><p>Tap Watch on a dossier to keep it here. Watchlists are private by default.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>';
+    return h + list.map(function (i) { return i.signal ? piCardHTML(i) : cardHTML(i, false); }).join('');
   }
   function switchHTML(on, label) { return '<button class="switch' + (on ? ' on' : '') + '" data-notif role="switch" aria-checked="' + on + '" aria-label="' + esc(label) + '"></button>'; }
   function renderBrief() {
@@ -852,19 +1348,42 @@
   }
   function openContact() { if (!wide() && S.current) closeArticle(); S.tab = 'settings'; S.setView = 'contact'; render(); $('#main').scrollTop = 0; var ch = $('#ct-h'); if (ch) try { ch.focus({ preventScroll: true }); } catch (er) {} }
   window.addEventListener('hashchange', function () { if (location.hash === '#contact') openContact(); });
+  function trustPageHTML(view) {
+    var disc = '<p class="sd-note">Informational only, not legal or trade-compliance advice.</p>';
+    if (view === 'methodology') return '<header class="tb"><button class="back" data-backset>Back</button><h1>Methodology</h1></header><div class="set-block"><p>Signals are extracted from primary sources first. Identifiers (HS, ECCN, dockets) appear only when quoted in the source. Impact tier (1-4) rates the instrument; importance (High/Medium/Low) and score /10 are separate. Prompt Stack v3 separates ingestion, copilot, validation and app layers. Slack/Teams/email brief delivery and external LLM calls are not available in this build.</p>' + disc + '</div>';
+    if (view === 'corrections') {
+      var rows = []; S.items.forEach(function (i) { var p = polOf(i); (p.corrections_log || []).forEach(function (c) { rows.push({ i: i, c: c }); }); });
+      return '<header class="tb"><button class="back" data-backset>Back</button><h1>Corrections log</h1></header><div class="set-block">' +
+        (rows.length ? '<ul>' + rows.map(function (r) { return '<li><button data-open="' + esc(r.i.id) + '">' + esc(mechTitle(r.i)) + '</button> \u00B7 ' + esc(JSON.stringify(r.c)) + '</li>'; }).join('') + '</ul>'
+          : '<p>No corrections published yet. Any fix creates a dated entry linked to the original signal.</p>') + disc + '</div>';
+    }
+    if (view === 'track') {
+      var calls = S.items.filter(function (i) { return polOf(i).impact_tier >= 3; }).slice(0, 12);
+      return '<header class="tb"><button class="back" data-backset>Back</button><h1>Track record</h1></header><div class="set-block"><p>Timestamped published calls. Outcomes are appended as separate records; published calls are never edited.</p><ul>' +
+        (calls.length ? calls.map(function (i) { var p = polOf(i); return '<li><span class="tabnum">' + esc(fmtDate(p.ingested_at || i.published)) + '</span> Tier ' + esc(String(p.impact_tier)) + ' \u00B7 ' + esc(mechTitle(i)) + ' \u00B7 ' + esc(p.confidence_rating || '') + '</li>'; }).join('')
+          : '<li>No tier 3+ calls in the current desk.</li>') + '</ul>' + disc + '</div>';
+    }
+    return '';
+  }
   function renderSettings() {
     var times = []; for (var hh = 5; hh <= 21; hh++) times.push(hh);
     if (S.setView === 'topics') return renderSettingsTopics();
+    if (S.setView === 'methodology' || S.setView === 'corrections' || S.setView === 'track') return trustPageHTML(S.setView);
     if (S.setView === 'contact') return renderContact();
     var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>' + (window.VXSocial ? window.VXSocial.settingsHTML() : '');
     h += '<div class="group-h">Help</div><div class="group"><button class="cell" data-contact><div class="l">Contact us<small>Voxarc Lab support: ' + esc(CFG.supportEmail) + '</small></div>' + ICON.chev + '</button></div>';
-    h += '<div class="group-h">Your feed</div><div class="group">' +
+    h += '<div class="group-h">Your desk</div><div class="group">' +
       '<button class="cell" data-settopics><div class="l">Topics you follow<small>' + esc(followLabel()) + '</small></div><div class="r">' + S.follow.length + ' of ' + CATEGORIES.length + '</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-editprofile><div class="l">Regions and role<small>' + esc(profileSummary()) + '</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">Reading</div><div class="group">' +
       '<div class="cell"><div class="l" id="fs-l">Text size</div><div class="seg" role="group" aria-labelledby="fs-l">' + [15, 17, 19, 21].map(function (f, n) { return '<button data-fs="' + f + '" aria-pressed="' + (S.prefs.fs === f) + '" aria-label="' + ['Small', 'Medium', 'Large', 'Extra large'][n] + '" class="' + (S.prefs.fs === f ? 'on' : '') + '">' + ['S', 'M', 'L', 'XL'][n] + '</button>'; }).join('') + '</div></div>' +
       '<div class="cell"><div class="l">Offline library<small>' + S.items.length + ' briefings stored on this device' + (S.updated ? ', checked ' + (fmtDate(S.updated) === 'Today' ? 'today' : fmtDate(S.updated) === 'Yesterday' ? 'yesterday' : fmtDate(S.updated)) : '') + '</small></div><div class="r">' + (S.online ? 'Ready' : 'Offline') + '</div></div>' +
       '<button class="cell" data-refresh><div class="l">Check for new briefings</div>' + ICON.chev + '</button></div>';
+    h += '<div class="group-h">Trust</div><div class="group">' +
+      '<button class="cell" data-trust="methodology"><div class="l">Methodology<small>How tiers, provenance and scores work</small></div><div class="r">\u203A</div></button>' +
+      '<button class="cell" data-trust="corrections"><div class="l">Corrections log<small>Dated fixes linked to original signals</small></div><div class="r">\u203A</div></button>' +
+      '<button class="cell" data-trust="track"><div class="l">Track record<small>Published calls with hits and misses</small></div><div class="r">\u203A</div></button>' +
+      '<div class="cell"><div class="l">Public sharing<small>Opt-in only. Desk stays private by default.</small></div><div class="r">' + (S.privacyPublicShare ? 'On' : 'Off') + '</div></div></div>';
     h += '<div class="group-h">Daily brief</div><div class="group">' +
       '<div class="cell"><div class="l">Morning reminder<small>A local notification on this device</small></div>' + switchHTML(S.prefs.notif, 'Morning reminder') + '</div>' +
       '<div class="cell"><label class="l" for="notifTime">Time</label><select id="notifTime">' + times.map(function (t) { return '<option value="' + t + '"' + (S.prefs.hour === t ? ' selected' : '') + '>' + fmtTime(t, 0) + '</option>'; }).join('') + '</select></div></div>';
@@ -872,14 +1391,14 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read. An optional account saves your watchlist across devices and lets you discuss signals with peers.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Public comments are off.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.termsUrl + '"><div class="l">Terms of Use</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.guidelinesUrl + '"><div class="l">Community Guidelines</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-mail="Voxarc Feed feedback"><div class="l">Send feedback</div><div class="r">' + esc(CFG.feedbackEmail) + '</div></button>' +
       '<div class="cell"><div class="l">Version</div><div class="r" id="appVersion">' + esc(CFG.version) + '</div></div></div>';
-    h += '<div class="foot">Voxarc Feed by Voxarc Lab. Signals are AI-assisted summaries of public sources, linked in every briefing. For information only. Not legal advice. No warranty or obligation; non-binding.</div></div>';
+    h += '<div class="foot">Voxarc Signal Desk by Voxarc Lab. Checked extraction from public sources, linked in every dossier. Informational only. Not legal or trade-compliance advice.</div></div>';
     return h;
   }
   // Batch 2: Dashboard data cards (official free sources only, each with source, as-of date and link)
@@ -903,15 +1422,41 @@
   }
   // Batch 2: Ask answers only from bundled briefings, with numbered citations and an as-of date; refuses when nothing matches.
   function askAnswerHTML(list) {
-    if (!list.length) return '<div class="ask-ans refuse" role="status"><b>I can\u2019t answer that from Voxarc sources yet.</b><p>No sourced briefing covers \u201C' + esc(S.query.trim()) + '\u201D. Nothing is guessed.</p></div>';
-    var top = list.slice(0, 3), cites = [], asOf = '';
-    var lines = top.map(function (i, k) {
-      var t = trustOf(i); if (t) cites.push(t); var dt = t && t.date ? t.date : String(i.published || '').slice(0, 10); if (dt > asOf) asOf = dt;
-      var sent = String(i.summary || '').split(/(?<=[.!?])\s/)[0].replace(/\u2026$/, '');
-      return '<li>' + esc(sent) + ' <sup>[' + (k + 1) + ']</sup></li>';
+    // Part B grounded Copilot: answer only from retrieved signal fields. No outside knowledge. No LLM claim.
+    if (!list.length) return '<div class="ask-ans refuse" role="status"><b>Not in provided sources.</b><p>No sourced signal covers \u201C' + esc(S.query.trim()) + '\u201D. A primary gazette, register or docket filing on this topic would answer it. Nothing is guessed.</p></div>';
+    var top = list.slice(0, 3), asOf = '';
+    var action = [], material = [], mitigate = [], sources = [];
+    top.forEach(function (i, k) {
+      var p = polOf(i), g = sigOf(i), tag = 'S' + (k + 1);
+      var t = trustOf(i); var dt = (t && t.date) || String(p.source_published_at || i.published || '').slice(0, 10); if (dt > asOf) asOf = dt;
+      var dir = p.operational_directive || g.so_what || '';
+      if (dir) action.push('<li>' + esc(dir) + ' <sup>[' + tag + ']</sup>' + (dt ? ' <span class="ask-d">' + esc(dlDate(dt)) + '</span>' : '') + '</li>');
+      var anchors = anchorsOf(i);
+      if (anchors.length) anchors.forEach(function (a) {
+        material.push('<li>' + esc(String(a.value || '') + (a.unit ? ' ' + a.unit : '')) + (a.label ? ' \u00B7 ' + esc(a.label) : '') + ' <sup>[' + tag + ']</sup></li>');
+      });
+      if (p.hs_code || p.eccn) mitigate.push('<li>Cited codes in source: ' + esc([p.hs_code && ('HS ' + p.hs_code), p.eccn && ('ECCN ' + p.eccn)].filter(Boolean).join(', ')) + ' <sup>[' + tag + ']</sup></li>');
+      sources.push('<li>[' + tag + '] ' + esc(provenanceLabel(i) || p.primary_source_type || srcName(i) || 'Source') +
+        (p.document_identifier ? ' \u00B7 ' + esc(p.document_identifier) : '') +
+        (dt ? ' \u00B7 ' + esc(dlDate(dt)) : '') +
+        (t && t.url ? ' <button class="tr-link" data-url="' + esc(t.url) + '">Open \u2197</button>' : '') + '</li>');
     });
-    return '<div class="ask-ans" role="status"><div class="xn-k">Answer from ' + top.length + ' sourced briefing' + (top.length > 1 ? 's' : '') + (asOf ? ' \u00B7 as of ' + esc(dlDate(asOf)) : '') + '</div><ul>' + lines.join('') + '</ul><ol class="ask-cites">' +
-      top.map(function (i, k) { var t = trustOf(i); return '<li>[' + (k + 1) + '] ' + (t ? '<button class="tr-link" data-url="' + esc(t.url) + '">' + esc(t.name) + (t.date ? ', ' + esc(dlDate(t.date)) : '') + ' \u2197</button>' : esc(i.title)) + '</li>'; }).join('') + '</ol></div>';
+    if (!material.length) material.push('<li>Not in provided sources.</li>');
+    if (!mitigate.length) mitigate.push('<li>No supported pathway in provided sources.</li>');
+    if (!action.length) action.push('<li>Not in provided sources.</li>');
+    var stale = asOf && ((Date.now() - d(asOf + 'T12:00:00Z').getTime()) > 30 * 86400000);
+    return '<div class="ask-ans copilot" role="status">' +
+      '<div class="xn-k">Policy Intelligence Copilot \u00B7 grounded in ' + top.length + ' retrieved source' + (top.length > 1 ? 's' : '') + (asOf ? ' \u00B7 as of ' + esc(dlDate(asOf)) : '') + '</div>' +
+      (stale ? '<p class="ask-stale">Flag: one or more sources are older than 30 days.</p>' : '') +
+      '<h4>ACTION DIRECTIVE</h4><ul>' + action.join('') + '</ul>' +
+      '<h4>MATERIAL AND VOLUME DELTA</h4><ul>' + material.join('') + '</ul>' +
+      '<h4>MITIGATION PATHWAYS</h4><ul>' + mitigate.join('') + '</ul>' +
+      '<h4>SOURCES</h4><ol class="ask-cites">' + sources.join('') + '</ol>' +
+      '<p class="sd-note">Informational only. Not legal or trade-compliance advice.</p>' +
+      '<div class="pi-desk" role="group">' +
+      '<button class="rx" data-forward="' + esc(top[0].id) + '">Route to Team</button>' +
+      '<button class="rx" data-flag="' + esc(top[0].id) + '">Flag to Legal</button>' +
+      '<button class="rx" data-privnote="' + esc(top[0].id) + '">Add Private Note</button></div>' + '<p class="sd-note">Copilot answers are grounded templates over retrieved desk fields only. No external model call and no Slack/Teams/email delivery in this build.</p></div>';
   }
   // Batch 2 focus: keep For you ~80% Arctic, AI and critical minerals (at most 1 in 5 Geoeconomics-only items near the top).
   function focusOrder(list) {
@@ -936,25 +1481,107 @@
     var q = S.query, tp = S.topic, so = S.searchOpen; S.query = ''; S.topic = 'all'; S.searchOpen = false;
     S.query = q; S.topic = tp; S.searchOpen = so;
     var q2 = S.query; S.query = ''; var list = filtered(S.items); S.query = q2;
-    if (S.sigSort === 'top') list = list.slice().sort(function (a, b) { return ((b.signal || {}).impact_score || 0) - ((a.signal || {}).impact_score || 0); });
+    if (S.sigSort === 'top') list = list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
     var h = '<header class="tb"><h1>Signals</h1><p>' + list.length + ' signals \u00B7 ' + esc(asOfText()) + '</p></header>' + sigControlsHTML() + trendHTML() +
       '<div class="section-h"><h2>' + (S.sigSort === 'top' ? 'Top Signals' : 'Latest signals') + '</h2><span>' + list.length + ' shown</span></div><span id="unread-l" hidden>Unread</span>';
     return h + (list.length ? list.map(function (i, n) { return i.signal ? sigCardHTML(i, n) : cardHTML(i, false); }).join('') : '<div class="empty"><h3>No signals match</h3><p>Try another importance or horizon.</p></div>');
   }
   function renderDashboard() {
-    var h = renderBrief();
-    if (S.booting) return h;
-    h += trackersHTML() + expertSectionHTML();
-    return h;
+    if (S.booting) return '<div class="skel-wrap" aria-hidden="true"><div class="sk-card"><div class="sk sk-t"></div><div class="sk sk-t short"></div></div></div>';
+    var stages = ['draft', 'consultation', 'enacted', 'enforcement'];
+    var jurisOrder = ['China', 'United States', 'European Union', 'Canada', 'Japan'];
+    var counts = {}, max = 1;
+    var byImp = { High: 0, Medium: 0, Low: 0 }, byHz = { 'Near term': 0, 'Medium term': 0, 'Long term': 0 };
+    var byGeo = {}, byInd = {};
+    S.items.forEach(function (i) {
+      var p = polOf(i), g = sigOf(i);
+      if (p.jurisdiction && p.procedural_stage) {
+        var k = p.jurisdiction + '|' + p.procedural_stage;
+        counts[k] = (counts[k] || 0) + 1; if (counts[k] > max) max = counts[k];
+      }
+      var tier = p.importance_tier || g.importance; if (byImp[tier] != null) byImp[tier]++;
+      var hz = p.time_horizon || g.time_horizon; if (byHz[hz] != null) byHz[hz]++;
+      (p.geo_impact || []).forEach(function (c) { byGeo[c] = (byGeo[c] || 0) + 1; });
+      (p.industry_impact || []).forEach(function (c) { byInd[c] = (byInd[c] || 0) + 1; });
+    });
+    S.items.forEach(function (i) {
+      var j = polOf(i).jurisdiction;
+      if (j && jurisOrder.indexOf(j) < 0) jurisOrder.push(j);
+    });
+    jurisOrder = jurisOrder.filter(function (j) {
+      return stages.some(function (s) { return counts[j + '|' + s]; });
+    }).slice(0, 8);
+    var heat = '<div class="heat" role="table" aria-label="Jurisdiction by stage"><div class="heat-h"><span></span>' +
+      stages.map(function (s) { return '<span>' + esc(s) + '</span>'; }).join('') + '</div>';
+    jurisOrder.forEach(function (j) {
+      heat += '<div class="heat-r"><span class="heat-j">' + esc(j.replace('United States', 'US').replace('European Union', 'EU')) + '</span>';
+      stages.forEach(function (s) {
+        var n = counts[j + '|' + s] || 0;
+        var inten = n ? Math.max(0.15, n / max) : 0;
+        heat += '<button class="heat-c" data-heatj="' + esc(j) + '" data-heats="' + esc(s) + '" style="--i:' + inten.toFixed(2) + '" aria-label="' + esc(j + ', ' + s + ': ' + n) + '">' +
+          (n ? '<span class="tabnum">' + n + '</span>' : '') + '</button>';
+      });
+      heat += '</div>';
+    });
+    heat += '</div>';
+    function barBlock(title, obj, filterKey) {
+      var keys = Object.keys(obj).sort(function (a, b) { return obj[b] - obj[a]; });
+      if (!keys.length) return '<p class="bempty">No data yet.</p>';
+      var mx = obj[keys[0]] || 1;
+      return '<div class="dash-bars" aria-label="' + esc(title) + '">' + keys.slice(0, 10).map(function (k) {
+        return '<button class="dash-bar" data-ff="' + filterKey + '" data-fv="' + esc(k) + '"><span class="db-l">' + (filterKey === 'fGeo' ? jurisFlag(k) + ' ' : '') + esc(k) + '</span>' +
+          '<span class="db-t"><i style="width:' + Math.round(obj[k] / mx * 100) + '%"></i></span><span class="db-n tabnum">' + obj[k] + '</span></button>';
+      }).join('') + '</div>';
+    }
+    function countPills(obj, filterKey) {
+      return '<div class="dash-pills">' + Object.keys(obj).map(function (k) {
+        return '<button class="fchip" data-ff="' + filterKey + '" data-fv="' + esc(k) + '">' + esc(k) + ' <b class="tabnum">' + obj[k] + '</b></button>';
+      }).join('') + '</div>';
+    }
+    var upcoming = [];
+    S.items.forEach(function (i) {
+      var p = polOf(i); if (!p.effective_date) return;
+      upcoming.push({ i: i, d: p.effective_date });
+    });
+    upcoming.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    upcoming = upcoming.filter(function (x) { return x.d >= todayISO(); }).slice(0, 8);
+    var upHTML = upcoming.length ? '<ul class="up-list">' + upcoming.map(function (x) {
+      return '<li><button data-open="' + esc(x.i.id) + '"><span class="tabnum">' + esc(dlDate(x.d)) + '</span><span>' + esc(mechTitle(x.i)) + '</span></button></li>';
+    }).join('') + '</ul>' : '<p class="bempty">No upcoming effective dates in the current feed.</p>';
+    var wl = Object.keys(S.watchlist || {});
+    var wlHTML = '';
+    if (wl.length) {
+      wlHTML = '<ul class="wl-dash">' + wl.map(function (id) {
+        var i = byId(id), seen = (S.watchSeen || {})[id];
+        if (!i) return '';
+        var changed = !seen || (d(i.published).getTime() > (seen || 0));
+        return '<li class="' + (changed ? 'chg' : '') + '"><button data-open="' + esc(id) + '">' +
+          (changed ? '<span class="wl-dot"></span><span class="wl-chg">Changed since last visit</span>' : '') +
+          '<span class="wl-t">' + esc(mechTitle(i)) + '</span></button></li>';
+      }).join('') + '</ul>';
+      wl.forEach(function (id) { var i = byId(id); if (i) S.watchSeen[id] = Date.now(); });
+      store.set('vx.watchSeen', S.watchSeen);
+    } else {
+      wlHTML = '<p class="bempty">Watch signals from a detail page to track them here.</p>';
+    }
+    return '<div class="brief-top"><div class="brief-date">' + esc(longDate(new Date())) + '</div><h2>Dashboard</h2><p>Signal terminal overview from the live feed. Tap a cell or bar to filter Signals.</p></div>' +
+      '<section class="dash-sec"><h3>Importance</h3>' + countPills(byImp, 'fImpact') + '</section>' +
+      '<section class="dash-sec"><h3>Time horizon</h3>' + countPills(byHz, 'fHorizon') + '</section>' +
+      '<section class="dash-sec"><h3>Jurisdiction by stage</h3>' + heat + '</section>' +
+      '<section class="dash-sec"><h3>Impact by country</h3>' + barBlock('Impact by country', byGeo, 'fGeo') + '</section>' +
+      '<section class="dash-sec"><h3>Impact by industry</h3>' + barBlock('Impact by industry', byInd, 'fIndustry') + '</section>' +
+      '<section class="dash-sec"><h3>Upcoming effective dates</h3>' + upHTML + '</section>' +
+      '<section class="dash-sec"><h3>Watchlist</h3>' + wlHTML + '</section>';
   }
+
   function renderAsk() {
-    var h = '<div class="brief-top"><h2>Ask</h2><p>Search every briefing and its sources. Each result links to the original document.</p></div>' +
-      '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="q" type="search" placeholder="Ask about a place, mineral or policy" aria-label="Ask Voxarc Feed" value="' + esc(S.query) + '" autocomplete="off" enterkeyhint="search">' + (S.query ? '<button class="clear" data-clear>Clear</button>' : '') + '</label></div>';
+    var h = '<div class="brief-top"><h2>Ask</h2><p>Grounded answers from Official Dockets and retrieved signals only. Outside knowledge is never used. Private by default.</p></div>' +
+      '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="q" type="search" placeholder="Ask about a docket, mineral, HS code or filing" aria-label="Ask Signal Desk" value="' + esc(S.query) + '" autocomplete="off" enterkeyhint="search">' + (S.query ? '<button class="clear" data-clear>Clear</button>' : '') + '</label></div>';
     if (S.query) { var tq = S.topic; S.topic = 'all'; h += askAnswerHTML(filtered(S.items)); S.topic = tq; }
     if (!S.query) return h + '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>';
     var tp = S.topic; S.topic = 'all'; var list = filtered(S.items); S.topic = tp;
     h += '<div class="section-h"><h2>Results</h2><span>' + list.length + ' briefing' + (list.length === 1 ? '' : 's') + '</span></div>';
-    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No briefings found</h3><p>Nothing matches \u201C' + esc(S.query.trim()) + '\u201D.</p></div>';
+    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No signals found</h3><p>Nothing matches \u201C' + esc(S.query.trim()) + '\u201D.</p></div>';
     return h + list.map(function (i) { return cardHTML(i, false); }).join('');
   }
   function render() {
@@ -1009,24 +1636,34 @@
   function linkify(s) { return esc(s); }
 
   function articleHTML(i) {
+    var p = polOf(i), hasPol = i.signal && Object.keys(p).length;
     var h = '<div class="rbar"><button class="back" data-back>' + ICON.back + '<span>Back</span></button><span class="sp"></span>' +
       '<button class="icon-btn" data-textsize aria-label="Text size">' + ICON.aa + '</button>' +
-      '<button class="icon-btn' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-label="Save">' + ICON.bm + '</button>' +
+      '<button class="icon-btn' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>' +
       '<button class="icon-btn" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button></div><div class="rprog" id="rprog"></div>';
-    h += '<div class="rscroll" id="rscroll"><article>' +
-      photoHeroHTML(i) + '<div class="kicker">' + esc(kickerOf(i)) + '</div><h1 tabindex="-1" id="rtitle">' + (i.signal ? esc(i.signal.signal_title) : markup(i.titleMarkup || i.title)) + '</h1>' +
-      (i.signal ? '<div class="smeta"><span class="hb ' + lvl(i.signal.importance) + '">Impact: ' + esc(i.signal.importance) + '</span><span class="sm-t">\u00B7 ' + esc(i.signal.time_horizon) + ' \u00B7 Risk: ' + esc(i.signal.risk_level) + '</span>' + INFO_BTN + '</div>' +
-        (i.signal.so_what ? '<p class="hc-why big"><b>So what:</b> ' + esc(i.signal.so_what) + '</p>' : '') + srcLineHTML(i) : srcLineHTML(i)) +
-      (primaryName(i) ? '<div class="ps-line">' + primaryChipHTML(i) + '<span>Official document, summarized by Voxarc Lab</span></div>' : '') +
-      '<div class="ameta"><span>Voxarc Lab</span><span>·</span><span>' + esc(fmtDate(i.published)) + '</span><span>·</span><span>' + readMins(i) + ' min read</span></div>' +
-      '<div class="tagrow">' + (i.topics || []).map(function (t) { return '<span class="tag">' + esc(TOPIC_LABEL[t] || t) + '</span>'; }).join('') + '</div>' +
-      '<div class="ractions" role="group" aria-label="React or share">' + reactHTML(i.id, true) + '<span class="sp"></span><button class="rx" data-share="' + esc(i.id) + '" aria-label="Share briefing">' + ICON.share + 'Share</button><button class="rx' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + (repostOf(i.id) ? 'Reposted' : 'Repost') + '</button></div>' + (i.signal ? auditHTML(i) : '') + signalDetailHTML(i) + tablesHTML(i) + (window.VXSocial ? window.VXSocial.commentsHTML(i) : '');
-    if (i.stat && i.stat.value) h += '<div class="statbox"><b>' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
+    h += '<div class="rscroll" id="rscroll"><article>';
+    // Terminal: no hero image. Instrument summary leads for policy signals.
+    if (hasPol) {
+      h += '<div class="pi-detail-head">' + impactBadge(i) + '</div>';
+      h += policyFieldsHTML(i);
+      h += impactChipsHTML(i);
+    } else {
+      h += '<div class="kicker">' + esc(kickerOf(i)) + '</div><h1 tabindex="-1" id="rtitle">' + markup(i.titleMarkup || i.title) + '</h1>';
+    }
+    h += '<h1 class="visually-hidden" tabindex="-1" id="rtitle">' + esc(hasPol ? mechTitle(i) : (i.title || '')) + '</h1>';
+    // Source + freshness only (no byline, no )
+    h += '<div class="ameta signal-meta">' + primaryCueHTML(i) + '<span class="pi-st-a">' + esc(sourceAgo(i) || fmtDate(i.published)) + '</span><span class="bp ai">AI-assisted</span></div>';
+    if (i.signal && !p.instrument_type) h += signalDetailHTML(i);
+    h += tablesHTML(i);
+    if (i.stat && i.stat.value) h += '<div class="statbox"><b class="tabnum">' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
+    // Action (was So what)
+    var act = (i.signal && i.signal.so_what) || (p && p.impact_subline) || '';
+    if (act) h += '<p class="hc-why big"><b>Action:</b> ' + esc(act) + '</p>';
     h += soWhatHTML(i, true);
     var dls = deadlinesOf(i, true);
     if (dls.length) h += '<div class="kdates"><h5>Key dates</h5>' + dls.map(function (x) {
       var past = x.date < todayISO(), dl = DL_TYPES[x.type] && !past;
-      return '<div class="kd' + (past ? ' past' : '') + '">' + (dl ? '<span class="dl-chip"><b>Deadline</b></span>' : '') + '<span class="kd-l">' + esc(x.label) + '</span><span class="kd-d">' + esc(dlDate(x.date)) + (past ? ' (passed)' : ' \u00B7 ' + inDays(x.date)) + '</span></div>';
+      return '<div class="kd' + (past ? ' past' : '') + '">' + (dl ? '<span class="dl-chip"><b>Deadline</b></span>' : '') + '<span class="kd-l">' + esc(x.label) + '</span><span class="kd-d tabnum">' + esc(dlDate(x.date)) + (past ? ' (passed)' : ' \u00B7 ' + inDays(x.date)) + '</span></div>';
     }).join('') + '</div>';
     h += dataCardHTML(i, true);
     h += marketHTML(i, true);
@@ -1034,12 +1671,16 @@
     h += '<div class="body">' + bodyHTML(i.body) + '</div>';
     if (i.sources && i.sources.length) h += '<div class="sources"><h5>Sources</h5>' + i.sources.map(function (s) {
       var u = safeUrl(s.url);
-      return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">Source: ' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small>' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
-    h += '<div class="share-cta"><button class="btn primary" data-share="' + esc(i.id) + '">Share briefing</button><button class="btn ghost" data-bm="' + esc(i.id) + '">' + (isSaved(i.id) ? 'Saved' : 'Save for later') + '</button></div>';
+      return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">Source: ' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small class="tabnum">' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
+    // Public Comments UI removed (Part D). Private Note is the annotation path.
     h += '<p class="disclaimer"><b>AI-assisted.</b> Summary, impact and horizon ratings are drafted with AI from the linked public sources and reviewed by Voxarc Lab. Check the originals before acting. For information only. Not legal advice. No warranty or obligation; non-binding.</p>' +
-      '<button class="btn ghost sm" data-sx="sigreport" data-id="' + esc(i.id) + '">Report inaccurate or misleading signal</button></article></div>';
+      '<button class="btn ghost sm" data-sx="sigreport" data-id="' + esc(i.id) + '">Report inaccurate or misleading signal</button>' +
+      detailSocialHTML(i) +
+      '</article></div>';
+    if (hasPol) h += policyActionsHTML(i);
     return h;
   }
+
   function openArticle(id, silent) {
     var i = byId(id); if (!i) return;
     S.current = id; var r = $('#reader');
@@ -1048,6 +1689,7 @@
     sc.addEventListener('scroll', function () { var p = sc.scrollTop / Math.max(1, sc.scrollHeight - sc.clientHeight); $('#rprog').style.width = Math.min(100, p * 100) + '%'; }, { passive: true });
     if (!silent) { S.read[id] = Date.now(); store.set('vx.read', S.read); }
     if (wide()) { var cards = document.querySelectorAll('.card'); for (var k = 0; k < cards.length; k++) cards[k].classList.toggle('sel', cards[k].dataset.open === id); }
+    document.body.classList.add('reading');
     if (!silent && !wide()) {
       history.pushState({ a: id }, '');
       S.returnFocus = document.activeElement && document.activeElement.closest ? document.activeElement.closest('[data-open]') : null;
@@ -1057,6 +1699,7 @@
   }
   function closeArticle() {
     var r = $('#reader'); r.classList.remove('open'); r.setAttribute('aria-hidden', 'true'); S.current = null;
+    document.body.classList.remove('reading');
     $('#main').removeAttribute('aria-hidden'); $('#tabbar').removeAttribute('aria-hidden');
     if (!wide()) setTimeout(function () { if (!S.current) r.innerHTML = ''; }, 300);
     var back = S.returnFocus && S.returnFocus.dataset ? S.returnFocus.dataset.open : null;
@@ -1184,16 +1827,13 @@
   }
   function linkOf(i) { return safeUrl(i.signal && i.signal.source_url) || (trustOf(i) || {}).url || CFG.siteUrl; }
   function repostSheet(id) {
+    // Part D: public in-app repost/comment removed. Offer private desk actions + OS share only.
     var i = byId(id); if (!i) return;
-    var u = linkOf(i), crux = (i.signal ? i.signal.crux : i.title).replace(/\s*[\u2014\u2013]\s*/g, ', ');
-    var li = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(u);
-    var x = 'https://x.com/intent/post?text=' + encodeURIComponent(crux + ' via @Voxarc ' + u);
-    var mine = repostOf(id);
-    sheet('<h3>Repost</h3>' + (mine ? '<p>You reposted this in Voxarc' + (mine.comment ? ': \u201C' + esc(mine.comment) + '\u201D' : '') + '</p><button class="btn ghost" data-repundo="' + esc(id) + '">Undo repost in Voxarc</button>'
-        : '<textarea id="repc" class="repc" maxlength="280" placeholder="Add a comment (optional)" aria-label="Comment"></textarea><button class="btn primary" data-repin="' + esc(id) + '">Repost in Voxarc</button>') +
-      '<p class="rep-n">LinkedIn and X open outside the app. You post it yourself on your own page.</p>' +
-      '<button class="btn primary" data-repurl="' + esc(li) + '">Repost to LinkedIn</button><button class="btn primary" data-repurl="' + esc(x) + '">Repost to X</button>' +
-      '<button class="btn ghost" data-repshare="' + esc(id) + '">Other apps</button><button class="btn ghost" data-closesheet>Cancel</button>');
+    sheet('<h3>Share signal</h3><p>Public in-app comments and reposts are off. Use Forward to Team (private share sheet), a Private Note (device-local until sign-in; then account-private via RLS), or the OS share sheet.</p>' +
+      '<button class="btn primary" data-forward="' + esc(id) + '">Forward to Team</button>' +
+      '<button class="btn ghost" data-privnote="' + esc(id) + '">Private Note</button>' +
+      '<button class="btn ghost" data-share="' + esc(id) + '">OS share sheet</button>' +
+      '<button class="btn ghost" data-closesheet>Cancel</button>');
   }
   function shareItem(id, comment) {
     var i = byId(id); if (!i) return;
@@ -1202,7 +1842,7 @@
     var text = (comment ? comment + '\n\n' : '') + (i.signal && i.signal.crux ? String(i.signal.crux).replace(/\s*[\u2014\u2013]\s*/g, ', ') : i.title + '\n\n' + lead) + '\n\nVoxarc Lab policy signal, read more in Voxarc Feed.';
     haptic();
     var sh = plugin('Share');
-    if (sh) return sh.share({ title: i.title, text: text, url: linkOf(i), dialogTitle: 'Share briefing' }).catch(function () {});
+    if (sh) return sh.share({ title: i.title, text: text, url: linkOf(i), dialogTitle: 'Share signal' }).catch(function () {});
     if (navigator.share) return navigator.share({ title: i.title, text: text, url: linkOf(i) }).catch(function () {});
     if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + linkOf(i)).then(function () { toast('Copied to clipboard'); });
   }
@@ -1233,8 +1873,8 @@
         schedule: { on: { hour: S.prefs.hour, minute: S.prefs.minute }, allowWhileIdle: true }, extra: { tab: 'brief' } }] });
     }).catch(function () {});
   }
-  function sheet(html) { var s = $('#sheet'); $('.sheet-card', s).innerHTML = html; s.hidden = false; }
-  function closeSheet() { $('#sheet').hidden = true; }
+  function sheet(html) { var s = $('#sheet'); $('.sheet-card', s).innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
+  function closeSheet() { var s = $('#sheet'); if (!s) return; s.hidden = true; s.setAttribute('hidden', ''); s.style.display = 'none'; }
   function confirmClearSaved() {
     if (!S.saved.length) { toast('No saved briefings to clear'); return; }
     sheet('<h3>Clear saved briefings?</h3><p>This removes all ' + S.saved.length + ' saved briefing' + (S.saved.length === 1 ? '' : 's') + ' from this device. The briefings stay in the feed.</p>' +
@@ -1264,10 +1904,55 @@
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-unlock],[data-cm],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],#btnSearch,#sheet');
     if (!t) return;
     if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
-    if (t.dataset.unlock) { e.stopPropagation(); openArticle(t.dataset.unlock); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
+    if (t.dataset.dossier) { e.stopPropagation(); openArticle(t.dataset.dossier); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .pi-exp') || document.querySelector('#rscroll .audit') || document.querySelector('#rscroll .pi-audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
+    if (t.dataset.pdf) { e.stopPropagation(); exportPdf(t.dataset.pdf); return; }
+    if (t.dataset.opensfilters) { e.stopPropagation(); openFiltersSheet(); return; }
+    if (t.dataset.ffreset) { e.stopPropagation(); resetAllFilters(); openFiltersSheet(); render(); return; }
+    if (t.dataset.moredesk) { e.stopPropagation(); moreDeskSheet(t.dataset.moredesk); return; }
+    if (t.dataset.ff) {
+      e.stopPropagation();
+      S[t.dataset.ff] = t.dataset.fv;
+      if (S.tab === 'brief') S.tab = 'signals';
+      persistFilters();
+      // Keep filter sheet open when choosing options inside it
+      if (document.querySelector('#sheet .ff-sheet')) { openFiltersSheet(); render(); return; }
+      render(); return;
+    }
+    if (t.dataset.dense) { e.stopPropagation(); S.dense = !S.dense; persistFilters(); if (document.querySelector('#sheet .ff-sheet')) openFiltersSheet(); render(); return; }
+    if (t.dataset.saveview) {
+      e.stopPropagation();
+      var name = 'View ' + ((S.namedViews || []).length + 1);
+      try { name = window.prompt('Name this view', name) || ''; } catch (err) { name = ''; }
+      name = String(name).replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 40);
+      if (!name) return;
+      S.namedViews = S.namedViews || [];
+      S.namedViews.push({ name: name, fJuris: S.fJuris, fMineral: S.fMineral, fStage: S.fStage, fImpact: S.fImpact, fScore: S.fScore, fHorizon: S.fHorizon, fGeo: S.fGeo, fIndustry: S.fIndustry, dense: S.dense });
+      store.set('vx.namedViews', S.namedViews); toast('Saved view: ' + name); render(); return;
+    }
+    if (t.dataset.loadview != null && t.dataset.loadview !== '') {
+      e.stopPropagation();
+      var v = (S.namedViews || [])[+t.dataset.loadview]; if (!v) return;
+      S.fJuris = v.fJuris || 'all'; S.fMineral = v.fMineral || 'all'; S.fStage = v.fStage || 'all'; S.fImpact = v.fImpact || 'all'; S.fScore = v.fScore || 'all'; S.fHorizon = v.fHorizon || 'all'; S.fGeo = v.fGeo || 'all'; S.fIndustry = v.fIndustry || 'all'; S.dense = !!v.dense;
+      persistFilters();
+      render(); return;
+    }
+    if (t.dataset.heatj) {
+      e.stopPropagation();
+      S.fJuris = t.dataset.heatj; S.fStage = t.dataset.heats || 'all'; S.tab = 'signals';
+      persistFilters();
+      render(); return;
+    }
+    if (t.dataset.flag) { e.stopPropagation(); flagLegal(t.dataset.flag); return; }
+    if (t.dataset.flaggo) { e.stopPropagation(); flagGo(t.dataset.flaggo); return; }
+    if (t.dataset.forward) { e.stopPropagation(); forwardTeam(t.dataset.forward); return; }
+    if (t.dataset.privnote) { e.stopPropagation(); privateNoteSheet(t.dataset.privnote); return; }
+    if (t.dataset.notesave) { e.stopPropagation(); savePrivateNote(t.dataset.notesave); return; }
+    if (t.dataset.trust) { e.stopPropagation(); S.setView = t.dataset.trust; S.tab = 'settings'; render(); return; }
+    if (t.hasAttribute('data-backset')) { e.stopPropagation(); S.setView = null; render(); return; }
+    if (t.dataset.watch) { e.stopPropagation(); toggleWatch(t.dataset.watch); return; }
     if (t.dataset.sinfo) { e.stopPropagation(); infoSheet(); return; }
     if (t.hasAttribute('data-tipdone')) { e.stopPropagation(); S.tipDone = true; store.set('vx.tipSignals', 1); render(); return; }
     if (t.dataset.repin) { var cm = ($('#repc') || {}).value || ''; cm = cm.replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280);
@@ -1406,18 +2091,25 @@
   }
   var booted = false;
   function loadAll() {
-    return Promise.all([loadBundled(), store.get('vx.feedCache'), store.get('vx.saved'), store.get('vx.read'), store.get('vx.prefs'), store.get('vx.reactions'), store.get('vx.onboarded'), store.get('vx.profile'), store.get('vx.follow')]).then(function (r) {
+    return Promise.all([loadBundled(), store.get('vx.feedCache'), store.get('vx.saved'), store.get('vx.read'), store.get('vx.prefs'), store.get('vx.reactions'), store.get('vx.onboarded'), store.get('vx.profile'), store.get('vx.follow'), store.get('vx.watchlist'), store.get('vx.namedViews'), store.get('vx.watchSeen'), store.get('vx.filters')]).then(function (r) {
       var bundled = r[0], cache = r[1];
       var bc = validFeed(bundled) && Array.isArray(bundled.dataCards) ? bundled.dataCards : [], cc = cache && Array.isArray(cache.dataCards) ? cache.dataCards : [];
       S.cards = cc.length ? cc : bc;
       store.get('vx.tipSignals').then(function (v) { if (v) { S.tipDone = true; render(); } });
       store.get('vx.reposts').then(function (v) { if (v && typeof v === 'object') { S.reposts = v; render(); } });
+      store.get('vx.privateNotes').then(function (v) { if (v && typeof v === 'object') { S.privateNotes = v; render(); } });
       S.generated = validFeed(bundled) ? bundled.generated : null; if (cache && cache.generated && (!S.generated || cache.generated > S.generated)) S.generated = cache.generated;
       S.trends = validFeed(bundled) && bundled.signalTrends ? bundled.signalTrends : null;
-      S.items = mergeFeeds(validFeed(bundled) ? bundled.items : [], cache && Array.isArray(cache.items) ? cache.items : []);
+      S.items = mergeFeeds(validFeed(bundled) ? bundled.items : [], cache && Array.isArray(cache.items) ? cache.items : []).filter(isPublished);
       S.saved = Array.isArray(r[2]) ? r[2] : []; S.read = r[3] || {}; if (cache && cache.updated) S.updated = cache.updated;
       if (r[4]) for (var k in r[4]) S.prefs[k] = r[4][k];
-      S.reactions = r[5] && typeof r[5] === 'object' ? r[5] : {}; Object.keys(S.reactions).forEach(function (k) { if (S.reactions[k] === 'amused') S.reactions[k] = 'useful'; });
+      S.reactions = r[5] && typeof r[5] === 'object' ? r[5] : {}; Object.keys(S.reactions).forEach(function (k) { var v = S.reactions[k]; if (v === 'amused' || v === 'like') S.reactions[k] = typeof v === 'object' ? v : { r: 'useful', t: Date.now() }; if (v && v.r === 'amused') v.r = 'useful'; if (v && v.r === 'like') v.r = 'useful'; }); Object.keys(S.reactions).forEach(function (k) { if (S.reactions[k] === 'amused') S.reactions[k] = 'useful'; });
+      S.watchlist = r[9] && typeof r[9] === 'object' ? r[9] : {};
+      S.namedViews = Array.isArray(r[10]) ? r[10] : [];
+      S.watchSeen = r[11] && typeof r[11] === 'object' ? r[11] : {};
+      if (r[12] && typeof r[12] === 'object') {
+        S.fJuris = r[12].fJuris || 'all'; S.fMineral = r[12].fMineral || 'all'; S.fStage = r[12].fStage || 'all'; S.fImpact = r[12].fImpact || 'all'; S.fScore = r[12].fScore || 'all'; S.fHorizon = r[12].fHorizon || 'all'; S.fGeo = r[12].fGeo || 'all'; S.fIndustry = r[12].fIndustry || 'all'; S.dense = !!r[12].dense;
+      }
       S.onboarded = !!r[6];
       var pf = r[7], fw = r[8] && typeof r[8] === 'object' ? cleanFollow(r[8].topics) : [];
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.

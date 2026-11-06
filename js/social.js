@@ -193,8 +193,9 @@
       '<button class="btn primary" data-sx="saveprofile">Save</button><button class="btn ghost" data-sx="profile" data-id="' + esc(me.id) + '">Cancel</button>');
   }
   function glSheet(sid) {
-    sheet('<h3>Before your first comment</h3><p>Comments are visible to other Voxarc members. Keep them factual and professional.</p>' + glBox('sxGl2') +
-      '<button class="btn primary" data-sx="glok" data-id="' + esc(sid) + '">Agree and post</button><button class="btn ghost" data-closesheet>Cancel</button>');
+    // Part D: public comments off. Guidelines sheet retained for account flows that still reference acceptance.
+    sheet('<h3>Community Guidelines</h3><p>Public comments are off in this build. Private Note is the annotation path (device-local until sign-in; then account-private via RLS).</p>' + glBox('sxGl2') +
+      '<button class="btn primary" data-sx="glok" data-id="' + esc(sid) + '">Agree</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
   function sigReportSheet(id) {
     sheet('<h3>Report inaccurate or misleading signal</h3><p>Signals are AI-assisted summaries of public sources. Tell Voxarc Lab what looks wrong and we will check it against the source within 24 hours.</p>' +
@@ -251,17 +252,8 @@
       : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>' + (GOOGLE ? 'Google or email' : 'Email') + '. Reading stays free without an account.</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' + peers) + '</div>';
   }
   function commentsHTML(i) {
-    var sid = i.id, list = cache[sid];
-    if (!list) { cache[sid] = 'loading'; B.comments(sid).then(function (a) { cache[sid] = a || []; X().refreshReader(); }).catch(function () { cache[sid] = []; }); }
-    var vis = Array.isArray(list) ? list.filter(function (c) { return blockedIds.indexOf(c.user_id) < 0 && !reported['comment:' + c.id] && !reported['user:' + c.user_id]; }) : [];
-    return '<section class="sx-cm" aria-label="Comments"><h5>Comments' + (Array.isArray(list) ? ' \u00B7 ' + vis.length : '') + '</h5>' +
-      (list === 'loading' || !list ? '<p class="sx-fine">Loading comments</p>' : vis.map(function (c) {
-        var a = c.author || {}, own = me && c.user_id === me.id;
-        return '<div class="sx-c"><button class="sx-cav" data-sx="profile" data-id="' + esc(c.user_id) + '" aria-label="Profile of ' + esc(a.name) + '">' + avatar(a) + '</button><div class="sx-cb"><div class="sx-ch"><button class="sx-nm" data-sx="profile" data-id="' + esc(c.user_id) + '"><b>' + esc(a.name) + '</b> <span>@' + esc(a.handle) + ' \u00B7 ' + ago(c.created_at) + '</span></button>' +
-          '<button class="sx-more" data-sx="' + (own ? 'delcomment' : 'cmenu') + '" data-id="' + esc(c.id) + '" data-u="' + esc(c.user_id) + '" data-h="' + esc(a.handle) + '" aria-label="' + (own ? 'Delete comment' : 'Report or block') + '">' + (own ? 'Delete' : '\u22EF') + '</button></div><p>' + esc(c.body) + '</p></div></div>';
-      }).join('') || '<p class="sx-fine">No comments yet. Start the conversation.</p>') +
-      (me ? '<div class="sx-add"><textarea id="sxCm" class="sx-in" maxlength="500" placeholder="Add a comment" aria-label="Add a comment"></textarea><button class="btn primary sm" data-sx="post" data-id="' + esc(sid) + '">Post</button></div>'
-        : '<button class="btn ghost" data-sx="signin">Sign in to comment</button>') + '</section>';
+    // Part D override: public comments disabled. Private Note replaces annotation.
+    return '';
   }
   function onReact(sid, kind) { if (me && LIVE) B.react(sid, kind).catch(function () {}); }
   function onSave(sid, on) { if (me && LIVE) B.save(sid, on).catch(function () {}); }
@@ -321,8 +313,7 @@
     if (a === 'signout') return B.signOut().then(function () { me = null; closeSheet(); rerender(); toast('Signed out'); });
     if (a === 'delete') return need(deleteSheet);
     if (a === 'deleteok') { if (v('sxDel').toUpperCase() !== 'DELETE') return toast('Type DELETE to confirm'); return B.deleteAccount().then(function () { me = null; var x = X(); Object.keys(x.S.reposts).forEach(function (k) { x.S.reposts[k].synced = false; }); x.saveReposts(); closeSheet(); rerender(); toast('Your account was deleted'); }).catch(function (er) { toast(er.message); }); }
-    if (a === 'post') { pendingCm = noDash(v('sxCm')).slice(0, 500); if (!pendingCm) return; if (!me.guidelines_accepted_at) return glSheet(id); return postComment(id); }
-    if (a === 'postx') { var b = noDash(v('sxCm')).slice(0, 500); if (!b) return; return B.addComment(id, b).then(function () { delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
+    if (a === 'post' || a === 'postx') { toast('Public comments are off. Use Private Note.'); return; }
     if (a === 'delcomment') return B.deleteComment(id).then(function () { cache = {}; X().refreshReader(); toast('Comment deleted'); });
   }, true);
 
