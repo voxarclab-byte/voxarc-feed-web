@@ -25,10 +25,10 @@ ul{padding-left:20px;color:#bdbdbd}#msg{color:#FF6B35}
 <main>
 <div class="brand"><img src="img/mark.png" alt=""><a href="./">Voxarc Feed</a></div>
 <h1>Delete your account</h1>
-<p class="note">Voxarc Feed is published by Voxarc Lab. Reading the app never needs an account. If you created one to comment, follow or sync, you can delete it here, in the app (Settings, Account, Delete account) or by email.</p>
+<p class="note">Voxarc Feed (Android package io.voxarc.app) is published by Voxarc Lab. Reading the app never needs an account. If you created one, you can delete it here without the app, in the app (Settings, Account, Delete account) or by email.</p>
 <div class="card">
 <div class="k">What is deleted</div>
-<ul><li>Your profile: name, handle and avatar</li><li>Your comments, follows and followers</li><li>Your reactions, saves and reposts</li><li>Your sign-in record (Google or email)</li></ul>
+<ul><li>Your profile: name, handle and avatar</li><li>Your comments, follows and followers</li><li>Your watchlist, Community Guidelines acceptance and blocks</li><li>Your reactions, saves and reposts</li><li>Your sign-in record (Google or email)</li></ul>
 <p class="note">Deletion is permanent and done right away. Reports you filed are kept without your identity for up to 90 days for safety review. Content on your own device stays until you clear it or uninstall the app.</p>
 </div>
 <div class="card" id="online">
@@ -43,14 +43,14 @@ ul{padding-left:20px;color:#bdbdbd}#msg{color:#FF6B35}
 <div class="k">Delete by email</div>
 <p class="note">Email <a href="mailto:support@voxarc.io?subject=Delete%20my%20Voxarc%20Feed%20account">support@voxarc.io</a> from the address on your account with the subject "Delete my Voxarc Feed account". We delete it within 30 days and confirm by email.</p>
 </div>
-<p class="note"><a href="./">Back to Voxarc Feed</a> · <a href="contact.html">Contact us</a></p>
+<p class="note"><a href="https://voxarclab.io">Voxarc Lab</a> · <a href="https://voxarclab.io/privacy">Privacy Policy</a> · <a href="mailto:support@voxarc.io">support@voxarc.io</a></p>
 </main>
-<script src="js/social-config.js?v=1104c"></script>
+<script src="js/social-config.js"></script>
 <script>
 (function () {
   var C = window.VX_SUPABASE || {}, live = C.url && C.url.indexOf('YOUR-') < 0, tok = null, $ = function (i) { return document.getElementById(i); };
   function msg(t) { $('msg').textContent = t; }
-  if (C.googleEnabled !== true) $('g').hidden = true; // Google sign-in returns once the OAuth client is set up
+  if (!C.googleEnabled) $('g').hidden = true;
   if (!live) { $('online').querySelectorAll('button,input').forEach(function (x) { x.disabled = true; }); msg('Online deletion opens when accounts launch. Until then use email below.'); return; }
   function h() { return { apikey: C.anonKey, Authorization: 'Bearer ' + (tok || C.anonKey), 'Content-Type': 'application/json' }; }
   function ready(t) { tok = t; fetch(C.url + '/auth/v1/user', { headers: h() }).then(function (r) { return r.json(); }).then(function (u) { $('wn').textContent = u.email || 'your account'; $('who').hidden = false; }); }

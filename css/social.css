@@ -109,3 +109,9 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .sx-prow{justify-content:space-between}.sx-pl{display:flex;align-items:center;gap:12px;text-align:left;flex:1;min-width:0}
 .sx-fb{flex:none;padding:6px 14px;border-radius:999px;border:1px solid var(--line);color:var(--gray);font-size:13px}.sx-fb.on{border-color:var(--orange);color:var(--orange)}
 .sx-nm b{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+/* 1.2.1 */
+.sx-gl-ok{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;margin:10px 0;color:var(--fg,inherit)}
+.sx-gl-ok input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:#FF6B35}
+.sx-gl-ok a{color:#FF6B35}
+.bp.ai{background:transparent;border:1px solid currentColor;opacity:.75}
+.act.more{font-size:18px;line-height:1;letter-spacing:1px}

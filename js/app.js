@@ -4,8 +4,10 @@
   var CFG = {
     remoteFeed: 'https://raw.githubusercontent.com/voxarclab-byte/voxarc-daily-media/main/app/feed.json', // live updates; bundled + cached content is used when unavailable
     privacyUrl: 'https://voxarclab.io/privacy',
-    contactUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/contact.html',
-    webUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/',
+    contactUrl: 'https://voxarclab.io/contact',
+    termsUrl: 'https://voxarclab.io/terms',
+    guidelinesUrl: (window.VX_SUPABASE && window.VX_SUPABASE.guidelinesUrl) || 'https://voxarclab.io/community-guidelines',
+    webUrl: 'https://voxarclab.io',
     supportEmail: 'support@voxarc.io',
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
@@ -32,6 +34,7 @@
     { id: 'global', label: 'Global', re: null }
   ];
   var OB_ROLES = [
+    { id: 'procurement', label: 'Procurement or supply chain' },
     { id: 'investor', label: 'Investor' }, { id: 'energy', label: 'Mining and energy' }, { id: 'gov', label: 'Government' },
     { id: 'indigenous', label: 'Indigenous organization' }, { id: 'analyst', label: 'Consultant or analyst' }, { id: 'research', label: 'Researcher or journalist' }
   ];
@@ -67,7 +70,7 @@
   var REACTIONS = [
     { id: 'like', emoji: '\uD83D\uDC4D', label: 'Like' },
     { id: 'dislike', emoji: '\uD83D\uDC4E', label: 'Dislike' },
-    { id: 'amused', emoji: '\uD83D\uDE02', label: 'Amused' }
+    { id: 'useful', emoji: '\uD83D\uDCA1', label: 'Useful' }
   ];
 
   var Cap = window.Capacitor;
@@ -458,7 +461,8 @@
       '<button class="act cmt" data-cm="' + esc(i.id) + '" aria-label="Comments, ' + nc + '">' + ICON.cmt + (nc ? '<span class="cn">' + nc + '</span>' : '') + '</button>' +
       '<button class="act" data-share=""' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
       '<button class="act' + (repostOf(i.id) ? ' on' : '') + '" data-repost="' + esc(i.id) + '" aria-pressed="' + !!repostOf(i.id) + '" aria-label="Repost">' + ICON.repost + '</button>' +
-      '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from Watchlist' : 'Save to Watchlist') + '">' + ICON.bm + '</button></div>';
+      '<button class="bm' + (isSaved(i.id) ? ' on' : '') + '" data-bm="' + esc(i.id) + '" aria-pressed="' + isSaved(i.id) + '" aria-label="' + (isSaved(i.id) ? 'Remove from Watchlist' : 'Save to Watchlist') + '">' + ICON.bm + '</button>' +
+      '<button class="act more" data-sx="sigmenu" data-id="' + esc(i.id) + '" aria-label="More options">\u22EF</button></div>';
   }
   var TOPIC_ART = {
     minerals: '<rect width="120" height="150" fill="#3a2e24"/><path d="M0 70 30 50 55 64 85 40 120 58V150H0z" fill="#5a4636"/><path d="M0 100 40 84 80 98 120 82V150H0z" fill="#2a211a"/><rect x="40" y="88" width="34" height="26" fill="#6b6f73"/><rect x="48" y="70" width="6" height="20" fill="#8a8f94"/><rect x="62" y="76" width="5" height="14" fill="#8a8f94"/><circle cx="96" cy="28" r="10" fill="#FF6B35" opacity=".55"/>',
@@ -526,9 +530,10 @@
     return { v: String(g.crux || i.summary || g.signal_title || '').replace(/\s*[\u2014\u2013]\s*/g, ', '), l: '', fact: true };
   }
   function fresh(i) { return fmtDate(i.published); }
-  function pillHTML(i, tier) { var s0 = subsetsOf(i)[0]; return '<span class="bp">' + esc(tier) + '</span>' + (s0 ? '<span class="bp sub">' + esc(s0) + '</span>' : ''); }
+  function pillHTML(i, tier) { var s0 = subsetsOf(i)[0]; return '<span class="bp">' + esc(tier) + '</span>' + (s0 ? '<span class="bp sub">' + esc(s0) + '</span>' : '') + '<span class="bp ai" title="Summary and ratings are AI-assisted and checked against the linked sources">AI-assisted</span>'; }
+  function hasTables(i) { var ts = Array.isArray(i.tables) ? i.tables : (S.tablesById && S.tablesById[i.id]) || []; return ts.some(function (t) { return t && Array.isArray(t.columns) && Array.isArray(t.rows) && t.rows.length > 0; }); }
   function briefRowHTML(i) {
-    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span><button class="bunlock" data-unlock="' + esc(i.id) + '" aria-label="Unlock full analysis, free for a limited time"><span>Unlock full analysis</span><small>Free for a limited time</small></button></div>' + actRowHTML(i);
+    return '<div class="bfoot"><span class="bfresh">' + esc(fresh(i)) + '</span>' + (hasTables(i) ? '<button class="bunlock" data-unlock="' + esc(i.id) + '" aria-label="Unlock full analysis, free for a limited time"><span>Unlock full analysis</span><small>Free for a limited time</small></button>' : '') + '</div>' + actRowHTML(i);
   }
   function critCardHTML(i) {
     var g = sigOf(i), k = keyFact(i);
@@ -867,12 +872,14 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read. Accounts are optional and only needed to comment, follow and sync.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Feed</b><p>Policy intelligence from Voxarc Lab. Free to read. An optional account saves your watchlist across devices and lets you discuss signals with peers.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-url="' + CFG.termsUrl + '"><div class="l">Terms of Use</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-url="' + CFG.guidelinesUrl + '"><div class="l">Community Guidelines</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-mail="Voxarc Feed feedback"><div class="l">Send feedback</div><div class="r">' + esc(CFG.feedbackEmail) + '</div></button>' +
       '<div class="cell"><div class="l">Version</div><div class="r" id="appVersion">' + esc(CFG.version) + '</div></div></div>';
-    h += '<div class="foot">Voxarc Feed by Voxarc Lab. Analysis summarizes public sources, which are linked in every briefing. Not legal or investment advice.</div></div>';
+    h += '<div class="foot">Voxarc Feed by Voxarc Lab. Signals are AI-assisted summaries of public sources, linked in every briefing. For information only. Not legal advice. No warranty or obligation; non-binding.</div></div>';
     return h;
   }
   // Batch 2: Dashboard data cards (official free sources only, each with source, as-of date and link)
@@ -1029,7 +1036,8 @@
       var u = safeUrl(s.url);
       return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">Source: ' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small>' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
     h += '<div class="share-cta"><button class="btn primary" data-share="' + esc(i.id) + '">Share briefing</button><button class="btn ghost" data-bm="' + esc(i.id) + '">' + (isSaved(i.id) ? 'Saved' : 'Save for later') + '</button></div>';
-    h += '<p class="disclaimer">Voxarc Lab analysis of public sources. Check the linked originals before acting. Not legal or investment advice.</p></article></div>';
+    h += '<p class="disclaimer"><b>AI-assisted.</b> Summary, impact and horizon ratings are drafted with AI from the linked public sources and reviewed by Voxarc Lab. Check the originals before acting. For information only. Not legal advice. No warranty or obligation; non-binding.</p>' +
+      '<button class="btn ghost sm" data-sx="sigreport" data-id="' + esc(i.id) + '">Report inaccurate or misleading signal</button></article></div>';
     return h;
   }
   function openArticle(id, silent) {
@@ -1409,14 +1417,14 @@
       S.items = mergeFeeds(validFeed(bundled) ? bundled.items : [], cache && Array.isArray(cache.items) ? cache.items : []);
       S.saved = Array.isArray(r[2]) ? r[2] : []; S.read = r[3] || {}; if (cache && cache.updated) S.updated = cache.updated;
       if (r[4]) for (var k in r[4]) S.prefs[k] = r[4][k];
-      S.reactions = r[5] && typeof r[5] === 'object' ? r[5] : {};
+      S.reactions = r[5] && typeof r[5] === 'object' ? r[5] : {}; Object.keys(S.reactions).forEach(function (k) { if (S.reactions[k] === 'amused') S.reactions[k] = 'useful'; });
       S.onboarded = !!r[6];
       var pf = r[7], fw = r[8] && typeof r[8] === 'object' ? cleanFollow(r[8].topics) : [];
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
       S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : DESK_ORDER.slice());
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
       fetch('data/signal_fields_local.json').then(function (x) { return x.json(); }).then(function (j) { S.sigFields = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});
-      fetch('data/tables_sample.json').then(function (x) { return x.json(); }).then(function (j) { S.tablesById = j && j.items || {}; if (S.current) refreshReader(); }).catch(function () {});
+      fetch('data/tables_sample.json').then(function (x) { return x.json(); }).then(function (j) { S.tablesById = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
       var wantContact = location.hash === '#contact';
@@ -1431,6 +1439,6 @@
       refreshRemote(false); scheduleNotif();
     });
   }
-  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts };
+  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts, openUrl: openUrl, mail: mail };
   loadAll();
 })();

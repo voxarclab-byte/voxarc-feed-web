@@ -11,6 +11,9 @@
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var noDash = function (s) { return String(s || '').replace(/\s*[\u2014\u2013]\s*/g, ', '); };
   function ls(k, v) { try { if (v === undefined) { var r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+  var GL_TEXT = 'I agree to the Voxarc Community Guidelines and understand that harassment, defamatory remarks, and abusive content will lead to account termination.';
+  var SIG_REASONS = ['Factually wrong', 'Misleading summary or rating', 'Source does not support it', 'Out of date', 'Something else'];
+  function glBox(id) { return '<label class="sx-gl-ok"><input type="checkbox" id="' + id + '"> <span>' + esc(GL_TEXT) + ' <a href="#" data-sx="glread">Read the guidelines</a></span></label>'; }
   var REASONS = ['Spam', 'Harassment or hate', 'Misinformation', 'Sexual or violent content', 'Something else'];
 
   /* ---------- Supabase backend (REST, no SDK) ---------- */
@@ -29,9 +32,9 @@
   function cnt(path) { return req(path, { headers: { Prefer: 'count=exact', Range: '0-0' }, raw: true }).then(function (x) { var m = /\/(\d+)$/.exec(x.r.headers.get('content-range') || ''); return m ? +m[1] : 0; }); }
   var PF = 'id,name,handle,avatar_url';
   var Live = {
-    me: function () { return uid() ? req('/rest/v1/profiles?id=eq.' + uid() + '&select=' + PF).then(function (a) { return a[0] || { id: uid(), name: '', handle: '' }; }) : Promise.resolve(null); },
+    me: function () { return uid() ? req('/rest/v1/profiles?id=eq.' + uid() + '&select=' + PF + ',guidelines_accepted_at').then(function (a) { return a[0] || { id: uid(), name: '', handle: '' }; }) : Promise.resolve(null); },
     signInEmail: function (e, p) { return req('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: e, password: p } }).then(setSess); },
-    signUpEmail: function (e, p, name) { return req('/auth/v1/signup', { method: 'POST', body: { email: e, password: p, data: { name: name } } }).then(function (j) { if (j && j.access_token) setSess(j); return j; }); },
+    signUpEmail: function (e, p, name) { return req('/auth/v1/signup', { method: 'POST', body: { email: e, password: p, data: { name: name, guidelines_accepted: new Date().toISOString() } } }).then(function (j) { if (j && j.access_token) setSess(j); return j; }); },
     signInGoogle: function () {
       var to = isNative ? C.nativeRedirect : (location.origin + location.pathname);
       var u = C.url + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(to);
@@ -69,6 +72,8 @@
     people: function () { return req('/rest/v1/profiles?handle=not.is.null&order=created_at.desc&limit=100&select=' + PF); },
     myFollowing: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (a) { return a.map(function (x) { return x.followee; }); }) : Promise.resolve([]); },
     myReposts: function () { return req('/rest/v1/reposts?user_id=eq.' + uid() + '&select=story_id,comment,created_at'); },
+    acceptGuidelines: function () { return req('/rest/v1/rpc/accept_guidelines', { method: 'POST', body: {} }); },
+    reportSignal: function (sid, reason) { return req('/rest/v1/reports', { method: 'POST', body: { reporter: uid(), target_type: 'signal', target_id: String(sid), reason: reason } }); },
     deleteAccount: function () { return req('/rest/v1/rpc/delete_my_account', { method: 'POST', body: {} }).then(function () { setSess(null); }); }
   };
 
@@ -97,7 +102,7 @@
   var Demo = {
     me: function () { var d = db(); return ok(d.me ? d.users[d.me] : null); },
     signInEmail: function (e) { var d = db(); var id = 'me'; d.users[id] = d.users[id] || { id: id, name: e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e }; d.me = id; sv(d); return ok(); },
-    signUpEmail: function (e, p, name) { var d = db(); d.users.me = { id: 'me', name: name || e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e }; d.me = 'me'; sv(d); return ok({}); },
+    signUpEmail: function (e, p, name) { var d = db(); d.users.me = { id: 'me', name: name || e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e, guidelines_accepted_at: new Date().toISOString() }; d.me = 'me'; sv(d); return ok({}); },
     signInGoogle: function () { var d = db(); d.users.me = d.users.me || { id: 'me', name: 'Ram Demo', handle: 'ram', email: 'demo@gmail.com' }; d.me = 'me'; sv(d); return ok(); },
     takeRedirect: function () { return ok(false); },
     signOut: function () { var d = db(); d.me = null; sv(d); return ok(); },
@@ -122,6 +127,8 @@
     commentCounts: function () { var m = {}; db().comments.forEach(function (c) { if (!c.hidden) m[c.story_id] = (m[c.story_id] || 0) + 1; }); return ok(m); },
     people: function () { var d = db(); return ok(Object.keys(d.users).map(function (k) { return d.users[k]; })); },
     myFollowing: function () { var d = db(); return ok(d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; })); },
+    acceptGuidelines: function () { var d = db(); if (d.users[d.me]) d.users[d.me].guidelines_accepted_at = new Date().toISOString(); sv(d); return ok(); },
+    reportSignal: function (sid, reason) { var d = db(); d.reports.push({ type: 'signal', id: sid, reason: reason }); sv(d); return ok(); },
     react: function () { return ok(); }, save: function () { return ok(); }, repost: function () { return ok(); }, myReposts: function () { return ok([]); },
     deleteAccount: function () { var d = db(); delete d.users.me; d.me = null; d.follows = d.follows.filter(function (x) { return x[0] !== 'me' && x[1] !== 'me'; }); d.comments = d.comments.filter(function (c) { return c.user_id !== 'me'; }); sv(d); return ok(); }
   };
@@ -148,13 +155,13 @@
 
   /* ---------- screens ---------- */
   function signInSheet(why) {
-    sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Follow analysts, comment on signals and keep your reposts in sync across devices.') + '</p>' +
+    sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Save signals to your watchlist across devices and discuss them with procurement and supply-chain peers.') + '</p>' +
       (GOOGLE ? '<button class="btn primary sx-g" data-sx="google"><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button><div class="sx-or"><span>or use email</span></div>' : '') +
       '<input id="sxName" class="sx-in" placeholder="Name (new accounts)" autocomplete="name" maxlength="60">' +
       '<input id="sxEmail" class="sx-in" type="email" placeholder="Email" autocomplete="email">' +
       '<input id="sxPw" class="sx-in" type="password" placeholder="Password (8+ characters)" autocomplete="current-password">' +
       '<div class="sx-2"><button class="btn primary" data-sx="emailin">Sign in</button><button class="btn ghost" data-sx="emailup">Create account</button></div>' +
-      '<p class="sx-fine">By continuing you agree to the community rules: no harassment, spam or hate. Reported content is hidden while Voxarc Lab reviews it. Support: support@voxarc.io' + (LIVE ? '' : '<br><b>On-device preview:</b> sign-in, profiles, follows and comments stay on this device until Voxarc accounts launch.') + '</p>' +
+      glBox('sxGl') + '<p class="sx-fine">Required to create an account. Reported comments are hidden for everyone while Voxarc Lab reviews them. Support: support@voxarc.io' + (LIVE ? '' : '<br><b>Demo mode:</b> accounts stay on this device until the backend is connected.') + '</p>' +
       '<button class="btn ghost" data-closesheet>Not now</button>');
   }
   function profileSheet(id) {
@@ -164,7 +171,7 @@
       var u = r[0] || {}, c = r[1], f = r[2], bl = blockedIds.indexOf(id) >= 0, reps = bl ? [] : (r[3] || []);
       sheet('<div class="sx-ph">' + avatar(u, true) + '<div><b class="sx-name">' + esc(u.name) + '</b><span class="sx-handle">@' + esc(u.handle) + '</span></div></div>' +
         '<div class="sx-counts"><button data-sx="list" data-k="followers" data-id="' + esc(id) + '"><b>' + c.followers + '</b>Followers</button><button data-sx="list" data-k="following" data-id="' + esc(id) + '"><b>' + c.following + '</b>Following</button><div><b>' + reps.length + '</b>Reposts</div></div>' +
-        (mine ? '<button class="btn primary" data-sx="ffeed">Following feed</button><button class="btn ghost" data-sx="people">Discover people</button><button class="btn ghost" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
+        (mine ? '<button class="btn primary" data-sx="ffeed">Following feed</button><button class="btn ghost" data-sx="people">Find peers</button><button class="btn ghost" data-sx="edit">Edit profile</button><button class="btn ghost" data-sx="blocked">Blocked accounts</button><button class="btn ghost" data-sx="signout">Sign out</button><button class="btn ghost sx-danger" data-sx="delete">Delete account</button>'
           : bl ? '<button class="btn ghost" data-sx="unblock" data-id="' + esc(id) + '">Unblock @' + esc(u.handle) + '</button>'
           : '<button class="btn ' + (f ? 'ghost' : 'primary') + '" data-sx="' + (f ? 'unfollow' : 'follow') + '" data-id="' + esc(id) + '">' + (f ? 'Following' : 'Follow') + '</button>' +
             '<div class="sx-2"><button class="btn ghost" data-sx="report" data-t="user" data-id="' + esc(id) + '">Report</button><button class="btn ghost sx-danger" data-sx="block" data-id="' + esc(id) + '" data-h="' + esc(u.handle) + '">Block</button></div>') +
@@ -185,8 +192,18 @@
       '<label class="sx-l">Avatar image URL (optional)<input id="sxPa" class="sx-in" value="' + esc(me.avatar_url || '') + '" placeholder="https://"></label>' +
       '<button class="btn primary" data-sx="saveprofile">Save</button><button class="btn ghost" data-sx="profile" data-id="' + esc(me.id) + '">Cancel</button>');
   }
+  function glSheet(sid) {
+    sheet('<h3>Before your first comment</h3><p>Comments are visible to other Voxarc members. Keep them factual and professional.</p>' + glBox('sxGl2') +
+      '<button class="btn primary" data-sx="glok" data-id="' + esc(sid) + '">Agree and post</button><button class="btn ghost" data-closesheet>Cancel</button>');
+  }
+  function sigReportSheet(id) {
+    sheet('<h3>Report inaccurate or misleading signal</h3><p>Signals are AI-assisted summaries of public sources. Tell Voxarc Lab what looks wrong and we will check it against the source within 24 hours.</p>' +
+      '<div class="sx-reasons">' + SIG_REASONS.map(function (r, n) { return '<label class="sx-r"><input type="radio" name="sxSR" value="' + esc(r) + '"' + (n ? '' : ' checked') + '>' + esc(r) + '</label>'; }).join('') + '</div>' +
+      '<textarea id="sxSRn" class="sx-in" maxlength="400" placeholder="What is wrong? (optional)" aria-label="Details"></textarea>' +
+      '<button class="btn primary" data-sx="sigreportok" data-id="' + esc(id) + '">Send report</button><button class="btn ghost" data-closesheet>Cancel</button>');
+  }
   function reportSheet(type, id) {
-    sheet('<h3>Report ' + (type === 'user' ? 'this account' : 'this comment') + '</h3><p>Tell Voxarc Lab what is wrong. ' + (type === 'comment' ? 'The comment is hidden for you right away' : 'Their comments are hidden for you right away') + ' and is reviewed within 24 hours.</p>' +
+    sheet('<h3>Report ' + (type === 'user' ? 'this account' : 'this comment') + '</h3><p>Tell Voxarc Lab what is wrong. ' + (type === 'comment' ? 'The comment is hidden for everyone right away' : 'Their comments are hidden for you right away') + ' and Voxarc Lab reviews it within 24 hours.</p>' +
       '<div class="sx-reasons">' + REASONS.map(function (r, n) { return '<label class="sx-r"><input type="radio" name="sxR" value="' + esc(r) + '"' + (n ? '' : ' checked') + '>' + esc(r) + '</label>'; }).join('') + '</div>' +
       '<button class="btn primary" data-sx="reportok" data-t="' + type + '" data-id="' + esc(id) + '">Send report</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
@@ -211,7 +228,7 @@
   function peopleSheet() {
     Promise.all([B.people(), B.myFollowing()]).then(function (r) {
       var fl = r[1] || [], list = (r[0] || []).filter(function (u) { return u && u.handle && (!me || u.id !== me.id) && blockedIds.indexOf(u.id) < 0 && !reported['user:' + u.id]; });
-      sheet('<h3>Discover people</h3><p>Analysts and readers on Voxarc. Follow them to see their reposts in your Following feed.</p><div class="sx-list">' + (list.map(function (u) { var f = fl.indexOf(u.id) >= 0;
+      sheet('<h3>Find peers</h3><p>Analysts, buyers and readers on Voxarc. Follow them to see the signals they share.</p><div class="sx-list">' + (list.map(function (u) { var f = fl.indexOf(u.id) >= 0;
         return '<div class="sx-row sx-prow"><button class="sx-pl" data-sx="profile" data-id="' + esc(u.id) + '">' + avatar(u) + '<span><b>' + esc(u.name) + '</b><small>@' + esc(u.handle) + '</small></span></button>' +
           '<button class="sx-fb' + (f ? '' : ' on') + '" data-sx="' + (f ? 'unfollow' : 'follow') + '" data-id="' + esc(u.id) + '" data-ret="people">' + (f ? 'Following' : 'Follow') + '</button></div>'; }).join('') || '<p class="sx-fine">No one to show yet. Be the first to sign up and comment.</p>') +
         '</div>' + (me ? '' : '<button class="btn primary" data-sx="signin">Sign in to follow people</button>') + '<button class="btn ghost" data-closesheet>Close</button>');
@@ -226,11 +243,12 @@
 
   /* ---------- hooks used by app.js ---------- */
   function settingsHTML() {
-    return '<div class="group-h">Account</div><div class="group"><button class="cell" data-sx="people"><div class="l">Discover people<small>Find analysts to follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' + (me
+    var peers = '<button class="cell" data-sx="people"><div class="l">Find peers<small>Analysts and buyers who discuss signals</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>';
+    return '<div class="group-h">Account</div><div class="group">' + (me
       ? '<button class="cell" data-sx="profile" data-id="' + esc(me.id) + '">' + avatar(me) + '<div class="l">' + esc(me.name) + '<small>@' + esc(me.handle) + ' \u00B7 Profile, followers, blocked accounts</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
-        '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
-      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account' + (LIVE ? '' : ' (on this device)') + '<small>' + (LIVE ? '' + (GOOGLE ? 'Google or email' : 'Email') + '. Reading stays free without an account.' : 'On-device preview until accounts launch. Nothing is sent anywhere.') + '</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>') + '</div>';
+        peers + '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
+      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>' + (GOOGLE ? 'Google or email' : 'Email') + '. Reading stays free without an account.</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' + peers) + '</div>';
   }
   function commentsHTML(i) {
     var sid = i.id, list = cache[sid];
@@ -258,15 +276,25 @@
   }
   function afterAuth(msg) { closeSheet(); return refreshMe().then(function () { syncReposts(); if (me && !me.handle) editSheet(); toast(msg || 'Signed in'); }); }
 
+  var pendingCm = '';
+  function postComment(id) { var b = pendingCm; if (!b) return; return B.addComment(id, b).then(function () { pendingCm = ''; delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-sx]'); if (!t) return;
     e.stopPropagation(); e.preventDefault();
     var a = t.dataset.sx, id = t.dataset.id, v = function (q) { var el = document.getElementById(q); return el ? el.value.trim() : ''; };
     if (a === 'signin') return signInSheet();
+    if (a === 'glread') { var gx = X(); if (gx && gx.openUrl) gx.openUrl(C.guidelinesUrl); else window.open(C.guidelinesUrl, '_blank'); return; }
+    if (a === 'sigmenu') return sheet('<h3>Signal options</h3><button class="btn ghost" data-sx="sigreport" data-id="' + esc(id) + '">Report inaccurate or misleading signal</button><button class="btn ghost" data-closesheet>Cancel</button>');
+    if (a === 'sigreport') return sigReportSheet(id);
+    if (a === 'sigreportok') { var sr = document.querySelector('input[name="sxSR"]:checked'), note = noDash(v('sxSRn')).slice(0, 400);
+      return B.reportSignal(id, (sr ? sr.value : 'Something else') + (note ? ': ' + note : '')).then(function () { closeSheet(); toast('Thanks. Voxarc Lab will check this signal against its source'); }).catch(function () { closeSheet(); var x = X(); if (x && x.mail) x.mail('Signal report ' + id); else toast('Could not send. Email support@voxarc.io'); }); }
+    if (a === 'glok') { var g2 = document.getElementById('sxGl2'); if (!g2 || !g2.checked) return toast('Tick the box to agree to the Community Guidelines');
+      return B.acceptGuidelines().then(function () { me.guidelines_accepted_at = new Date().toISOString(); closeSheet(); postComment(id); }).catch(function (er) { toast(er.message); }); }
     if (a === 'google' && !GOOGLE) return;
     if (a === 'google') return B.signInGoogle().then(function () { if (!LIVE) afterAuth('Signed in with Google'); }).catch(function (er) { toast(er.message); });
     if (a === 'emailin' || a === 'emailup') {
-      var em = v('sxEmail'), pw = v('sxPw');
+      var em = v('sxEmail'), pw = v('sxPw'), gl = document.getElementById('sxGl');
+      if (a === 'emailup' && !(gl && gl.checked)) return toast('Tick the box to agree to the Community Guidelines');
       if (!/^\S+@\S+\.\S+$/.test(em) || pw.length < 8) return toast('Enter an email and a password of 8 or more characters');
       return (a === 'emailin' ? B.signInEmail(em, pw) : B.signUpEmail(em, pw, noDash(v('sxName')))).then(function (j) {
         if (a === 'emailup' && LIVE && !(sess && sess.access_token)) { closeSheet(); return toast('Check your email to confirm your account'); }
@@ -293,7 +321,8 @@
     if (a === 'signout') return B.signOut().then(function () { me = null; closeSheet(); rerender(); toast('Signed out'); });
     if (a === 'delete') return need(deleteSheet);
     if (a === 'deleteok') { if (v('sxDel').toUpperCase() !== 'DELETE') return toast('Type DELETE to confirm'); return B.deleteAccount().then(function () { me = null; var x = X(); Object.keys(x.S.reposts).forEach(function (k) { x.S.reposts[k].synced = false; }); x.saveReposts(); closeSheet(); rerender(); toast('Your account was deleted'); }).catch(function (er) { toast(er.message); }); }
-    if (a === 'post') { var b = noDash(v('sxCm')).slice(0, 500); if (!b) return; return B.addComment(id, b).then(function () { delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
+    if (a === 'post') { pendingCm = noDash(v('sxCm')).slice(0, 500); if (!pendingCm) return; if (!me.guidelines_accepted_at) return glSheet(id); return postComment(id); }
+    if (a === 'postx') { var b = noDash(v('sxCm')).slice(0, 500); if (!b) return; return B.addComment(id, b).then(function () { delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
     if (a === 'delcomment') return B.deleteComment(id).then(function () { cache = {}; X().refreshReader(); toast('Comment deleted'); });
   }, true);
 
