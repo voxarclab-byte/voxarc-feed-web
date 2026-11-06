@@ -3,10 +3,10 @@
   'use strict';
   var CFG = {
     remoteFeed: 'https://raw.githubusercontent.com/voxarclab-byte/voxarc-daily-media/main/app/feed.json', // live updates; bundled + cached content is used when unavailable
-    privacyUrl: 'https://voxarclab.io/privacy',
+    privacyUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/privacy.html',
     contactUrl: 'https://voxarclab.io/contact',
     termsUrl: 'https://voxarclab.io/terms',
-    guidelinesUrl: (window.VX_SUPABASE && window.VX_SUPABASE.guidelinesUrl) || 'https://voxarclab.io/community-guidelines',
+    guidelinesUrl: (window.VX_SUPABASE && window.VX_SUPABASE.guidelinesUrl) || 'https://voxarclab-byte.github.io/voxarc-feed-web/community-guidelines.html',
     webUrl: 'https://voxarclab.io',
     supportEmail: 'support@voxarc.io',
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old

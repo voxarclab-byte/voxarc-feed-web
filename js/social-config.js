@@ -6,6 +6,6 @@ window.VX_SUPABASE = {
   googleEnabled: false, // turn on after the Google OAuth client is added in Supabase (docs/SOCIAL_SETUP.md)
   nativeRedirect: 'io.voxarc.app://auth-callback',
   webRedirect: 'https://voxarclab-byte.github.io/voxarc-feed-web/', // web app host (OAuth return only)
-  deleteUrl: 'https://voxarclab.io/delete-account',
-  guidelinesUrl: 'https://voxarclab.io/community-guidelines'
+  deleteUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/delete-account.html',
+  guidelinesUrl: 'https://voxarclab-byte.github.io/voxarc-feed-web/community-guidelines.html'
 };
