@@ -12,11 +12,11 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.4', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.5', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
-    flags: { marketOdds: false, marketLinkOut: false, publicSocial: false },
+    flags: { marketOdds: false, marketLinkOut: false, publicSocial: true },
     // Part D/E: stealth is the default visibility. Public comment/cite/follow gated until server checks ship.
     defaultVisibility: 'STEALTH'
   };
@@ -83,6 +83,7 @@
 
   var Cap = window.Capacitor;
   var isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
+  if (isNative && document.documentElement) document.documentElement.classList.add('native-shell');
   var P = (Cap && Cap.Plugins) || {};
   function plugin(n) { return isNative && P[n] ? P[n] : null; }
 
@@ -637,14 +638,23 @@
     if (day < 14) return 'Source published ' + day + 'd ago';
     return 'Source published ' + fmtDate(iso);
   }
+  function normalizeScore10(v) {
+    // Always display /10. Legacy 0-100 impact_score values must never render as e.g. 84/10.
+    if (v == null || v === '' || !isFinite(+v)) return null;
+    var n = +v;
+    if (n > 10 && n <= 100) n = n / 10;
+    if (n < 0) n = 0;
+    if (n > 10) n = 10;
+    return n;
+  }
   function impactBadge(i) {
     var p = polOf(i), g = sigOf(i);
     var imp = p.importance_tier || g.importance || '';
-    var sc = p.impact_score_10; if (sc == null && g.impact_score != null) sc = (+g.impact_score) / 10;
+    var sc = normalizeScore10(p.impact_score_10 != null ? p.impact_score_10 : (g.impact_score != null ? (+g.impact_score) / 10 : null));
     if (!imp && sc == null) return '';
-    var label = imp ? esc(imp) : '';
-    if (sc != null && isFinite(+sc)) label += (label ? ' ' : '') + (+sc).toFixed(1) + '/10';
-    return '<span class="pi-badge ' + esc((imp || '').toLowerCase()) + ' tabnum" title="Importance band and impact score /10 (separate from instrument tier 1-4)">' + label + '</span>';
+    var band = imp ? '<span class="pi-score-band">' + esc(imp) + '</span>' : '';
+    var num = (sc != null) ? '<span class="pi-score-n tabnum">' + sc.toFixed(1) + '</span>' : '';
+    return '<span class="pi-score ' + esc((imp || '').toLowerCase()) + '" title="Importance band and impact score /10 (separate from instrument tier 1-4)">' + band + num + '</span>';
   }
   function horizonOf(i) {
     var p = polOf(i), g = sigOf(i);
@@ -652,8 +662,8 @@
   }
   function scoreOf10(i) {
     var p = polOf(i), g = sigOf(i);
-    if (p.impact_score_10 != null) return +p.impact_score_10;
-    if (g.impact_score != null) return +g.impact_score / 10;
+    if (p.impact_score_10 != null) return normalizeScore10(p.impact_score_10);
+    if (g.impact_score != null) return normalizeScore10((+g.impact_score) / 10);
     return null;
   }
   function statusStripHTML(i) {
@@ -822,7 +832,7 @@
       ' \u00B7 Last verified ' + esc(fmtDate(verified)) +
       ' \u00B7 ' + nCorr + ' correction' + (nCorr === 1 ? '' : 's') + '</span>';
     if (sc != null) {
-      h += '<div class="pi-rubric"><div class="pi-rubric-h">Impact score <b class="tabnum">' + (+sc).toFixed(1) + '/10</b> <span class="pi-rubric-c">(' + esc(scConf) + ' confidence)</span></div><ul>';
+      var scN = normalizeScore10(sc); h += '<div class="pi-rubric"><div class="pi-rubric-h">Impact score <b class="tabnum">' + (scN == null ? 'n/a' : scN.toFixed(1)) + '/10</b> <span class="pi-rubric-c">(' + esc(scConf) + ' confidence)</span></div><ul>';
       var labels = { severity: 'Severity', geo_breadth: 'Countries affected', industry_breadth: 'Industries affected', proximity: 'Effective-date proximity', stage: 'Procedural stage' };
       Object.keys(labels).forEach(function (k) {
         var v = rubric[k];
@@ -1013,20 +1023,42 @@
     var impact = sublineOf(i);
     var prov = provenanceLabel(i);
     var same = impact && action && String(impact).slice(0,120) === String(action).slice(0,120);
+    var stage = stageHTML(p);
+    var hz = horizonOf(i);
+    var srcN = p.primary_source_type || srcName(i) || '';
+    if (String(srcN).indexOf('Secondary') >= 0) srcN = srcName(i) || srcN;
+    var metaBits = [];
+    if (stage) metaBits.push(stage);
+    if (hz) metaBits.push('<span class="pi-st-h">' + esc(hz) + '</span>');
+    if (srcN) metaBits.push('<span class="pi-st-src">' + esc(srcN) + '</span>');
+    var ago = sourceAgo(i); if (ago) metaBits.push('<span class="pi-st-a">' + esc(ago.replace(/^Source published /, '')) + '</span>');
+    var meta = metaBits.length ? '<div class="pi-meta">' + metaBits.join('<span class="pi-meta-dot" aria-hidden="true">·</span>') + '</div>' : '';
+    var curR = reactionOf(i.id);
+    var reactLabel = curR === 'like' ? 'Liked' : (curR === 'dislike' ? 'Disliked' : 'React');
+    var reactAria = curR === 'like' ? 'Liked — tap to change' : (curR === 'dislike' ? 'Disliked — tap to change' : 'React — choose Like or Dislike');
+    var socialRow = '<div class="pi-social-row" role="group" aria-label="Signal social actions">' +
+      '<button type="button" class="pi-soc pi-react' + (curR ? ' on ' + esc(curR) : '') + '" data-react-open="' + esc(i.id) + '" aria-haspopup="dialog" aria-pressed="' + !!curR + '" aria-label="' + reactAria + '">' +
+      (curR === 'like' ? ICON.check : (curR === 'dislike' ? '<span class="pi-soc-x" aria-hidden="true">✕</span>' : ICON.spark)) +
+      '<span>' + reactLabel + '</span></button>' +
+      '<button type="button" class="pi-soc" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '<span>Share</span></button>' +
+      '<button type="button" class="pi-soc" data-card-comment="' + esc(i.id) + '" aria-label="Comment">' + ICON.cmt + '<span>Comment</span></button>' +
+      '<button type="button" class="pi-soc" data-card-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + '<span>Repost</span></button></div>';
     if (S.dense) {
-      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '"><div class="pi-dense-row">' +
-        impactBadge(i) + tierBadge(i) +
-        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
-        '</div>' + statusStripHTML(i) + '</article>';
+      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '">' +
+        '<div class="pi-dense-row">' + impactBadge(i) +
+        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button></div>' +
+        meta + socialRow + '</article>';
     }
-    return '<article class="bcard pi" data-open="' + esc(i.id) + '">' +
-      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div></div>' +
+    var actionLine = action ? '<p class="pi-action"><span class="pi-k">Action</span> ' + esc(String(action).slice(0, 140)) + '</p>' : (impact ? '<p class="pi-action"><span class="pi-k">Impact</span> ' + esc(String(impact).slice(0, 140)) + '</p>' : '');
+    var headMeta = '<div class="pi-card-head" role="group" aria-label="Signal classification">' +
+      impactBadge(i) + tierBadge(i) + (p.confidence_rating || confLabel(p.confidence) ? confBadge(i) : '') + '</div>';
+    return '<article class="bcard pi" data-open="' + esc(i.id) + '">' + headMeta +
       '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
-      (impact ? '<p class="pi-impact">' + esc(String(impact).slice(0, 160)) + '</p>' : '') +
-      ((!same && action) ? '<p class="bimp"><b>Directive:</b> ' + esc(String(action).slice(0, 160)) + '</p>' : '') +
-      anchorsHTML(i) +
-      '<div class="pi-cues">' + hsCue(i) + (prov ? '<span class="pi-prov">' + esc(prov) + '</span>' : '') + primaryCueHTML(i) + '</div>' +
-      statusStripHTML(i) +
+      actionLine +
+      (anchorsOf(i).length ? anchorsHTML(i) : '') +
+      meta +
+      (prov ? '<p class="pi-provline">' + esc(prov) + '</p>' : '') +
+      socialRow +
       (hasPaidDetail(i) ? '<div class="bfoot"><button class="bunlock" data-dossier="' + esc(i.id) + '" aria-label="Open Full Dossier"><span>Full Dossier</span><small>Regulatory Dossier</small></button></div>' : '') +
       '</article>';
   }
@@ -1106,7 +1138,7 @@
     var h = '<div class="ffilters ff-compact" role="toolbar" aria-label="Filters">' +
       '<div class="ff-compact-row">' + chips +
       '<button type="button" class="fchip ff-open' + (n ? ' on' : '') + '" data-opensfilters="1" aria-haspopup="dialog" aria-expanded="false">Filters' + (n ? ' (' + n + ')' : '') + '</button>' +
-      '<button type="button" class="fchip densetog' + (S.dense ? ' on' : '') + '" data-dense="1" aria-pressed="' + !!S.dense + '">' + (S.dense ? 'Comfortable' : 'Dense') + '</button>' +
+      '<button type="button" class="fchip densetog on" data-dense="1" aria-pressed="true" title="Density: ' + (S.dense ? 'Dense' : 'Comfortable') + '. Tap to switch.">' + (S.dense ? 'Dense' : 'Comfortable') + '</button>' +
       '<button type="button" class="fchip" data-saveview="1">Save view</button></div>';
     if ((S.namedViews || []).length) {
       h += '<div class="ff-compact-row ff-saved"><span class="ff-l">Saved</span>' + S.namedViews.map(function (v, idx) {
@@ -1479,7 +1511,7 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Public comments are off.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Like, Dislike, Share, Comment, Repost and Follow are available when signed in.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.termsUrl + '"><div class="l">Terms of Use</div>' + ICON.chev + '</button>' +
@@ -1895,9 +1927,10 @@
         '<div class="ob-cta"><button class="btn primary" data-obnext>Continue</button></div>';
     } else if (step === 'stealth') {
       var vis = o.visibility || 'STEALTH';
-      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. Public Comment, Cite and Tracked by stay off until you opt in later (not offered in this build). Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
+      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. You may opt into Public below so Find peers can list you and others can see your comments, reposts and follower lists. Watchlists, Private Notes, Forward, Ask history, Helpful/Not Relevant and whom you track are never public.</p><div class="ob-chips">' +
         '<button class="ob-opt' + (vis === 'STEALTH' ? ' on' : '') + '" data-ob="visibility" data-v="STEALTH" aria-pressed="' + (vis === 'STEALTH') + '">Stealth (recommended)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '" disabled title="Public mode ships after server visibility checks">Public (not available yet)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '">Public (opt-in)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        (vis === 'PUBLIC' ? '<p class="ob-note">Public lists you in Find peers and lets others see your comments, reposts and follower lists. Watchlists, Private Notes, Ask history and whom you track stay private.</p>' : '<p class="ob-note">Stealth is the default. You can opt into Public later in Profile → Edit profile.</p>') +
         '</div><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>Save desk preferences</button></div>';
     } else {
@@ -1909,11 +1942,11 @@
   }
   function obToggle(kind, v) {
     if (kind === 'visibility') {
-      if (v !== 'STEALTH') { toast('Public mode is not available in this build'); return; }
-      S.ob.visibility = 'STEALTH';
-      var opts = document.querySelectorAll('#onboard [data-ob="visibility"]');
-      for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === 'STEALTH'; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
-      haptic('LIGHT'); return;
+      if (v === 'PUBLIC' && S.ob.visibility !== 'PUBLIC') {
+        if (!window.confirm('Opt into Public profile? You will appear in Find peers and others can see your comments, reposts and follower lists. Watchlists, Private Notes, Ask history and whom you track stay private. You can switch back to Stealth anytime.')) return;
+      }
+      S.ob.visibility = (v === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
+      haptic('LIGHT'); renderOnboarding(0); return;
     }
     var a = S.ob[kind], k = a.indexOf(v);
     if (kind === 'roles') S.ob.roles = k >= 0 ? [] : [v]; else if (k >= 0) a.splice(k, 1); else a.push(v);
@@ -1937,7 +1970,7 @@
       store.set('vx.profile', S.profile);
     }
     if (!skipped) {
-      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'STEALTH' : (o.visibility || 'STEALTH'); // PUBLIC not offered yet
+      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
       store.set('vx.visibilityMode', S.visibilityMode);
     }
     if (o.edit) {
@@ -1978,23 +2011,52 @@
     render(); refreshReader();
   }
   function refreshReader() { if (S.current) { var sc = $('#rscroll'), y = sc ? sc.scrollTop : 0; openArticle(S.current, true); if ($('#rscroll')) $('#rscroll').scrollTop = y; } }
+  function openReactPicker(id) {
+    var cur = reactionOf(id);
+    sheet('<h3>React</h3><p class="sd-note">One reaction per signal. Tap again to clear.</p>' +
+      '<button type="button" class="btn ' + (cur === 'like' ? 'primary' : 'ghost') + ' block" data-react="like" data-rid="' + esc(id) + '" aria-pressed="' + (cur === 'like') + '">Like' + (cur === 'like' ? ' · selected' : '') + '</button>' +
+      '<button type="button" class="btn ' + (cur === 'dislike' ? 'primary' : 'ghost') + ' block" data-react="dislike" data-rid="' + esc(id) + '" aria-pressed="' + (cur === 'dislike') + '">Dislike' + (cur === 'dislike' ? ' · selected' : '') + '</button>' +
+      (cur ? '<button type="button" class="btn ghost block" data-react-clear="' + esc(id) + '">Clear reaction</button>' : '') +
+      '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
+  }
   function toggleReact(id, r) {
     if (!byId(id)) return;
     var off = reactionOf(id) === r;
     if (off) delete S.reactions[id]; else S.reactions[id] = { r: r, t: Date.now() };
     store.set('vx.reactions', S.reactions); haptic(); if (window.VXSocial) window.VXSocial.onReact(id, off ? null : r);
+    if (document.getElementById('sheet') && document.querySelector('#sheet [data-react]')) closeSheet();
     var m = $('#main'), y = m.scrollTop; render(); m.scrollTop = y; refreshReader();
   }
   function linkOf(i) { return safeUrl(i.signal && i.signal.source_url) || (trustOf(i) || {}).url || CFG.siteUrl; }
-  function repostSheet(id) {
-    // Part D: public in-app repost/comment removed. Offer private desk actions + OS share only.
+  function shareUrlOf(i) {
+    // Prefer a stable Voxarc web deep link; fall back to primary source URL, then site.
+    var base = String(CFG.privacyUrl || 'https://voxarclab-byte.github.io/voxarc-feed-web/privacy.html').replace(/privacy\.html.*$/, '');
+    if (!base) base = 'https://voxarclab-byte.github.io/voxarc-feed-web/';
+    var app = base.replace(/\/?$/, '/') + 'index.html?s=' + encodeURIComponent(i.id);
+    return safeUrl(app) || linkOf(i) || CFG.siteUrl;
+  }
+  function openCardComments(id) {
+    if (window.VXSocial && window.VXSocial.openComments) return window.VXSocial.openComments(id);
+    if (window.VXSocial && window.VXSocial.commentsHTML) { sheet(window.VXSocial.commentsHTML(id)); return; }
+    sheet('<h3>Comment</h3><p>Sign in to comment. Community Guidelines acceptance is required before posting.</p><button class="btn primary" data-sx="signin">Sign in</button><button class="btn ghost" data-closesheet>Close</button>');
+  }
+  function openCardRepost(id) {
     var i = byId(id); if (!i) return;
-    sheet('<h3>Share signal</h3><p>Public in-app comments and reposts are off. Use Forward to Team (private share sheet), a Private Note (device-local until sign-in; then account-private via RLS), or the OS share sheet.</p>' +
-      '<button class="btn primary" data-forward="' + esc(id) + '">Forward to Team</button>' +
-      '<button class="btn ghost" data-privnote="' + esc(id) + '">Private Note</button>' +
-      '<button class="btn ghost" data-share="' + esc(id) + '">OS share sheet</button>' +
+    var signed = window.VXSocial && window.VXSocial.user && window.VXSocial.user();
+    if (!signed) {
+      sheet('<h3>Repost</h3><p>Sign in to repost with an optional note. Your visibility stays Stealth until you opt into a public profile.</p>' +
+        '<button class="btn primary" data-sx="signin">Sign in</button>' +
+        '<button class="btn ghost" data-share="' + esc(id) + '">Share via OS</button>' +
+        '<button class="btn ghost" data-closesheet>Close</button>');
+      return;
+    }
+    sheet('<h3>Repost</h3><p>Optional note (public only if your profile visibility is Public).</p>' +
+      '<textarea id="rpNote" class="sx-ta" rows="3" maxlength="280" placeholder="Add a note (optional)"></textarea>' +
+      '<button class="btn primary" data-repost-go="' + esc(id) + '">Repost</button>' +
+      '<button class="btn ghost" data-share="' + esc(id) + '">Share via OS</button>' +
       '<button class="btn ghost" data-closesheet>Cancel</button>');
   }
+  function repostSheet(id) { openCardRepost(id); }
   function shareItem(id, comment) {
     var i = byId(id); if (!i) return;
     var lead = (i.stat && i.stat.value ? i.stat.value + ': ' + i.stat.label : (i.summary || '')).replace(/\s+/g, ' ');
@@ -2002,9 +2064,10 @@
     var text = (comment ? comment + '\n\n' : '') + (i.signal && i.signal.crux ? String(i.signal.crux).replace(/\s*[\u2014\u2013]\s*/g, ', ') : i.title + '\n\n' + lead) + '\n\nVoxarc Lab policy signal, read more in Voxarc Feed.';
     haptic();
     var sh = plugin('Share');
-    if (sh) return sh.share({ title: i.title, text: text, url: linkOf(i), dialogTitle: 'Share signal' }).catch(function () {});
-    if (navigator.share) return navigator.share({ title: i.title, text: text, url: linkOf(i) }).catch(function () {});
-    if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + linkOf(i)).then(function () { toast('Copied to clipboard'); });
+    var url = shareUrlOf(i);
+    if (sh) return sh.share({ title: i.title, text: text, url: url, dialogTitle: 'Share signal' }).catch(function () {});
+    if (navigator.share) return navigator.share({ title: i.title, text: text, url: url }).catch(function () {});
+    if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + url).then(function () { toast('Copied to clipboard'); });
   }
   function setNotif(on) {
     var ln = plugin('LocalNotifications');
@@ -2033,7 +2096,7 @@
         schedule: { on: { hour: S.prefs.hour, minute: S.prefs.minute }, allowWhileIdle: true }, extra: { tab: 'brief' } }] });
     }).catch(function () {});
   }
-  function sheet(html) { var s = $('#sheet'); $('.sheet-card', s).innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
+  function sheet(html) { var s = $('#sheet'); if (!s) return; var card = s.querySelector('.sheet-card') || s; card.innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
   function closeSheet() { var s = $('#sheet'); if (!s) return; s.hidden = true; s.setAttribute('hidden', ''); s.style.display = 'none'; }
   function confirmClearSaved() {
     if (!S.saved.length) { toast('No saved briefings to clear'); return; }
@@ -2064,7 +2127,7 @@
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react-open],[data-react-clear],[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-repost-go],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-card-comment],[data-card-repost],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],#btnSearch,#sheet');
     if (!t) return;
     if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
     if (t.dataset.dossier) { e.stopPropagation(); openArticle(t.dataset.dossier); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .pi-exp') || document.querySelector('#rscroll .audit') || document.querySelector('#rscroll .pi-audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
@@ -2091,6 +2154,10 @@
       if (document.querySelector('#sheet .ff-sheet')) { openFiltersSheet(); render(); return; }
       render(); return;
     }
+    if (t.dataset.reactOpen != null) { e.stopPropagation(); openReactPicker(t.dataset.reactOpen); return; }
+    if (t.dataset.reactClear != null) { e.stopPropagation(); var cid = t.dataset.reactClear; if (S.reactions[cid]) { delete S.reactions[cid]; store.set('vx.reactions', S.reactions); if (window.VXSocial) window.VXSocial.onReact(cid, null); } closeSheet(); render(); return; }
+    if (t.dataset.cardComment != null) { e.stopPropagation(); openCardComments(t.dataset.cardComment); return; }
+    if (t.dataset.cardRepost != null) { e.stopPropagation(); openCardRepost(t.dataset.cardRepost); return; }
     if (t.dataset.dense) { e.stopPropagation(); S.dense = !S.dense; persistFilters(); if (document.querySelector('#sheet .ff-sheet')) openFiltersSheet(); render(); return; }
     if (t.dataset.saveview) {
       e.stopPropagation();
@@ -2145,6 +2212,7 @@
       return;
     }
     if (t.dataset.tab) { if (S.tab === t.dataset.tab) { $('#main').scrollTop = 0; } S.tab = t.dataset.tab; S.setView = null; if (!wide() && S.current) closeArticle(); render(); return; }
+    if (t.dataset.repostGo) { e.stopPropagation(); var note = ((document.getElementById('rpNote') || {}).value || '').trim(); S.reposts[t.dataset.repostGo] = { comment: note, createdAt: new Date().toISOString(), synced: false }; store.set('vx.reposts', S.reposts); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repostGo, { comment: note }); closeSheet(); toast('Reposted'); render(); return; }
     if (t.dataset.share) { e.stopPropagation(); shareItem(t.dataset.share); return; }
     if (t.hasAttribute('data-back')) { if (history.state && history.state.a) history.back(); else closeArticle(); return; }
     if (t.dataset.url) { if (t.tagName === 'A') e.preventDefault(); openUrl(t.dataset.url); return; }
@@ -2291,6 +2359,11 @@
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
       var wantContact = location.hash === '#contact';
+    try {
+      var qs = new URLSearchParams(location.search || '');
+      var deep = qs.get('s');
+      if (deep) S.pendingOpen = String(deep);
+    } catch (eDeep) {}
       if (!S.onboarded && S.items.length && !wantContact) startOnboarding(false);
       if (wantContact) { S.tab = 'settings'; S.setView = 'contact'; }
       render();

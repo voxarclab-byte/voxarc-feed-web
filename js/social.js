@@ -1,4 +1,4 @@
-/* Voxarc Feed accounts and social layer (1.2.0). Backend: Supabase (Auth + Postgres with row level security).
+/* Voxarc Feed accounts and social layer (1.3.5). Backend: Supabase (Auth + Postgres with row level security).
    Same file runs in the Android app (Capacitor) and the web app. With placeholder config it runs in demo mode on this device. */
 (function () {
   'use strict';
@@ -30,7 +30,7 @@
   function refresh() { return fetch(C.url + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { apikey: C.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: sess.refresh_token }) }).then(function (r) { return r.json(); }).then(function (j) { if (j.access_token) setSess(j); else setSess(null); }); }
   function uid() { return sess && sess.user ? sess.user.id : null; }
   function cnt(path) { return req(path, { headers: { Prefer: 'count=exact', Range: '0-0' }, raw: true }).then(function (x) { var m = /\/(\d+)$/.exec(x.r.headers.get('content-range') || ''); return m ? +m[1] : 0; }); }
-  var PF = 'id,name,handle,avatar_url';
+  var PF = 'id,name,handle,avatar_url,visibility_mode';
   var Live = {
     me: function () { return uid() ? req('/rest/v1/profiles?id=eq.' + uid() + '&select=' + PF + ',guidelines_accepted_at').then(function (a) { return a[0] || { id: uid(), name: '', handle: '' }; }) : Promise.resolve(null); },
     signInEmail: function (e, p) { return req('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: e, password: p } }).then(setSess); },
@@ -58,6 +58,7 @@
     comments: function (sid) { return req('/rest/v1/comments?story_id=eq.' + encodeURIComponent(sid) + '&hidden=eq.false&order=created_at.asc&select=id,body,created_at,user_id,author:profiles(' + PF + ')'); },
     addComment: function (sid, body) { return req('/rest/v1/comments', { method: 'POST', headers: { Prefer: 'return=representation' }, body: { story_id: sid, user_id: uid(), body: body } }); },
     deleteComment: function (id) { return req('/rest/v1/comments?id=eq.' + id + '&user_id=eq.' + uid(), { method: 'DELETE' }); },
+    updateComment: function (id, body) { return req('/rest/v1/comments?id=eq.' + id + '&user_id=eq.' + uid(), { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: { body: body } }); },
     report: function (type, id, reason) { return req('/rest/v1/reports', { method: 'POST', body: { reporter: uid(), target_type: type, target_id: String(id), reason: reason } }); },
     block: function (id) { return req('/rest/v1/blocks', { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates' }, body: { blocker: uid(), blocked: id } }); },
     unblock: function (id) { return req('/rest/v1/blocks?blocker=eq.' + uid() + '&blocked=eq.' + id, { method: 'DELETE' }); },
@@ -69,7 +70,7 @@
     followingFeed: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (f) { var ids = f.map(function (x) { return x.followee; }); if (!ids.length) return [];
       return req('/rest/v1/reposts?user_id=in.(' + ids.join(',') + ')&order=created_at.desc&limit=100&select=story_id,comment,created_at,user_id,author:profiles(' + PF + ')'); }) : Promise.resolve([]); },
     commentCounts: function () { return req('/rest/v1/comments?hidden=eq.false&select=story_id&limit=5000').then(function (a) { var m = {}; (a || []).forEach(function (c) { m[c.story_id] = (m[c.story_id] || 0) + 1; }); return m; }); },
-    people: function () { return req('/rest/v1/profiles?handle=not.is.null&order=created_at.desc&limit=100&select=' + PF); },
+    people: function () { return req('/rest/v1/profiles?visibility_mode=eq.PUBLIC&handle=not.is.null&order=created_at.desc&limit=100&select=' + PF); },
     myFollowing: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (a) { return a.map(function (x) { return x.followee; }); }) : Promise.resolve([]); },
     myReposts: function () { return req('/rest/v1/reposts?user_id=eq.' + uid() + '&select=story_id,comment,created_at'); },
     acceptGuidelines: function () { return req('/rest/v1/rpc/accept_guidelines', { method: 'POST', body: {} }); },
@@ -81,7 +82,7 @@
   function db() {
     var d = ls('vx.demo');
     if (!d) d = { me: null, users: {
-      u1: { id: 'u1', name: 'Maya Okafor', handle: 'maya_policy' }, u2: { id: 'u2', name: 'Lars Nygaard', handle: 'arcticlars' }, u3: { id: 'u3', name: 'Priya Raman', handle: 'priya_minerals' } },
+      u1: { id: 'u1', name: 'Maya Okafor', handle: 'maya_policy', visibility_mode: 'PUBLIC' }, u2: { id: 'u2', name: 'Lars Nygaard', handle: 'arcticlars', visibility_mode: 'PUBLIC' }, u3: { id: 'u3', name: 'Priya Raman', handle: 'priya_minerals', visibility_mode: 'STEALTH' } },
       follows: [['u1', 'u2'], ['u2', 'u1'], ['u3', 'u1'], ['u2', 'u3']], comments: [], reports: [], blocks: [], seq: 1 };
     return d;
   }
@@ -101,9 +102,9 @@
   }
   var Demo = {
     me: function () { var d = db(); return ok(d.me ? d.users[d.me] : null); },
-    signInEmail: function (e) { var d = db(); var id = 'me'; d.users[id] = d.users[id] || { id: id, name: e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e }; d.me = id; sv(d); return ok(); },
-    signUpEmail: function (e, p, name) { var d = db(); d.users.me = { id: 'me', name: name || e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e, guidelines_accepted_at: new Date().toISOString() }; d.me = 'me'; sv(d); return ok({}); },
-    signInGoogle: function () { var d = db(); d.users.me = d.users.me || { id: 'me', name: 'Ram Demo', handle: 'ram', email: 'demo@gmail.com' }; d.me = 'me'; sv(d); return ok(); },
+    signInEmail: function (e) { var d = db(); var id = 'me'; d.users[id] = d.users[id] || { id: id, name: e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e, visibility_mode: 'STEALTH' }; d.me = id; sv(d); return ok(); },
+    signUpEmail: function (e, p, name) { var d = db(); d.users.me = { id: 'me', name: name || e.split('@')[0], handle: e.split('@')[0].replace(/\W/g, '_').slice(0, 20), email: e, guidelines_accepted_at: new Date().toISOString(), visibility_mode: 'STEALTH' }; d.me = 'me'; sv(d); return ok({}); },
+    signInGoogle: function () { var d = db(); d.users.me = d.users.me || { id: 'me', name: 'Ram Demo', handle: 'ram', email: 'demo@gmail.com', visibility_mode: 'STEALTH' }; d.me = 'me'; sv(d); return ok(); },
     takeRedirect: function () { return ok(false); },
     signOut: function () { var d = db(); d.me = null; sv(d); return ok(); },
     updateProfile: function (p) { var d = db(); var u = d.users[d.me]; for (var k in p) u[k] = p[k]; sv(d); return ok(u); },
@@ -117,6 +118,7 @@
     comments: function (sid) { var d = db(); seedComments(d, sid); sv(d); return ok(d.comments.filter(function (c) { return c.story_id === sid && !c.hidden; }).map(function (c) { return { id: c.id, body: c.body, created_at: c.created_at, user_id: c.user_id, author: d.users[c.user_id] }; })); },
     addComment: function (sid, body) { var d = db(); d.comments.push({ id: 'c' + d.seq++, story_id: sid, user_id: d.me, body: body, created_at: new Date().toISOString() }); sv(d); return ok(); },
     deleteComment: function (id) { var d = db(); d.comments = d.comments.filter(function (c) { return !(c.id === id && c.user_id === d.me); }); sv(d); return ok(); },
+    updateComment: function (id, body) { var d = db(); d.comments.forEach(function (c) { if (c.id === id && c.user_id === d.me) c.body = body; }); sv(d); return ok([{ id: id, body: body }]); },
     report: function (type, id, reason) { var d = db(); d.reports.push({ type: type, id: id, reason: reason }); if (type === 'comment') d.comments.forEach(function (c) { if (c.id === id) c.hidden = true; }); sv(d); return ok(); },
     block: function (id) { var d = db(); if (d.blocks.indexOf(id) < 0) d.blocks.push(id); d.follows = d.follows.filter(function (x) { return !((x[0] === d.me && x[1] === id) || (x[1] === d.me && x[0] === id)); }); sv(d); return ok(); },
     unblock: function (id) { var d = db(); d.blocks = d.blocks.filter(function (x) { return x !== id; }); sv(d); return ok(); },
@@ -125,11 +127,11 @@
     followingFeed: function () { var d = db(), f = d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; });
       return ok((d.reposts || []).filter(function (r) { return f.indexOf(r.user_id) >= 0; }).map(function (r) { return { story_id: r.story_id, comment: r.comment, created_at: r.created_at, user_id: r.user_id, author: d.users[r.user_id] }; }).sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; })); },
     commentCounts: function () { var m = {}; db().comments.forEach(function (c) { if (!c.hidden) m[c.story_id] = (m[c.story_id] || 0) + 1; }); return ok(m); },
-    people: function () { var d = db(); return ok(Object.keys(d.users).map(function (k) { return d.users[k]; })); },
+    people: function () { var d = db(); return ok(Object.keys(d.users).map(function (k) { return d.users[k]; }).filter(function (u) { return u && u.handle && (u.visibility_mode || 'STEALTH') === 'PUBLIC'; })); },
     myFollowing: function () { var d = db(); return ok(d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; })); },
     acceptGuidelines: function () { var d = db(); if (d.users[d.me]) d.users[d.me].guidelines_accepted_at = new Date().toISOString(); sv(d); return ok(); },
     reportSignal: function (sid, reason) { var d = db(); d.reports.push({ type: 'signal', id: sid, reason: reason }); sv(d); return ok(); },
-    react: function () { return ok(); }, save: function () { return ok(); }, repost: function () { return ok(); }, myReposts: function () { return ok([]); },
+    react: function (sid, kind) { var d = db(); d.reactions = d.reactions || {}; var k = d.me + ':' + sid; if (!kind) delete d.reactions[k]; else d.reactions[k] = { user_id: d.me, story_id: sid, kind: kind }; sv(d); return ok(); }, save: function () { return ok(); }, repost: function (sid, r) { var d = db(); d.reposts = d.reposts || []; if (!r) { d.reposts = d.reposts.filter(function (x) { return !(x.user_id === d.me && x.story_id === sid); }); } else { var hit = d.reposts.filter(function (x) { return x.user_id === d.me && x.story_id === sid; })[0]; if (hit) hit.comment = r.comment || ''; else d.reposts.push({ user_id: d.me, story_id: sid, comment: (r && r.comment) || '', created_at: new Date().toISOString() }); } sv(d); return ok(); }, myReposts: function () { var d = db(); return ok((d.reposts || []).filter(function (r) { return r.user_id === d.me; })); },
     deleteAccount: function () { var d = db(); delete d.users.me; d.me = null; d.follows = d.follows.filter(function (x) { return x[0] !== 'me' && x[1] !== 'me'; }); d.comments = d.comments.filter(function (c) { return c.user_id !== 'me'; }); sv(d); return ok(); }
   };
   var B = LIVE ? Live : Demo;
@@ -187,14 +189,19 @@
     });
   }
   function editSheet() {
+    var vis = (me.visibility_mode === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
     sheet('<h3>Edit profile</h3><label class="sx-l">Name<input id="sxPn" class="sx-in" maxlength="60" value="' + esc(me.name) + '"></label>' +
       '<label class="sx-l">Handle<input id="sxPh" class="sx-in" maxlength="20" value="' + esc(me.handle) + '"></label>' +
       '<label class="sx-l">Avatar image URL (optional)<input id="sxPa" class="sx-in" value="' + esc(me.avatar_url || '') + '" placeholder="https://"></label>' +
+      '<fieldset class="sx-vis"><legend>Profile visibility</legend>' +
+      '<label class="sx-r"><input type="radio" name="sxVis" value="STEALTH"' + (vis === 'STEALTH' ? ' checked' : '') + '> Stealth (default)<small>Not listed in Find peers. Comments and reposts stay private to you.</small></label>' +
+      '<label class="sx-r"><input type="radio" name="sxVis" value="PUBLIC"' + (vis === 'PUBLIC' ? ' checked' : '') + '> Public<small>Discoverable in Find peers. Your comments, reposts and follower lists can be seen by others.</small></label>' +
+      '<p class="sx-fine" id="sxVisWarn"' + (vis === 'PUBLIC' ? '' : ' hidden') + '>Confirm: Public is an opt-in. Watchlists, Private Notes, Ask history and whom you track stay private either way.</p></fieldset>' +
       '<button class="btn primary" data-sx="saveprofile">Save</button><button class="btn ghost" data-sx="profile" data-id="' + esc(me.id) + '">Cancel</button>');
   }
   function glSheet(sid) {
     // Part D: public comments off. Guidelines sheet retained for account flows that still reference acceptance.
-    sheet('<h3>Community Guidelines</h3><p>Public comments are off in this build. Private Note is the annotation path (device-local until sign-in; then account-private via RLS).</p>' + glBox('sxGl2') +
+    sheet('<h3>Before your first comment</h3><p>Comments are visible to other members when your profile visibility allows. Keep them factual. Stealth remains the default for new accounts.</p>' + glBox('sxGl2') +
       '<button class="btn primary" data-sx="glok" data-id="' + esc(sid) + '">Agree</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
   function sigReportSheet(id) {
@@ -244,18 +251,33 @@
 
   /* ---------- hooks used by app.js ---------- */
   function settingsHTML() {
-    // Part E ship order: public follow/people stay off until CFG.flags.publicSocial
-    var pub = !!(window.__vx && window.__vx.CFG && window.__vx.CFG.flags && window.__vx.CFG.flags.publicSocial);
-    var peers = pub ? '<button class="cell" data-sx="people"><div class="l">Find peers<small>Analysts and buyers who discuss signals</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' : '';
-    var ffeed = pub ? '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' : '';
+    // Next patch: Follow / Find peers / Following feed enabled (STEALTH default; public profiles only in discovery).
+    var peers = '<button class="cell" data-sx="people"><div class="l">Find peers<small>Public analyst profiles only — no following government sources as people</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>';
+    var ffeed = '<button class="cell" data-sx="ffeed"><div class="l">Following feed<small>Reposts from people you follow</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>';
     return '<div class="group-h">Account</div><div class="group">' + (me
       ? '<button class="cell" data-sx="profile" data-id="' + esc(me.id) + '">' + avatar(me) + '<div class="l">' + esc(me.name) + '<small>@' + esc(me.handle) + ' \u00B7 Profile and blocked accounts</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>' +
         ffeed + peers + '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
       : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>' + (GOOGLE ? 'Google or email' : 'Email') + '. Reading, local Watch and Private Notes stay free without an account.</small></div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>') + '</div>';
   }
   function commentsHTML(i) {
-    // Part D override: public comments disabled. Private Note replaces annotation.
-    return '';
+    var sid = typeof i === 'string' ? i : (i && i.id);
+    if (!sid) return '';
+    var list = cache[sid];
+    if (!list) { cache[sid] = 'loading'; B.comments(sid).then(function (a) { cache[sid] = a || []; if (document.getElementById('sxCmSheet')) openCommentsSheet(sid); else { var x = X(); if (x && x.refreshReader) x.refreshReader(); } }).catch(function () { cache[sid] = []; }); }
+    var vis = Array.isArray(list) ? list.filter(function (c) { return blockedIds.indexOf(c.user_id) < 0 && !reported['comment:' + c.id] && !reported['user:' + c.user_id]; }) : [];
+    var body = '<div id="sxCmSheet" class="sx-cm" aria-label="Comments"><h3>Comments' + (Array.isArray(list) ? ' · ' + vis.length : '') + '</h3>' +
+      (list === 'loading' || !list ? '<p class="sx-fine">Loading comments</p>' : (vis.map(function (c) {
+        var a = c.author || {}, own = me && c.user_id === me.id;
+        return '<div class="sx-c"><button class="sx-cav" data-sx="profile" data-id="' + esc(c.user_id) + '" aria-label="Profile of ' + esc(a.name || 'member') + '">' + avatar(a) + '</button><div class="sx-cb"><div class="sx-ch"><button class="sx-nm" data-sx="profile" data-id="' + esc(c.user_id) + '"><b>' + esc(a.name || 'Member') + '</b> <span>@' + esc(a.handle || 'user') + ' · ' + ago(c.created_at) + '</span></button>' +
+          '<button class="sx-more" data-sx="' + (own ? 'owncmenu' : 'cmenu') + '" data-id="' + esc(c.id) + '" data-u="' + esc(c.user_id) + '" data-h="' + esc(a.handle || '') + '" data-body="' + esc(c.body) + '" data-sid="' + esc(sid) + '" aria-label="' + (own ? 'Edit or delete comment' : 'Report or block') + '">' + (own ? 'Edit' : '⋯') + '</button></div><p>' + esc(c.body) + '</p></div></div>';
+      }).join('') || '<p class="sx-fine">No comments yet. Start the conversation.</p>')) +
+      (me ? '<div class="sx-add"><textarea id="sxCm" class="sx-in" maxlength="500" placeholder="Add a comment" aria-label="Add a comment"></textarea><button class="btn primary sm" data-sx="post" data-id="' + esc(sid) + '">Post</button></div>'
+        : '<button class="btn ghost" data-sx="signin">Sign in to comment</button>') +
+      '<button class="btn ghost" data-closesheet>Close</button></div>';
+    return body;
+  }
+  function openCommentsSheet(sid) {
+    sheet(commentsHTML(sid));
   }
   function onReact(sid, kind) { if (me && LIVE) B.react(sid, kind).catch(function () {}); }
   function onSave(sid, on) { if (me && LIVE) B.save(sid, on).catch(function () {}); }
@@ -272,6 +294,11 @@
 
   var pendingCm = '';
   function postComment(id) { var b = pendingCm; if (!b) return; return B.addComment(id, b).then(function () { pendingCm = ''; delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.name === 'sxVis') {
+      var w = document.getElementById('sxVisWarn'); if (w) w.hidden = e.target.value !== 'PUBLIC';
+    }
+  });
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-sx]'); if (!t) return;
     e.stopPropagation(); e.preventDefault();
@@ -303,7 +330,11 @@
     if (a === 'list') return listSheet(id, t.dataset.k);
     if (a === 'edit') return editSheet();
     if (a === 'saveprofile') { var h = v('sxPh').replace(/[^\w]/g, '').slice(0, 20); if (h.length < 3) return toast('Handle needs 3 or more letters or numbers');
-      return B.updateProfile({ name: noDash(v('sxPn')).slice(0, 60), handle: h.toLowerCase(), avatar_url: /^https:\/\//.test(v('sxPa')) ? v('sxPa') : null }).then(function () { return refreshMe(); }).then(function () { toast('Profile saved'); profileSheet(me.id); }).catch(function (er) { toast(/duplicate|unique/i.test(er.message) ? 'That handle is taken' : er.message); }); }
+      var visEl = document.querySelector('input[name="sxVis"]:checked'); var vis = (visEl && visEl.value === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
+      if (vis === 'PUBLIC' && me.visibility_mode !== 'PUBLIC') {
+        if (!window.confirm('Make your profile Public? You will appear in Find peers and your comments, reposts and follower lists can be seen by others. Watchlists, Private Notes and Ask history stay private. You can switch back to Stealth anytime.')) return;
+      }
+      return B.updateProfile({ name: noDash(v('sxPn')).slice(0, 60), handle: h.toLowerCase(), avatar_url: /^https:\/\//.test(v('sxPa')) ? v('sxPa') : null, visibility_mode: vis }).then(function () { return refreshMe(); }).then(function () { toast(vis === 'PUBLIC' ? 'Profile saved (Public)' : 'Profile saved (Stealth)'); profileSheet(me.id); }).catch(function (er) { toast(/duplicate|unique/i.test(er.message) ? 'That handle is taken' : er.message); }); }
     if (a === 'follow' || a === 'unfollow') return need(function () { B[a](id).then(function () { toast(a === 'follow' ? 'Following' : 'Unfollowed'); if (t.dataset.ret === 'people') peopleSheet(); else profileSheet(id); }); });
     if (a === 'report') return need(function () { reportSheet(t.dataset.t, id); });
     if (a === 'reportok') { var rs = document.querySelector('input[name="sxR"]:checked'); return B.report(t.dataset.t, id, rs ? rs.value : 'Other').then(function () { reported[t.dataset.t + ':' + id] = 1; ls('vx.reported', reported); closeSheet(); toast('Report sent. Thanks for keeping Voxarc useful'); rerender(); }).catch(function (er) { toast(er.message); }); }
@@ -315,8 +346,11 @@
     if (a === 'signout') return B.signOut().then(function () { me = null; closeSheet(); rerender(); toast('Signed out'); });
     if (a === 'delete') return need(deleteSheet);
     if (a === 'deleteok') { if (v('sxDel').toUpperCase() !== 'DELETE') return toast('Type DELETE to confirm'); return B.deleteAccount().then(function () { me = null; var x = X(); Object.keys(x.S.reposts).forEach(function (k) { x.S.reposts[k].synced = false; }); x.saveReposts(); closeSheet(); rerender(); toast('Your account was deleted'); }).catch(function (er) { toast(er.message); }); }
-    if (a === 'post' || a === 'postx') { toast('Public comments are off. Use Private Note.'); return; }
-    if (a === 'delcomment') return B.deleteComment(id).then(function () { cache = {}; X().refreshReader(); toast('Comment deleted'); });
+    if (a === 'post' || a === 'postx') { pendingCm = noDash(v('sxCm')).slice(0, 500); if (!pendingCm) return toast('Write a comment first'); if (!me) return signInSheet(); if (!me.guidelines_accepted_at) return glSheet(id); return postComment(id).then(function () { openCommentsSheet(id); }); }
+    if (a === 'owncmenu') return sheet('<h3>Your comment</h3><button class="btn ghost" data-sx="editcomment" data-id="' + esc(id) + '" data-body="' + esc(t.dataset.body || '') + '" data-sid="' + esc(t.dataset.sid || '') + '">Edit</button><button class="btn ghost sx-danger" data-sx="delcomment" data-id="' + esc(id) + '" data-sid="' + esc(t.dataset.sid || '') + '">Delete</button><button class="btn ghost" data-closesheet>Cancel</button>');
+    if (a === 'editcomment') return sheet('<h3>Edit comment</h3><textarea id="sxCmEdit" class="sx-in" maxlength="500" aria-label="Edit comment">' + esc(t.dataset.body || '') + '</textarea><button class="btn primary" data-sx="editcommentok" data-id="' + esc(id) + '" data-sid="' + esc(t.dataset.sid || '') + '">Save</button><button class="btn ghost" data-closesheet>Cancel</button>');
+    if (a === 'editcommentok') { var nb = noDash(v('sxCmEdit')).slice(0, 500); if (!nb) return toast('Write a comment first'); var sidE = t.dataset.sid || ''; return B.updateComment(id, nb).then(function () { if (sidE) delete cache[sidE]; closeSheet(); toast('Comment updated'); if (sidE) openCommentsSheet(sidE); else X().refreshReader(); }).catch(function (er) { toast(er.message); }); }
+    if (a === 'delcomment') { var sidD = t.dataset.sid || ''; return B.deleteComment(id).then(function () { if (sidD) delete cache[sidD]; else cache = {}; closeSheet(); toast('Comment deleted'); if (sidD) openCommentsSheet(sidD); else X().refreshReader(); }); }
   }, true);
 
   // OAuth return: web reads the URL hash; Android gets io.voxarc.app://auth-callback#access_token=... through appUrlOpen.
@@ -324,6 +358,6 @@
     if (/access_token=/.test(location.hash)) B.takeRedirect(location.hash).then(function () { history.replaceState(null, '', location.pathname); afterAuth('Signed in with Google'); });
     if (isNative && P.App) P.App.addListener('appUrlOpen', function (ev) { if (ev && /auth-callback/.test(ev.url || '')) { if (P.Browser) P.Browser.close().catch(function () {}); B.takeRedirect(ev.url).then(function (okk) { if (okk) afterAuth('Signed in with Google'); }); } });
   }
-  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; } };
+  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, openComments: openCommentsSheet, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; } };
   setTimeout(function () { headerSync(); refreshMe().then(syncReposts); loadCounts(); }, 0);
 })();
