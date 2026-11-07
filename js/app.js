@@ -12,11 +12,13 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.3', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.4', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
-    flags: { marketOdds: false, marketLinkOut: false }
+    flags: { marketOdds: false, marketLinkOut: false, publicSocial: false },
+    // Part D/E: stealth is the default visibility. Public comment/cite/follow gated until server checks ship.
+    defaultVisibility: 'STEALTH'
   };
   (function () { var o = window.__VX_FLAGS; if (o && typeof o === 'object') for (var k in CFG.flags) if (typeof o[k] === 'boolean') CFG.flags[k] = o[k]; })();
   // First-run personalization choices. Stored on this device only (vx.profile); nothing is sent anywhere.
@@ -34,9 +36,16 @@
     { id: 'global', label: 'Global', re: null }
   ];
   var OB_ROLES = [
-    { id: 'procurement', label: 'Procurement or supply chain' },
-    { id: 'investor', label: 'Investor' }, { id: 'energy', label: 'Mining and energy' }, { id: 'gov', label: 'Government' },
-    { id: 'indigenous', label: 'Indigenous organization' }, { id: 'analyst', label: 'Consultant or analyst' }, { id: 'research', label: 'Researcher or journalist' }
+    { id: 'procurement', label: 'Procurement' },
+    { id: 'supply_chain', label: 'Supply chain' },
+    { id: 'analyst', label: 'Analyst' },
+    { id: 'legal', label: 'Legal' },
+    { id: 'other', label: 'Other' },
+    { id: 'investor', label: 'Investor' },
+    { id: 'energy', label: 'Mining and energy' },
+    { id: 'gov', label: 'Government' },
+    { id: 'indigenous', label: 'Indigenous organization' },
+    { id: 'research', label: 'Researcher or journalist' }
   ];
   // Topic chips. 'all' is the For you view: only the topics this device follows (Week 4).
   var TOPICS = [
@@ -79,7 +88,7 @@
 
   var S = {
     items: [], reposts: {}, sigSort: 'top', fImp: 'all', fHz: 'all', trends: null, tab: 'feed', topic: 'all', query: '', searchOpen: false,
-    saved: [], read: {}, reactions: {}, watchlist: {}, watchSeen: {}, privateNotes: {}, privacyPublicShare: false, savedView: 'saved', current: null, online: true, dense: false, fJuris: 'all', fMineral: 'all', fStage: 'all', fImpact: 'all', fScore: 'all', fHorizon: 'all', fGeo: 'all', fIndustry: 'all', namedViews: [],
+    saved: [], read: {}, reactions: {}, signalFeedback: {}, watchlist: {}, watchRules: [], watchSeen: {}, privateNotes: {}, privacyPublicShare: false, visibilityMode: 'STEALTH', savedView: 'saved', current: null, online: true, dense: false, fJuris: 'all', fMineral: 'all', fStage: 'all', fImpact: 'all', fScore: 'all', fHorizon: 'all', fGeo: 'all', fIndustry: 'all', namedViews: [],
     prefs: { fs: 17, notif: false, hour: 7, minute: 0 }, feedSource: 'bundled', updated: null,
     booting: true, loadError: false, onboarded: true, profile: null, ob: null, rendered: false,
     follow: ['arctic', 'ai', 'minerals', 'geo'], cards: [], setView: null, tipDone: false
@@ -683,6 +692,49 @@
   }
   function watchOf(id) { return (S.watchlist || {})[id] || null; }
   function saveWatch() { store.set('vx.watchlist', S.watchlist || {}); }
+  function saveWatchRules() { store.set('vx.watchRules', S.watchRules || []); }
+  function addWatchRule(rule) {
+    S.watchRules = S.watchRules || [];
+    var id = 'wr_' + Date.now();
+    var row = { id: id, kind: rule.kind, value: String(rule.value || '').trim(), label: rule.label || '', alerts: rule.alerts !== false, createdAt: new Date().toISOString(), private: true };
+    if (!row.value) { toast('Enter a value to watch'); return; }
+    S.watchRules.push(row); saveWatchRules(); toast('Private watch rule saved'); render();
+  }
+  function removeWatchRule(id) {
+    S.watchRules = (S.watchRules || []).filter(function (r) { return r.id !== id; }); saveWatchRules(); toast('Watch rule removed'); render();
+  }
+  function matchWatchRules(item) {
+    var p = polOf(item), hits = [];
+    (S.watchRules || []).forEach(function (r) {
+      var v = (r.value || '').toLowerCase(); if (!v) return;
+      if (r.kind === 'hs' && String(p.hs_code || '').toLowerCase().indexOf(v) >= 0) hits.push(r);
+      else if (r.kind === 'material') {
+        var blob = ((p.industry_impact || []).join(' ') + ' ' + (item.title || '') + ' ' + (item.summary || '')).toLowerCase();
+        if (blob.indexOf(v) >= 0) hits.push(r);
+      } else if (r.kind === 'country') {
+        var geo = ((p.geo_impact || []).join(' ') + ' ' + (p.jurisdiction || '') + ' ' + (item.title || '')).toLowerCase();
+        if (geo.indexOf(v) >= 0) hits.push(r);
+      }
+    });
+    return hits;
+  }
+  function watchRulesHTML() {
+    var rows = S.watchRules || [];
+    var h = '<div class="section-h"><h2>Watch rules</h2><span>Private · HS / material / country</span></div>';
+    h += '<p class="sd-note">Local alerts only in this build. Rules stay on this device (and sync to your account watchlists row when signed in). Never public.</p>';
+    h += '<div class="wr-add group">' +
+      '<label class="l">Add rule</label>' +
+      '<select id="wrKind" aria-label="Watch rule type"><option value="hs">HS code</option><option value="material">Material</option><option value="country">Country / jurisdiction</option></select>' +
+      '<input id="wrVal" type="text" placeholder="e.g. 8542, lithium, Canada" aria-label="Watch rule value" />' +
+      '<button type="button" class="btn primary sm" data-wradd>Add private rule</button></div>';
+    if (!rows.length) h += '<p class="sd-note">No watch rules yet.</p>';
+    else h += '<div class="group">' + rows.map(function (r) {
+      return '<div class="cell"><div class="l">' + esc((r.kind || '').toUpperCase()) + ' · ' + esc(r.value) + '<small>Alerts ' + (r.alerts === false ? 'off' : 'on') + ' · private</small></div>' +
+        '<button class="btn ghost sm" data-wrdel="' + esc(r.id) + '">Remove</button></div>';
+    }).join('') + '</div>';
+    return h;
+  }
+
   function noteOf(id) { return (S.privateNotes || {})[id] || null; }
   function saveNotes() { store.set('vx.privateNotes', S.privateNotes || {}); }
   function provenanceLabel(i) {
@@ -791,11 +843,35 @@
   function moreDeskSheet(id) {
     var i = byId(id); if (!i) return;
     var hasNote = !!noteOf(id);
-    sheet('<h3>More actions</h3><p class="sd-note">Desk tools for this signal. Private by default.</p>' +
+    var fb = (S.signalFeedback || {})[id] || {};
+    var publicSocial = !!(CFG.flags && CFG.flags.publicSocial);
+    var h = '<h3>More actions</h3><p class="sd-note">Private desk tools. Watchlists, notes, forwards and Helpful/Not Relevant stay private in every mode.</p>' +
       '<button type="button" class="btn ghost block" data-flag="' + esc(id) + '">Flag to Legal / Procurement</button>' +
       '<button type="button" class="btn ghost block" data-forward="' + esc(id) + '">Forward to Team</button>' +
       '<button type="button" class="btn ghost block" data-privnote="' + esc(id) + '">' + (hasNote ? 'Edit Private Note' : 'Private Note') + '</button>' +
-      '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
+      '<button type="button" class="btn ghost block' + (fb.v === 'helpful' ? ' on' : '') + '" data-sigfb="helpful" data-id="' + esc(id) + '" aria-pressed="' + (fb.v === 'helpful') + '">Helpful Signal' + (fb.v === 'helpful' ? ' · saved privately' : '') + '</button>' +
+      '<button type="button" class="btn ghost block' + (fb.v === 'not_relevant' ? ' on' : '') + '" data-sigfb="not_relevant" data-id="' + esc(id) + '" aria-pressed="' + (fb.v === 'not_relevant') + '">Not Relevant' + (fb.v === 'not_relevant' ? ' · saved privately' : '') + '</button>';
+    if (publicSocial) {
+      h += '<button type="button" class="btn ghost block" data-citepub="' + esc(id) + '">Cite &amp; Annotate</button>';
+    } else {
+      h += '<button type="button" class="btn ghost block" data-citepriv="' + esc(id) + '">Cite &amp; Annotate (Private Desk)</button>' +
+        '<p class="sd-note">Public Comment &amp; Annotate, public citations and Track Analyst stay off until server visibility checks ship (Part E order).</p>';
+    }
+    h += '<button type="button" class="btn ghost" data-closesheet>Cancel</button>';
+    sheet(h);
+  }
+  function setSignalFeedback(id, val) {
+    if (!S.signalFeedback) S.signalFeedback = {};
+    if (S.signalFeedback[id] && S.signalFeedback[id].v === val) delete S.signalFeedback[id];
+    else S.signalFeedback[id] = { v: val, at: Date.now(), private: true };
+    store.set('vx.signalFeedback', S.signalFeedback);
+    toast(val === 'helpful' ? 'Marked Helpful Signal (private)' : 'Marked Not Relevant (private)');
+    closeSheet();
+  }
+  function citePrivate(id) {
+    // Private Desk path only: opens Private Note — never publishes, never team delivery
+    S._citePrefill = true;
+    privateNoteSheet(id);
   }
   function impactChipsHTML(i) {
     var p = polOf(i), h = '';
@@ -835,20 +911,25 @@
     } else {
       window.open('mailto:?subject=' + encodeURIComponent('Voxarc Lab: ' + mechTitle(i)) + '&body=' + encodeURIComponent(text));
     }
-    toast('Forward ready (private share sheet)');
+    toast('Share sheet opened — choose a recipient. Nothing was auto-sent.');
   }
   function privateNoteSheet(id) {
     var cur = noteOf(id);
-    sheet('<h3>Private Note</h3><p>Private by default. On this device until you sign in; if signed in, synced to your account private_notes row (not public). Not a team-visible comment.</p>' +
+    var cite = !!S._citePrefill; S._citePrefill = false;
+    var title = cite ? 'Cite &amp; Annotate (Private Desk)' : 'Private Note';
+    var blurb = cite
+      ? 'Saves a citation note to your Private Desk on this device (or your account when signed in). Not sent to a team and not published.'
+      : 'Private by default. On this device until you sign in; if signed in, synced to your account private_notes row (not public). Not a team-visible comment.';
+    sheet('<h3>' + title + '</h3><p>' + blurb + '</p>' +
       '<textarea id="privNote" class="repc" maxlength="2000" placeholder="Private analysis note">' + esc((cur && cur.body) || '') + '</textarea>' +
-      '<button class="btn primary" data-notesave="' + esc(id) + '">Save Private Note</button><button class="btn ghost" data-closesheet>Cancel</button>');
+      '<button class="btn primary" data-notesave="' + esc(id) + '">' + (cite ? 'Save to Private Desk' : 'Save Private Note') + '</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
   function savePrivateNote(id) {
     var body = (($('#privNote') || {}).value || '').replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 2000);
     S.privateNotes = S.privateNotes || {};
     if (!body) { delete S.privateNotes[id]; saveNotes(); closeSheet(); toast('Private note cleared'); render(); if (S.current === id) refreshReader(); return; }
     S.privateNotes[id] = { body: body, updatedAt: new Date().toISOString() };
-    saveNotes(); closeSheet(); toast('Private note saved'); haptic(); render(); if (S.current === id) refreshReader();
+    saveNotes(); closeSheet(); toast('Saved to Private Desk on this device — not sent to a team'); haptic(); render(); if (S.current === id) refreshReader();
   }
 
   function exportPdf(id) {
@@ -1289,8 +1370,9 @@
       });
     }
     var h = '<div class="section-h"><h2>Watchlist' + (notes ? ' \u00B7 Private Notes' : '') + '</h2><span>' + list.length + ' on this device \u00B7 private by default</span></div>';
-    h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + (!notes) + '" class="' + (notes ? '' : 'on') + '">Watching \u00B7 ' + Object.keys(S.watchlist || {}).length + '</button>' +
+        h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + (!notes) + '" class="' + (notes ? '' : 'on') + '">Watching \u00B7 ' + Object.keys(S.watchlist || {}).length + '</button>' +
       '<button role="tab" data-savedview="notes" aria-selected="' + notes + '" class="' + (notes ? 'on' : '') + '">Private Notes \u00B7 ' + Object.keys(S.privateNotes || {}).length + '</button></div>';
+    if (!notes) h += watchRulesHTML();
     if (notes) return h + (list.length ? list.map(function (i) { var n = noteOf(i.id); return '<div class="rp-h"><span>Private Note \u00B7 ' + esc(fmtDate(n.updatedAt)) + '</span></div><p class="rp-c">' + esc(n.body) + '</p>' + (i.signal ? piCardHTML(i) : cardHTML(i, false)); }).join('')
       : '<div class="empty"><h3>No private notes yet</h3><p>Add a Private Note from a Regulatory Dossier. Device-local until sign-in; then account-private (RLS), never a public comment.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>');
     if (!list.length) return h + '<div class="empty">' + ICON.saved + '<h3>Nothing watched yet</h3><p>Tap Watch on a dossier to keep it here. Watchlists are private by default.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>';
@@ -1350,7 +1432,7 @@
   window.addEventListener('hashchange', function () { if (location.hash === '#contact') openContact(); });
   function trustPageHTML(view) {
     var disc = '<p class="sd-note">Informational only, not legal or trade-compliance advice.</p>';
-    if (view === 'methodology') return '<header class="tb"><button class="back" data-backset>Back</button><h1>Methodology</h1></header><div class="set-block"><p>Signals are extracted from primary sources first. Identifiers (HS, ECCN, dockets) appear only when quoted in the source. Impact tier (1-4) rates the instrument; importance (High/Medium/Low) and score /10 are separate. Prompt Stack v3 separates ingestion, copilot, validation and app layers. Slack/Teams/email brief delivery and external LLM calls are not available in this build.</p>' + disc + '</div>';
+    if (view === 'methodology') return '<header class="tb"><button class="back" data-backset>Back</button><h1>Methodology</h1></header><div class="set-block"><p>Signals are extracted from primary sources first. Identifiers (HS, ECCN, dockets) appear only when quoted in the source. Impact tier (1-4) rates the instrument; importance (High/Medium/Low) and score /10 are separate. Prompt Stack v4 separates ingestion, copilot, validation and app layers. Slack/Teams/email brief delivery and external LLM calls are not available in this build.</p>' + disc + '</div>';
     if (view === 'corrections') {
       var rows = []; S.items.forEach(function (i) { var p = polOf(i); (p.corrections_log || []).forEach(function (c) { rows.push({ i: i, c: c }); }); });
       return '<header class="tb"><button class="back" data-backset>Back</button><h1>Corrections log</h1></header><div class="set-block">' +
@@ -1379,11 +1461,17 @@
       '<div class="cell"><div class="l" id="fs-l">Text size</div><div class="seg" role="group" aria-labelledby="fs-l">' + [15, 17, 19, 21].map(function (f, n) { return '<button data-fs="' + f + '" aria-pressed="' + (S.prefs.fs === f) + '" aria-label="' + ['Small', 'Medium', 'Large', 'Extra large'][n] + '" class="' + (S.prefs.fs === f ? 'on' : '') + '">' + ['S', 'M', 'L', 'XL'][n] + '</button>'; }).join('') + '</div></div>' +
       '<div class="cell"><div class="l">Offline library<small>' + S.items.length + ' briefings stored on this device' + (S.updated ? ', checked ' + (fmtDate(S.updated) === 'Today' ? 'today' : fmtDate(S.updated) === 'Yesterday' ? 'yesterday' : fmtDate(S.updated)) : '') + '</small></div><div class="r">' + (S.online ? 'Ready' : 'Offline') + '</div></div>' +
       '<button class="cell" data-refresh><div class="l">Check for new briefings</div>' + ICON.chev + '</button></div>';
+    h += '<div class="group-h">Visibility</div><div class="group">' +
+      '<div class="cell"><div class="l">Stealth Corporate Mode<small>Stealth is on by default. Public posting stays off unless you opt in later (not offered in this build).</small></div><div class="r">On</div></div>' +
+      '<div class="cell"><div class="l">Comment &amp; Annotate<small>Private Note on this device (or your account when signed in). Not team chat.</small></div><div class="r">Private</div></div>' +
+      '<div class="cell"><div class="l">Cite &amp; Annotate<small>Saves to your Private Desk on this device. Not sent to a team.</small></div><div class="r">Private</div></div>' +
+      '<div class="cell"><div class="l">Tracked by<small>Public analyst profile off until server checks ship</small></div><div class="r">Off</div></div>' +
+      '<div class="cell"><div class="l">Helpful Signal / Not Relevant<small>Always private telemetry on this device</small></div><div class="r">Private</div></div>' +
+      '<p class="set-sub" style="padding:8px 16px 12px">Never public: Watchlists, Private Notes, Forward to Team, Helpful/Not Relevant, Ask history, and whom you track.</p></div>';
     h += '<div class="group-h">Trust</div><div class="group">' +
       '<button class="cell" data-trust="methodology"><div class="l">Methodology<small>How tiers, provenance and scores work</small></div><div class="r">\u203A</div></button>' +
       '<button class="cell" data-trust="corrections"><div class="l">Corrections log<small>Dated fixes linked to original signals</small></div><div class="r">\u203A</div></button>' +
-      '<button class="cell" data-trust="track"><div class="l">Track record<small>Published calls with hits and misses</small></div><div class="r">\u203A</div></button>' +
-      '<div class="cell"><div class="l">Public sharing<small>Opt-in only. Desk stays private by default.</small></div><div class="r">' + (S.privacyPublicShare ? 'On' : 'Off') + '</div></div></div>';
+      '<button class="cell" data-trust="track"><div class="l">Track record<small>Published calls with hits and misses</small></div><div class="r">\u203A</div></button></div>';
     h += '<div class="group-h">Daily brief</div><div class="group">' +
       '<div class="cell"><div class="l">Morning reminder<small>A local notification on this device</small></div>' + switchHTML(S.prefs.notif, 'Morning reminder') + '</div>' +
       '<div class="cell"><label class="l" for="notifTime">Time</label><select id="notifTime">' + times.map(function (t) { return '<option value="' + t + '"' + (S.prefs.hour === t ? ' selected' : '') + '>' + fmtTime(t, 0) + '</option>'; }).join('') + '</select></div></div>';
@@ -1422,41 +1510,92 @@
   }
   // Batch 2: Ask answers only from bundled briefings, with numbered citations and an as-of date; refuses when nothing matches.
   function askAnswerHTML(list) {
-    // Part B grounded Copilot: answer only from retrieved signal fields. No outside knowledge. No LLM claim.
+    // Part B grounded Copilot: every factual claim carries [Sn] + source date. No outside knowledge / LLM.
     if (!list.length) return '<div class="ask-ans refuse" role="status"><b>Not in provided sources.</b><p>No sourced signal covers \u201C' + esc(S.query.trim()) + '\u201D. A primary gazette, register or docket filing on this topic would answer it. Nothing is guessed.</p></div>';
-    var top = list.slice(0, 3), asOf = '';
-    var action = [], material = [], mitigate = [], sources = [];
+    var top = list.slice(0, 3), asOf = '', oldest = '';
+    var action = [], material = [], mitigate = [], sources = [], conflicts = [], claims = [];
+    function claimLine(text, tag, dt) {
+      if (!text) return '';
+      var line = esc(text) + ' <sup>[' + tag + ']</sup>' + (dt ? ' <span class="ask-d">' + esc(dlDate(dt)) + '</span>' : ' <span class="ask-d">date not in source</span>');
+      claims.push({ text: String(text), tag: tag, dt: dt || '' });
+      return '<li>' + line + '</li>';
+    }
     top.forEach(function (i, k) {
       var p = polOf(i), g = sigOf(i), tag = 'S' + (k + 1);
-      var t = trustOf(i); var dt = (t && t.date) || String(p.source_published_at || i.published || '').slice(0, 10); if (dt > asOf) asOf = dt;
+      var t = trustOf(i); var dt = (t && t.date) || String(p.source_published_at || i.published || '').slice(0, 10);
+      if (dt && dt > asOf) asOf = dt;
+      if (dt && (!oldest || dt < oldest)) oldest = dt;
       var dir = p.operational_directive || g.so_what || '';
-      if (dir) action.push('<li>' + esc(dir) + ' <sup>[' + tag + ']</sup>' + (dt ? ' <span class="ask-d">' + esc(dlDate(dt)) + '</span>' : '') + '</li>');
-      var anchors = anchorsOf(i);
-      if (anchors.length) anchors.forEach(function (a) {
-        material.push('<li>' + esc(String(a.value || '') + (a.unit ? ' ' + a.unit : '')) + (a.label ? ' \u00B7 ' + esc(a.label) : '') + ' <sup>[' + tag + ']</sup></li>');
+      if (dir) action.push(claimLine(dir, tag, dt));
+      var stage = p.procedural_stage || p.stage || '';
+      if (stage) action.push(claimLine('Procedural stage: ' + stage, tag, dt));
+      if (p.effective_date) action.push(claimLine('Effective date: ' + p.effective_date, tag, dt));
+      // MATERIAL AND VOLUME DELTA: only quantified price/volume/tariff/lead-time changes — never geo/industry tags
+      function isQuantifiedDelta(a) {
+        if (!a) return false;
+        var blob = [a.value, a.unit, a.label, a.kind, a.excerpt].map(function (x) { return String(x || ''); }).join(' ');
+        var cat = /\b(price|prices|volume|volumes|tariff|tariffs|duty|duties|lead[\-\s]?time|quota|tonnage|throughput)\b/i.test(blob);
+        var chg = /(%|\bpercent\b|[+\-]\d|\bincrease\b|\bdecrease\b|\bup\b|\bdown\b|\brise\b|\bfell\b|\bdrop\b|\bgrew\b|\byear over year\b|\byoy\b|\bvs\.?\s*prior)/i.test(blob);
+        return cat && chg;
+      }
+      (Array.isArray(p.quantitative_anchors) ? p.quantitative_anchors : anchorsOf(i)).forEach(function (a) {
+        if (!isQuantifiedDelta(a)) return;
+        material.push(claimLine(String(a.value || '') + (a.unit ? ' ' + a.unit : '') + (a.label ? ' \u00B7 ' + a.label : ''), tag, dt));
       });
-      if (p.hs_code || p.eccn) mitigate.push('<li>Cited codes in source: ' + esc([p.hs_code && ('HS ' + p.hs_code), p.eccn && ('ECCN ' + p.eccn)].filter(Boolean).join(', ')) + ' <sup>[' + tag + ']</sup></li>');
+      ['volume_delta', 'price_delta', 'tariff_delta', 'lead_time_delta', 'lead_time'].forEach(function (k) {
+        if (p[k]) material.push(claimLine(k.replace(/_/g, ' ') + ': ' + p[k], tag, dt));
+      });
+      // MITIGATION PATHWAYS: only supported alternatives/exemptions — never compliance windows, HS/ECCN, or notice quotes
+      function pushPath(txt) { if (txt) mitigate.push(claimLine(String(txt), tag, dt)); }
+      (Array.isArray(p.mitigation_pathways) ? p.mitigation_pathways : []).forEach(pushPath);
+      (Array.isArray(p.exemptions) ? p.exemptions : []).forEach(pushPath);
+      (Array.isArray(p.alternatives) ? p.alternatives : []).forEach(pushPath);
+      (Array.isArray(p.license_exceptions) ? p.license_exceptions : []).forEach(pushPath);
+      if (p.supported_pathway) pushPath(p.supported_pathway);
+      if (p.exemption) pushPath(p.exemption);
+      if (p.alternative) pushPath(p.alternative);
       sources.push('<li>[' + tag + '] ' + esc(provenanceLabel(i) || p.primary_source_type || srcName(i) || 'Source') +
         (p.document_identifier ? ' \u00B7 ' + esc(p.document_identifier) : '') +
-        (dt ? ' \u00B7 ' + esc(dlDate(dt)) : '') +
+        (dt ? ' \u00B7 ' + esc(dlDate(dt)) : ' \u00B7 date not in source') +
         (t && t.url ? ' <button class="tr-link" data-url="' + esc(t.url) + '">Open \u2197</button>' : '') + '</li>');
+    });
+    // Conflict detection: same claim family (effective date / HS / stage) with disagreeing values across sources
+    function vals(re) {
+      var out = [];
+      claims.forEach(function (c) { if (re.test(c.text)) out.push(c); });
+      return out;
+    }
+    [['Effective date', /^Effective date:/i], ['HS code', /^HS code/i], ['Procedural stage', /^Procedural stage:/i]].forEach(function (pair) {
+      var rows = vals(pair[1]);
+      var uniq = {};
+      rows.forEach(function (r) { uniq[r.text] = (uniq[r.text] || []); uniq[r.text].push(r); });
+      var keys = Object.keys(uniq);
+      if (keys.length > 1) {
+        conflicts.push('<li><b>Conflict on ' + esc(pair[0]) + ':</b> ' + keys.map(function (k) {
+          var rs = uniq[k];
+          return esc(k.replace(/^[^:]+:\s*/, '')) + ' [' + rs.map(function (x) { return x.tag; }).join(', ') + ']' + (rs[0].dt ? ' (' + esc(dlDate(rs[0].dt)) + ')' : '');
+        }).join(' vs ') + '. Official gazette / register entries are preferred; both shown — nothing picked silently.</li>');
+      }
     });
     if (!material.length) material.push('<li>Not in provided sources.</li>');
     if (!mitigate.length) mitigate.push('<li>No supported pathway in provided sources.</li>');
     if (!action.length) action.push('<li>Not in provided sources.</li>');
-    var stale = asOf && ((Date.now() - d(asOf + 'T12:00:00Z').getTime()) > 30 * 86400000);
+    var stale = oldest && ((Date.now() - d(oldest + 'T12:00:00Z').getTime()) > 30 * 86400000);
     return '<div class="ask-ans copilot" role="status">' +
       '<div class="xn-k">Policy Intelligence Copilot \u00B7 grounded in ' + top.length + ' retrieved source' + (top.length > 1 ? 's' : '') + (asOf ? ' \u00B7 as of ' + esc(dlDate(asOf)) : '') + '</div>' +
-      (stale ? '<p class="ask-stale">Flag: one or more sources are older than 30 days.</p>' : '') +
+      (stale ? '<p class="ask-stale">Stale flag: at least one retrieved source is older than 30 days' + (oldest ? ' (oldest ' + esc(dlDate(oldest)) + ')' : '') + '. Topic may have moved; verify the live docket.</p>' : '') +
+      (conflicts.length ? '<div class="ask-conflict"><h4>SOURCE CONFLICTS</h4><ul>' + conflicts.join('') + '</ul></div>' : '') +
       '<h4>ACTION DIRECTIVE</h4><ul>' + action.join('') + '</ul>' +
       '<h4>MATERIAL AND VOLUME DELTA</h4><ul>' + material.join('') + '</ul>' +
       '<h4>MITIGATION PATHWAYS</h4><ul>' + mitigate.join('') + '</ul>' +
       '<h4>SOURCES</h4><ol class="ask-cites">' + sources.join('') + '</ol>' +
-      '<p class="sd-note">Informational only. Not legal or trade-compliance advice.</p>' +
+      '<p class="sd-note">Informational only. Not legal or trade-compliance advice. Every factual line above carries a source tag and date from retrieved desk fields only.</p>' +
       '<div class="pi-desk" role="group">' +
+      '<button class="rx" data-privnote="' + esc(top[0].id) + '">Save to Private Desk</button>' +
       '<button class="rx" data-forward="' + esc(top[0].id) + '">Route to Team</button>' +
       '<button class="rx" data-flag="' + esc(top[0].id) + '">Flag to Legal</button>' +
-      '<button class="rx" data-privnote="' + esc(top[0].id) + '">Add Private Note</button></div>' + '<p class="sd-note">Copilot answers are grounded templates over retrieved desk fields only. No external model call and no Slack/Teams/email delivery in this build.</p></div>';
+      '<button class="rx" data-citepriv="' + esc(top[0].id) + '">Cite &amp; Annotate</button></div>' +
+      '<p class="sd-note">Save to Private Desk and Cite open a Private Note on this device (account-private if signed in). They do not send to teammates. Route to Team opens your device share sheet — you choose the recipient; nothing is auto-sent. No external model call and no Slack/Teams/email delivery in this build.</p></div>';
   }
   // Batch 2 focus: keep For you ~80% Arctic, AI and critical minerals (at most 1 in 5 Geoeconomics-only items near the top).
   function focusOrder(list) {
@@ -1715,10 +1854,10 @@
   // Week 4 first run is light: the intro, then one screen to pick the topics to follow (all four on by default).
   // Skip is always visible and follows everything. Regions and role are optional and live in Settings.
   // Every choice is stored on this device only; nothing is sent anywhere and there is no account.
-  var OB_FIRST = ['intro', 'follow'], OB_EDIT = ['regions', 'role'];
+  var OB_FIRST = ['intro', 'follow', 'regions', 'role', 'stealth'], OB_EDIT = ['regions', 'role', 'stealth'];
   function startOnboarding(edit) {
     var p = S.profile || {};
-    S.ob = { steps: edit ? OB_EDIT : OB_FIRST, step: 0, topics: S.follow.slice(), regions: (p.regions || []).slice(), roles: (p.roles || []).slice(), edit: !!edit };
+    S.ob = { steps: edit ? OB_EDIT : OB_FIRST, step: 0, topics: S.follow.slice(), regions: (p.regions || []).slice(), roles: (p.roles || []).slice(), visibility: S.visibilityMode || 'STEALTH', edit: !!edit };
     renderOnboarding(0);
   }
   function obChoice(kind, o, on, extra) {
@@ -1749,16 +1888,33 @@
       h = '<div class="ob-body"><div class="ob-k">Step 1 of 2</div><h1 id="ob-h" tabindex="-1">Which regions matter to you?</h1><p class="ob-sub">We weight your 3 signals toward briefings that name these places.</p><div class="ob-chips">' +
         OB_REGIONS.map(function (r) { return obChoice('regions', r, o.regions.indexOf(r.id) >= 0); }).join('') + '</div></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obnext>' + (o.regions.length ? 'Continue' : 'Continue with all regions') + '</button></div>';
-    } else {
-      h = '<div class="ob-body"><div class="ob-k">Step 2 of 2</div><h1 id="ob-h" tabindex="-1">What best describes you?</h1><p class="ob-sub">Optional. It helps us decide what to build next, and never leaves this device.</p><div class="ob-chips">' +
+    } else if (step === 'role') {
+      var ri = o.steps.indexOf('role') + 1, rn = o.steps.length;
+      h = '<div class="ob-body"><div class="ob-k">Step ' + ri + ' of ' + rn + '</div><h1 id="ob-h" tabindex="-1">What best describes you?</h1><p class="ob-sub">Role picker for your Signal Desk. Optional. Choices stay on this device unless you sync an account later.</p><div class="ob-chips">' +
         OB_ROLES.map(function (r) { return obChoice('roles', r, o.roles.indexOf(r.id) >= 0); }).join('') + '</div></div>' +
-        '<div class="ob-cta"><button class="btn primary" data-obdone>Save</button></div>';
+        '<div class="ob-cta"><button class="btn primary" data-obnext>Continue</button></div>';
+    } else if (step === 'stealth') {
+      var vis = o.visibility || 'STEALTH';
+      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. Public Comment, Cite and Tracked by stay off until you opt in later (not offered in this build). Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
+        '<button class="ob-opt' + (vis === 'STEALTH' ? ' on' : '') + '" data-ob="visibility" data-v="STEALTH" aria-pressed="' + (vis === 'STEALTH') + '">Stealth (recommended)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '" disabled title="Public mode ships after server visibility checks">Public (not available yet)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        '</div><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
+        '<div class="ob-cta"><button class="btn primary" data-obdone>Save desk preferences</button></div>';
+    } else {
+      h = '<div class="ob-body"><h1 id="ob-h">Continue</h1></div><div class="ob-cta"><button class="btn primary" data-obdone>Done</button></div>';
     }
     el.innerHTML = '<div class="ob-screen ' + (dir > 0 ? 'fwd' : dir < 0 ? 'rev' : '') + '" data-step="' + step + '">' + top + h + '</div>';
     el.hidden = false; document.body.classList.add('ob-open');
     var hd = $('#ob-h'); if (hd) setTimeout(function () { try { hd.focus({ preventScroll: true }); } catch (e) {} }, 40);
   }
   function obToggle(kind, v) {
+    if (kind === 'visibility') {
+      if (v !== 'STEALTH') { toast('Public mode is not available in this build'); return; }
+      S.ob.visibility = 'STEALTH';
+      var opts = document.querySelectorAll('#onboard [data-ob="visibility"]');
+      for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === 'STEALTH'; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
+      haptic('LIGHT'); return;
+    }
     var a = S.ob[kind], k = a.indexOf(v);
     if (kind === 'roles') S.ob.roles = k >= 0 ? [] : [v]; else if (k >= 0) a.splice(k, 1); else a.push(v);
     haptic('LIGHT');
@@ -1780,9 +1936,13 @@
       S.profile = { topics: S.follow.slice(), regions: o.regions, roles: o.roles, t: Date.now() };
       store.set('vx.profile', S.profile);
     }
+    if (!skipped) {
+      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'STEALTH' : (o.visibility || 'STEALTH'); // PUBLIC not offered yet
+      store.set('vx.visibilityMode', S.visibilityMode);
+    }
     if (o.edit) {
       S.ob = null; document.body.classList.remove('ob-open'); var ee = $('#onboard'); ee.hidden = true; ee.innerHTML = '';
-      render(); if (!skipped) toast('Regions and role saved'); return;
+      render(); if (!skipped) toast('Desk preferences saved'); return;
     }
     S.onboarded = true; store.set('vx.onboarded', { t: Date.now(), v: 1 });
     if (first) {
@@ -1904,7 +2064,7 @@
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],#btnSearch,#sheet');
     if (!t) return;
     if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
     if (t.dataset.dossier) { e.stopPropagation(); openArticle(t.dataset.dossier); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .pi-exp') || document.querySelector('#rscroll .audit') || document.querySelector('#rscroll .pi-audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
@@ -1912,6 +2072,16 @@
     if (t.dataset.opensfilters) { e.stopPropagation(); openFiltersSheet(); return; }
     if (t.dataset.ffreset) { e.stopPropagation(); resetAllFilters(); openFiltersSheet(); render(); return; }
     if (t.dataset.moredesk) { e.stopPropagation(); moreDeskSheet(t.dataset.moredesk); return; }
+    if (t.dataset.sigfb) { e.stopPropagation(); setSignalFeedback(t.dataset.id, t.dataset.sigfb); return; }
+    if (t.dataset.citepriv) { e.stopPropagation(); citePrivate(t.dataset.citepriv); return; }
+    if (t.dataset.citepub) { e.stopPropagation(); toast('Public citation requires verified email and capability switch — not enabled in this build'); return; }
+    if (t.hasAttribute('data-wradd')) {
+      e.stopPropagation();
+      var kind = (($('#wrKind') || {}).value) || 'hs';
+      var val = (($('#wrVal') || {}).value) || '';
+      addWatchRule({ kind: kind, value: val }); return;
+    }
+    if (t.dataset.wrdel) { e.stopPropagation(); removeWatchRule(t.dataset.wrdel); return; }
     if (t.dataset.ff) {
       e.stopPropagation();
       S[t.dataset.ff] = t.dataset.fv;
@@ -2091,7 +2261,7 @@
   }
   var booted = false;
   function loadAll() {
-    return Promise.all([loadBundled(), store.get('vx.feedCache'), store.get('vx.saved'), store.get('vx.read'), store.get('vx.prefs'), store.get('vx.reactions'), store.get('vx.onboarded'), store.get('vx.profile'), store.get('vx.follow'), store.get('vx.watchlist'), store.get('vx.namedViews'), store.get('vx.watchSeen'), store.get('vx.filters')]).then(function (r) {
+    return Promise.all([loadBundled(), store.get('vx.feedCache'), store.get('vx.saved'), store.get('vx.read'), store.get('vx.prefs'), store.get('vx.reactions'), store.get('vx.onboarded'), store.get('vx.profile'), store.get('vx.follow'), store.get('vx.watchlist'), store.get('vx.namedViews'), store.get('vx.watchSeen'), store.get('vx.filters'), store.get('vx.signalFeedback')]).then(function (r) {
       var bundled = r[0], cache = r[1];
       var bc = validFeed(bundled) && Array.isArray(bundled.dataCards) ? bundled.dataCards : [], cc = cache && Array.isArray(cache.dataCards) ? cache.dataCards : [];
       S.cards = cc.length ? cc : bc;
@@ -2110,6 +2280,7 @@
       if (r[12] && typeof r[12] === 'object') {
         S.fJuris = r[12].fJuris || 'all'; S.fMineral = r[12].fMineral || 'all'; S.fStage = r[12].fStage || 'all'; S.fImpact = r[12].fImpact || 'all'; S.fScore = r[12].fScore || 'all'; S.fHorizon = r[12].fHorizon || 'all'; S.fGeo = r[12].fGeo || 'all'; S.fIndustry = r[12].fIndustry || 'all'; S.dense = !!r[12].dense;
       }
+      S.signalFeedback = r[13] && typeof r[13] === 'object' ? r[13] : {};
       S.onboarded = !!r[6];
       var pf = r[7], fw = r[8] && typeof r[8] === 'object' ? cleanFollow(r[8].topics) : [];
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
@@ -2131,6 +2302,6 @@
       refreshRemote(false); scheduleNotif();
     });
   }
-  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts, openUrl: openUrl, mail: mail };
+  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, CFG: CFG, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts, openUrl: openUrl, mail: mail };
   loadAll();
 })();
