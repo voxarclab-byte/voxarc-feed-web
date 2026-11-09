@@ -12,7 +12,7 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.7', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.8', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
@@ -1089,14 +1089,9 @@
     var same = impact && action && String(impact).slice(0,120) === String(action).slice(0,120);
     var variant = tier === 'lead' || tier === 'next' ? tier : '';
     var idx = tier === 'next' ? '<span class="pi-idx" aria-hidden="true">02</span>' : '';
-    if (S.dense) {
-      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '"><div class="pi-dense-row">' +
-        impactBadge(i) + tierBadge(i) +
-        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
-        '</div>' + statusStripHTML(i) + shareSignalBtn(i) + '</article>';
-    }
-    return '<article class="bcard pi' + (variant ? ' pi-' + variant : '') + '" data-open="' + esc(i.id) + '">' +
-      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div>' + (variant === 'lead' ? watchBtn(i) : '') + '</div>' +
+    // 1.3.8: always render the full card. Dense only tightens spacing (CSS), it never hides detail.
+    return '<article class="bcard pi' + (S.dense ? ' dense' : '') + (variant ? ' pi-' + variant : '') + '" data-open="' + esc(i.id) + '">' +
+      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div>' + watchBtn(i) + '</div>' +
       idx +
       '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
       (impact ? '<p class="pi-impact">' + esc(String(impact).slice(0, 160)) + '</p>' : '') +
@@ -1465,7 +1460,7 @@
         (S.query ? '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' : '') + '</div>';
     }
     if (!desk && !S.query) list = S.sigSort === 'top' ? list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); }) : focusOrder(list);
-    list.forEach(function (i, n) { h += i.signal ? sigCardHTML(i, n) : cardHTML(i, n === 0 && !S.query && !desk, n); });
+    list.forEach(function (i, n) { h += i.signal ? piCardHTML(i, n === 0 ? 'lead' : '') : cardHTML(i, n === 0 && !S.query && !desk, n); });
     return h;
   }
   function renderSaved() {
@@ -1760,7 +1755,7 @@
     if (S.sigSort === 'top') list = list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
     var h = '<header class="tb"><h1>Signals</h1><p>' + list.length + ' signals \u00B7 ' + esc(asOfText()) + '</p></header>' + sigControlsHTML() + trendHTML() +
       '<div class="section-h"><h2>' + (S.sigSort === 'top' ? 'Top Signals' : 'Latest signals') + '</h2><span>' + list.length + ' shown</span></div><span id="unread-l" hidden>Unread</span>';
-    return h + (list.length ? list.map(function (i, n) { return i.signal ? sigCardHTML(i, n) : cardHTML(i, false); }).join('') : '<div class="empty"><h3>No signals match</h3><p>Try another importance or horizon.</p></div>');
+    return h + (list.length ? list.map(function (i, n) { return i.signal ? piCardHTML(i, n === 0 ? 'lead' : '') : cardHTML(i, false); }).join('') : '<div class="empty"><h3>No signals match</h3><p>Try another importance or horizon.</p></div>');
   }
   function renderDashboard() {
     if (S.booting) return '<div class="skel-wrap" aria-hidden="true"><div class="sk-card"><div class="sk sk-t"></div><div class="sk sk-t short"></div></div></div>';
@@ -2477,6 +2472,13 @@
       S.watchSeen = r[11] && typeof r[11] === 'object' ? r[11] : {};
       if (r[12] && typeof r[12] === 'object') {
         S.fJuris = r[12].fJuris || 'all'; S.fMineral = r[12].fMineral || 'all'; S.fStage = r[12].fStage || 'all'; S.fImpact = r[12].fImpact || 'all'; S.fScore = r[12].fScore || 'all'; S.fHorizon = r[12].fHorizon || 'all'; S.fGeo = r[12].fGeo || 'all'; S.fIndustry = r[12].fIndustry || 'all'; S.dense = !!r[12].dense;
+      }
+      // 1.3.8: Dense used to strip cards to title+meta only. Restore full cards as default once.
+      if (!S.prefs.cardFull138) {
+        S.dense = false;
+        S.prefs.cardFull138 = 1;
+        store.set('vx.prefs', S.prefs);
+        persistFilters();
       }
       S.signalFeedback = r[13] && typeof r[13] === 'object' ? r[13] : {};
       S.onboarded = !!r[6];
