@@ -12,11 +12,11 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.5', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.6', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
-    flags: { marketOdds: false, marketLinkOut: false, publicSocial: true },
+    flags: { marketOdds: false, marketLinkOut: false, publicSocial: false },
     // Part D/E: stealth is the default visibility. Public comment/cite/follow gated until server checks ship.
     defaultVisibility: 'STEALTH'
   };
@@ -83,13 +83,13 @@
 
   var Cap = window.Capacitor;
   var isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
-  if (isNative && document.documentElement) document.documentElement.classList.add('native-shell');
   var P = (Cap && Cap.Plugins) || {};
   function plugin(n) { return isNative && P[n] ? P[n] : null; }
 
   var S = {
     items: [], reposts: {}, sigSort: 'top', fImp: 'all', fHz: 'all', trends: null, tab: 'feed', topic: 'all', query: '', searchOpen: false,
     saved: [], read: {}, reactions: {}, signalFeedback: {}, watchlist: {}, watchRules: [], watchSeen: {}, privateNotes: {}, privacyPublicShare: false, visibilityMode: 'STEALTH', savedView: 'saved', current: null, online: true, dense: false, fJuris: 'all', fMineral: 'all', fStage: 'all', fImpact: 'all', fScore: 'all', fHorizon: 'all', fGeo: 'all', fIndustry: 'all', namedViews: [],
+    subtopic: '', topicQuery: '', shareBusy: false,
     prefs: { fs: 17, notif: false, hour: 7, minute: 0 }, feedSource: 'bundled', updated: null,
     booting: true, loadError: false, onboarded: true, profile: null, ob: null, rendered: false,
     follow: ['arctic', 'ai', 'minerals', 'geo'], cards: [], setView: null, tipDone: false
@@ -223,14 +223,80 @@
 
   /* ---------- Week 4: followed topics, freshness and desk data ---------- */
   // Followed topics live on this device only (vx.follow). All four are followed until the user changes that.
-  function cleanFollow(a) { var o = []; (Array.isArray(a) ? a : []).forEach(function (t) { if (CATEGORIES.indexOf(t) >= 0 && o.indexOf(t) < 0) o.push(t); }); return DESK_ORDER.filter(function (t) { return o.indexOf(t) >= 0; }); }
   var DESK_ORDER = ['arctic', 'ai', 'minerals', 'geo'];
-  function followsAll() { return S.follow.length >= CATEGORIES.length; }
-  function isFollowed(t) { return S.follow.indexOf(t) >= 0; }
-  // Following everything shows everything, including briefings without a topic tag.
-  function inFollow(i) { return followsAll() || (i.topics || []).some(function (t) { return isFollowed(t); }); }
-  function setFollow(list) { S.follow = cleanFollow(list); if (!S.follow.length) S.follow = DESK_ORDER.slice(); store.set('vx.follow', { topics: S.follow, t: Date.now(), v: 1 }); }
-  function followLabel() { return followsAll() ? 'All ' + CATEGORIES.length + ' topics' : joinList(S.follow.map(function (t) { return TOPIC_LABEL[t]; })); }
+  var TAX = window.VX_TAXONOMY || [];
+  var RECOMMENDED = window.VX_TOPIC_RECOMMENDED || ['arctic-security', 'ai-governance', 'critical-minerals'];
+  function canonKey(id) {
+    if (id === 'arctic' || id === 'arctic-security') return 'arctic';
+    if (id === 'ai' || id === 'ai-governance') return 'ai';
+    if (id === 'minerals' || id === 'critical-minerals') return 'minerals';
+    if (id === 'geo') return 'geo';
+    return id;
+  }
+  function taxGroup(id) {
+    var i;
+    for (i = 0; i < TAX.length; i++) if (TAX[i].id === id) return TAX[i];
+    var mapped = { arctic: 'arctic-security', ai: 'ai-governance', minerals: 'critical-minerals' }[id];
+    if (!mapped) return null;
+    for (i = 0; i < TAX.length; i++) if (TAX[i].id === mapped) return TAX[i];
+    return null;
+  }
+  function canonId(id) {
+    if (id === 'arctic' || id === 'arctic-security') return 'arctic-security';
+    if (id === 'ai' || id === 'ai-governance') return 'ai-governance';
+    if (id === 'minerals' || id === 'critical-minerals') return 'critical-minerals';
+    if (id === 'geo') return 'geo';
+    var g = taxGroup(id);
+    return g && g.status === 'active' ? g.id : null;
+  }
+  function topicLabel(id) {
+    if (id === 'all') return 'Overview';
+    if (id === 'geo') return 'Geoeconomics';
+    var g = taxGroup(id);
+    if (g) return g.label;
+    return TOPIC_LABEL[id] || id;
+  }
+  function cleanFollow(a) {
+    var o = [], seen = {};
+    (Array.isArray(a) ? a : []).forEach(function (t) {
+      var id = canonId(t);
+      if (!id || seen[id]) return;
+      seen[id] = 1; o.push(id);
+    });
+    return o;
+  }
+  function followsAll() {
+    var have = {};
+    S.follow.forEach(function (t) { have[canonKey(t)] = 1; });
+    return CATEGORIES.every(function (t) { return have[t]; });
+  }
+  function isFollowed(t) { var k = canonKey(t); return S.follow.some(function (x) { return canonKey(x) === k; }); }
+  function topicHit(i, id) {
+    var topics = i.topics || [], k = canonKey(id);
+    if (k === 'arctic' || k === 'ai' || k === 'minerals' || k === 'geo') return topics.indexOf(k) >= 0 || topics.indexOf(id) >= 0;
+    return topics.indexOf(id) >= 0;
+  }
+  function subtopicOf(sid) {
+    var found = null;
+    TAX.forEach(function (g) { (g.subs || []).forEach(function (s) { if (s.id === sid) found = s; }); });
+    return found;
+  }
+  function subtopicHit(i, sid) {
+    var s = subtopicOf(sid); if (!s) return true;
+    var terms = (s.terms && s.terms.length ? s.terms : [s.label]).map(function (t) { return String(t).toLowerCase(); });
+    var g = i.signal || {};
+    var hay = [i.title, i.summary, i.body, g.crux, g.signal_title, g.so_what].join(' ').toLowerCase();
+    return terms.some(function (t) { return t && hay.indexOf(t) >= 0; });
+  }
+  // Following every legacy desk shows every briefing, including ones without a topic tag.
+  function inFollow(i) { return followsAll() || S.follow.some(function (t) { return topicHit(i, t); }); }
+  function setFollow(list) {
+    var next = cleanFollow(list);
+    if (!next.length) next = cleanFollow(DESK_ORDER);
+    S.follow = next;
+    store.set('vx.follow', { topics: S.follow, pins: S.follow.slice(), t: Date.now(), v: 2 });
+  }
+  function followLabel() { return followsAll() ? 'All ' + CATEGORIES.length + ' topics' : joinList(S.follow.map(function (t) { return topicLabel(t); })); }
   function agoText(ms) {
     var m = Math.floor(ms / 60000);
     if (m < 1) return 'just now';
@@ -248,13 +314,14 @@
     if (times.length) { var last = Math.max.apply(null, times), a = agoText(Math.max(0, now - last)); parts.push('updated ' + (a || fmtDate(new Date(last).toISOString()))); }
     return { week: wk, text: parts.join(' \u00B7 ') };
   }
-  function deskItems(t) { return S.items.filter(function (i) { return (i.topics || []).indexOf(t) >= 0; }); }
+  function deskItems(t) { return S.items.filter(function (i) { return topicHit(i, t); }); }
   // A desk's data cards: from the feed's dataCards (each lists its desks), else the same cards attached to briefings.
   function deskCards(t) {
-    var src = S.cards.filter(function (c) { return c && Array.isArray(c.desks) && c.desks.indexOf(t) >= 0; });
+    var key = canonKey(t);
+    var src = S.cards.filter(function (c) { return c && Array.isArray(c.desks) && (c.desks.indexOf(t) >= 0 || c.desks.indexOf(key) >= 0); });
     if (!S.cards.length) {
       var by = {}; S.items.forEach(function (i) { var c = i.dataCard; if (c && typeof c === 'object' && c.id && !by[c.id]) by[c.id] = c; });
-      src = (DESK_FALLBACK[t] || []).map(function (id) { return by[id]; }).filter(Boolean);
+      src = (DESK_FALLBACK[t] || DESK_FALLBACK[key] || []).map(function (id) { return by[id]; }).filter(Boolean);
     }
     return src.map(function (c) { return cardOf({ dataCard: c }); }).filter(Boolean);
   }
@@ -263,17 +330,17 @@
     var cites = [], links = [];
     cs.forEach(function (c) { var x = c.source + ' \u00B7 as of ' + c.asOf + (c.license ? ' \u00B7 ' + c.license : ''); if (cites.indexOf(x) < 0) cites.push(x); if (c.url && links.indexOf(c.url) < 0) links.push(c.url); });
     var cite = cites.map(function (x) { return esc('Source: ' + x); }).join('<br>');
-    var h = '<section class="deskhero' + (S.rendered ? '' : ' in') + '" role="figure" aria-label="' + esc(TOPIC_LABEL[t] + ' data. ' + cs.map(function (c) { return c.title + ': ' + c.value + ' ' + c.unit + (c.change ? ', ' + c.change : ''); }).join('. ') + '. ' + cites.map(function (x) { return 'Source: ' + x; }).join('. ')) + '">';
+    var h = '<section class="deskhero' + (S.rendered ? '' : ' in') + '" role="figure" aria-label="' + esc(topicLabel(t) + ' data. ' + cs.map(function (c) { return c.title + ': ' + c.value + ' ' + c.unit + (c.change ? ', ' + c.change : ''); }).join('. ') + '. ' + cites.map(function (x) { return 'Source: ' + x; }).join('. ')) + '">';
     if (cs.length === 1) {
       var c = cs[0];
       h += '<div class="dh-k">Desk data \u00B7 ' + esc(c.title) + '</div><div class="dh-main"><div class="dh-v"><b>' + esc(c.value) + '</b><span>' + esc(c.unit) + '</span></div>' +
         (c.change ? '<div class="dh-c">' + esc(c.change) + '</div>' : '') + '</div>' + chartSVG(c, 300, 64) + (c.seriesLabel ? '<div class="dh-sl">' + esc(c.seriesLabel) + '</div>' : '');
     } else {
-      h += '<div class="dh-k">Desk data \u00B7 ' + esc(DESK_TITLE[t] || TOPIC_LABEL[t]) + '</div><ul class="dh-rows">' + cs.map(function (c) {
+      h += '<div class="dh-k">Desk data \u00B7 ' + esc(DESK_TITLE[t] || DESK_TITLE[canonKey(t)] || topicLabel(t)) + '</div><ul class="dh-rows">' + cs.map(function (c) {
         return '<li><span class="dh-rt">' + esc(c.title.replace(/\s+price$/i, '')) + '</span><span class="dh-rv"><b>' + esc(c.value) + '</b> ' + esc(c.unit) + '</span>' + chartSVG(c, 90, 26) + (c.change ? '<span class="dh-rc">' + esc(c.change) + '</span>' : '') + '</li>';
       }).join('') + '</ul>' + (cs[0].seriesLabel ? '<div class="dh-sl">' + esc(cs[0].seriesLabel) + '</div>' : '');
     }
-    if (DESK_NOTE[t]) h += '<p class="dh-note">' + esc(DESK_NOTE[t]) + '</p>';
+    if (DESK_NOTE[t] || DESK_NOTE[canonKey(t)]) h += '<p class="dh-note">' + esc(DESK_NOTE[t] || DESK_NOTE[canonKey(t)]) + '</p>';
     h += '<div class="dc-src dh-src">' + cite + '</div>';
     if (links[0]) h += '<button class="dc-link" data-url="' + esc(links[0]) + '">Open the data source' + ICON.ext + '</button>';
     return h + '</section>';
@@ -440,10 +507,12 @@
         var inds = (pol && pol.industry_impact) || [];
         if (inds.indexOf(S.fIndustry) < 0) return false;
       }
-      if (S.topic !== 'all' && (i.topics || []).indexOf(S.topic) < 0) return false;
+      if (S.topic !== 'all' && !topicHit(i, S.topic)) return false;
+      if (S.subtopic && !subtopicHit(i, S.subtopic)) return false;
       if (S.topic === 'all' && !q && !inFollow(i)) return false;
       if (!q) return true;
-      var hay = [i.title, i.kicker, i.summary, i.body, (i.sources || []).map(function (s) { return s.publisher + ' ' + s.title; }).join(' ')].join(' ').toLowerCase();
+      var topicHay = (i.topics || []).map(function (t) { var id = canonId(t) || t, g = taxGroup(id); return topicLabel(id) + ' ' + (g && g.aliases ? g.aliases.join(' ') : ''); }).join(' ');
+      var hay = [i.title, i.kicker, i.summary, i.body, topicHay, (i.sources || []).map(function (s) { return s.publisher + ' ' + s.title; }).join(' ')].join(' ').toLowerCase();
       return q.split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
     });
   }
@@ -487,13 +556,16 @@
   }
   function repostOf(id) { return S.reposts[id] || null; }
   function saveReposts() { store.set('vx.reposts', S.reposts); }
-  function actRowHTML(i) {
-    // 1.3.0: main signal cards have no reaction, comment or repost row. Watchlist + overflow only.
+  function shareSignalBtn(i) {
+    return '<button type="button" class="share-signal" data-sharesignal="' + esc(i.id) + '" aria-label="Share Signal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share Signal</span></button>';
+  }
+  function watchBtn(i) {
     var on = !!watchOf(i.id) || isSaved(i.id);
-    return '<div class="arow" role="group" aria-label="Actions">' +
-      '<button class="bm' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>' +
-      '<button class="act" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button>' +
-      '<button class="act more" data-sx="sigmenu" data-id="' + esc(i.id) + '" aria-label="More options">⋯</button></div>';
+    return '<button type="button" class="bm' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>';
+  }
+  function actRowHTML(i) {
+    // One Share Signal action. No reaction, comment, repost or social-network row.
+    return '<div class="pi-tools" role="group" aria-label="Signal actions">' + watchBtn(i) + shareSignalBtn(i) + '</div>';
   }
   var TOPIC_ART = {
     minerals: '<rect width="120" height="150" fill="#3a2e24"/><path d="M0 70 30 50 55 64 85 40 120 58V150H0z" fill="#5a4636"/><path d="M0 100 40 84 80 98 120 82V150H0z" fill="#2a211a"/><rect x="40" y="88" width="34" height="26" fill="#6b6f73"/><rect x="48" y="70" width="6" height="20" fill="#8a8f94"/><rect x="62" y="76" width="5" height="14" fill="#8a8f94"/><circle cx="96" cy="28" r="10" fill="#FF6B35" opacity=".55"/>',
@@ -638,23 +710,14 @@
     if (day < 14) return 'Source published ' + day + 'd ago';
     return 'Source published ' + fmtDate(iso);
   }
-  function normalizeScore10(v) {
-    // Always display /10. Legacy 0-100 impact_score values must never render as e.g. 84/10.
-    if (v == null || v === '' || !isFinite(+v)) return null;
-    var n = +v;
-    if (n > 10 && n <= 100) n = n / 10;
-    if (n < 0) n = 0;
-    if (n > 10) n = 10;
-    return n;
-  }
   function impactBadge(i) {
     var p = polOf(i), g = sigOf(i);
     var imp = p.importance_tier || g.importance || '';
-    var sc = normalizeScore10(p.impact_score_10 != null ? p.impact_score_10 : (g.impact_score != null ? (+g.impact_score) / 10 : null));
-    if (!imp && sc == null) return '';
-    var band = imp ? '<span class="pi-score-band">' + esc(imp) + '</span>' : '';
-    var num = (sc != null) ? '<span class="pi-score-n tabnum">' + sc.toFixed(1) + '</span>' : '';
-    return '<span class="pi-score ' + esc((imp || '').toLowerCase()) + '" title="Importance band and impact score /10 (separate from instrument tier 1-4)">' + band + num + '</span>';
+    var sc = p.impact_score_10; if (sc == null && g.impact_score != null) sc = (+g.impact_score) / 10;
+    if (!imp && (sc == null || !isFinite(+sc))) return '<span class="pi-badge na">Score unavailable</span>';
+    var label = imp ? esc(imp) : '';
+    if (sc != null && isFinite(+sc)) label += (label ? ' ' : '') + (+sc).toFixed(1) + '/10';
+    return '<span class="pi-badge ' + esc((imp || '').toLowerCase()) + ' tabnum" title="Importance band and impact score /10 (separate from instrument tier 1-4)">' + label + '</span>';
   }
   function horizonOf(i) {
     var p = polOf(i), g = sigOf(i);
@@ -662,8 +725,8 @@
   }
   function scoreOf10(i) {
     var p = polOf(i), g = sigOf(i);
-    if (p.impact_score_10 != null) return normalizeScore10(p.impact_score_10);
-    if (g.impact_score != null) return normalizeScore10((+g.impact_score) / 10);
+    if (p.impact_score_10 != null) return +p.impact_score_10;
+    if (g.impact_score != null) return +g.impact_score / 10;
     return null;
   }
   function statusStripHTML(i) {
@@ -832,7 +895,7 @@
       ' \u00B7 Last verified ' + esc(fmtDate(verified)) +
       ' \u00B7 ' + nCorr + ' correction' + (nCorr === 1 ? '' : 's') + '</span>';
     if (sc != null) {
-      var scN = normalizeScore10(sc); h += '<div class="pi-rubric"><div class="pi-rubric-h">Impact score <b class="tabnum">' + (scN == null ? 'n/a' : scN.toFixed(1)) + '/10</b> <span class="pi-rubric-c">(' + esc(scConf) + ' confidence)</span></div><ul>';
+      h += '<div class="pi-rubric"><div class="pi-rubric-h">Impact score <b class="tabnum">' + (+sc).toFixed(1) + '/10</b> <span class="pi-rubric-c">(' + esc(scConf) + ' confidence)</span></div><ul>';
       var labels = { severity: 'Severity', geo_breadth: 'Countries affected', industry_breadth: 'Industries affected', proximity: 'Effective-date proximity', stage: 'Procedural stage' };
       Object.keys(labels).forEach(function (k) {
         var v = rubric[k];
@@ -903,10 +966,10 @@
   }
 
 
-  function forwardTeam(id) {
+  function forwardTeam(id, note) {
     var i = byId(id); if (!i) return;
     var p = polOf(i);
-    var text = 'Forward to Team (private)\n\n' + mechTitle(i) + '\n' +
+    var text = (note ? note + '\n\n' : '') + 'Forward to Team (private)\n\n' + mechTitle(i) + '\n' +
       (p.operational_directive || impactLine(i) || '') + '\n' +
       (p.docket_url ? 'Docket: ' + p.docket_url + '\n' : '') +
       (p.provenance_status ? 'Provenance: ' + provenanceLabel(i) + '\n' : '') +
@@ -926,12 +989,13 @@
   function privateNoteSheet(id) {
     var cur = noteOf(id);
     var cite = !!S._citePrefill; S._citePrefill = false;
+    var seed = S._noteSeed || ''; S._noteSeed = '';
     var title = cite ? 'Cite &amp; Annotate (Private Desk)' : 'Private Note';
     var blurb = cite
       ? 'Saves a citation note to your Private Desk on this device (or your account when signed in). Not sent to a team and not published.'
       : 'Private by default. On this device until you sign in; if signed in, synced to your account private_notes row (not public). Not a team-visible comment.';
     sheet('<h3>' + title + '</h3><p>' + blurb + '</p>' +
-      '<textarea id="privNote" class="repc" maxlength="2000" placeholder="Private analysis note">' + esc((cur && cur.body) || '') + '</textarea>' +
+      '<textarea id="privNote" class="repc" maxlength="2000" placeholder="Private analysis note">' + esc((cur && cur.body) || seed || '') + '</textarea>' +
       '<button class="btn primary" data-notesave="' + esc(id) + '">' + (cite ? 'Save to Private Desk' : 'Save Private Note') + '</button><button class="btn ghost" data-closesheet>Cancel</button>');
   }
   function savePrivateNote(id) {
@@ -1023,43 +1087,25 @@
     var impact = sublineOf(i);
     var prov = provenanceLabel(i);
     var same = impact && action && String(impact).slice(0,120) === String(action).slice(0,120);
-    var stage = stageHTML(p);
-    var hz = horizonOf(i);
-    var srcN = p.primary_source_type || srcName(i) || '';
-    if (String(srcN).indexOf('Secondary') >= 0) srcN = srcName(i) || srcN;
-    var metaBits = [];
-    if (stage) metaBits.push(stage);
-    if (hz) metaBits.push('<span class="pi-st-h">' + esc(hz) + '</span>');
-    if (srcN) metaBits.push('<span class="pi-st-src">' + esc(srcN) + '</span>');
-    var ago = sourceAgo(i); if (ago) metaBits.push('<span class="pi-st-a">' + esc(ago.replace(/^Source published /, '')) + '</span>');
-    var meta = metaBits.length ? '<div class="pi-meta">' + metaBits.join('<span class="pi-meta-dot" aria-hidden="true">·</span>') + '</div>' : '';
-    var curR = reactionOf(i.id);
-    var reactLabel = curR === 'like' ? 'Liked' : (curR === 'dislike' ? 'Disliked' : 'React');
-    var reactAria = curR === 'like' ? 'Liked — tap to change' : (curR === 'dislike' ? 'Disliked — tap to change' : 'React — choose Like or Dislike');
-    var socialRow = '<div class="pi-social-row" role="group" aria-label="Signal social actions">' +
-      '<button type="button" class="pi-soc pi-react' + (curR ? ' on ' + esc(curR) : '') + '" data-react-open="' + esc(i.id) + '" aria-haspopup="dialog" aria-pressed="' + !!curR + '" aria-label="' + reactAria + '">' +
-      (curR === 'like' ? ICON.check : (curR === 'dislike' ? '<span class="pi-soc-x" aria-hidden="true">✕</span>' : ICON.spark)) +
-      '<span>' + reactLabel + '</span></button>' +
-      '<button type="button" class="pi-soc" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '<span>Share</span></button>' +
-      '<button type="button" class="pi-soc" data-card-comment="' + esc(i.id) + '" aria-label="Comment">' + ICON.cmt + '<span>Comment</span></button>' +
-      '<button type="button" class="pi-soc" data-card-repost="' + esc(i.id) + '" aria-label="Repost">' + ICON.repost + '<span>Repost</span></button></div>';
+    var variant = tier === 'lead' || tier === 'next' ? tier : '';
+    var idx = tier === 'next' ? '<span class="pi-idx" aria-hidden="true">02</span>' : '';
     if (S.dense) {
-      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '">' +
-        '<div class="pi-dense-row">' + impactBadge(i) +
-        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button></div>' +
-        meta + socialRow + '</article>';
+      return '<article class="bcard pi dense" data-open="' + esc(i.id) + '"><div class="pi-dense-row">' +
+        impactBadge(i) + tierBadge(i) +
+        '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
+        '</div>' + statusStripHTML(i) + shareSignalBtn(i) + '</article>';
     }
-    var actionLine = action ? '<p class="pi-action"><span class="pi-k">Action</span> ' + esc(String(action).slice(0, 140)) + '</p>' : (impact ? '<p class="pi-action"><span class="pi-k">Impact</span> ' + esc(String(impact).slice(0, 140)) + '</p>' : '');
-    var headMeta = '<div class="pi-card-head" role="group" aria-label="Signal classification">' +
-      impactBadge(i) + tierBadge(i) + (p.confidence_rating || confLabel(p.confidence) ? confBadge(i) : '') + '</div>';
-    return '<article class="bcard pi" data-open="' + esc(i.id) + '">' + headMeta +
+    return '<article class="bcard pi' + (variant ? ' pi-' + variant : '') + '" data-open="' + esc(i.id) + '">' +
+      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div>' + (variant === 'lead' ? watchBtn(i) : '') + '</div>' +
+      idx +
       '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
-      actionLine +
-      (anchorsOf(i).length ? anchorsHTML(i) : '') +
-      meta +
-      (prov ? '<p class="pi-provline">' + esc(prov) + '</p>' : '') +
-      socialRow +
+      (impact ? '<p class="pi-impact">' + esc(String(impact).slice(0, 160)) + '</p>' : '') +
+      ((!same && action) ? '<p class="bimp"><b>Directive:</b> ' + esc(String(action).slice(0, 160)) + '</p>' : '') +
+      anchorsHTML(i) +
+      '<div class="pi-cues">' + hsCue(i) + (prov ? '<span class="pi-prov">' + esc(prov) + '</span>' : '') + primaryCueHTML(i) + '</div>' +
+      statusStripHTML(i) +
       (hasPaidDetail(i) ? '<div class="bfoot"><button class="bunlock" data-dossier="' + esc(i.id) + '" aria-label="Open Full Dossier"><span>Full Dossier</span><small>Regulatory Dossier</small></button></div>' : '') +
+      '<div class="pi-tools">' + shareSignalBtn(i) + '</div>' +
       '</article>';
   }
   function critCardHTML(i) { return piCardHTML(i, 'crit'); }
@@ -1138,7 +1184,7 @@
     var h = '<div class="ffilters ff-compact" role="toolbar" aria-label="Filters">' +
       '<div class="ff-compact-row">' + chips +
       '<button type="button" class="fchip ff-open' + (n ? ' on' : '') + '" data-opensfilters="1" aria-haspopup="dialog" aria-expanded="false">Filters' + (n ? ' (' + n + ')' : '') + '</button>' +
-      '<button type="button" class="fchip densetog on" data-dense="1" aria-pressed="true" title="Density: ' + (S.dense ? 'Dense' : 'Comfortable') + '. Tap to switch.">' + (S.dense ? 'Dense' : 'Comfortable') + '</button>' +
+      '<button type="button" class="fchip densetog' + (S.dense ? ' on' : '') + '" data-dense="1" aria-pressed="' + !!S.dense + '">' + (S.dense ? 'Comfortable' : 'Dense') + '</button>' +
       '<button type="button" class="fchip" data-saveview="1">Save view</button></div>';
     if ((S.namedViews || []).length) {
       h += '<div class="ff-compact-row ff-saved"><span class="ff-l">Saved</span>' + S.namedViews.map(function (v, idx) {
@@ -1175,10 +1221,14 @@
     var seen = {}, flat = [];
     cards.forEach(function (i) { if (i && !seen[i.id]) { seen[i.id] = 1; flat.push(i); } });
     flat.sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
-    return '<header class="tb brief-h"><div class="bk">Signal Desk</div><h1 id="sig-h" tabindex="-1">Official Dockets</h1><p>' + esc(asOfText()) + '</p></header>' + filterBarHTML() +
+    return homeChipsHTML() +
+      '<div class="desk-tools"><button type="button" class="link-btn" data-managetopics>Manage topics</button></div>' +
+      '<header class="tb brief-h"><div class="bk">Your desk</div><h1 id="sig-h" tabindex="-1">Intelligence desk</h1><p>' + esc(asOfText()) + '</p></header>' +
+      '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="q" type="search" placeholder="Search topics, signals, sources" aria-label="Search" value="' + esc(S.query) + '" autocomplete="off" enterkeyhint="search"></label></div>' +
+      filterBarHTML() +
       '<section class="btier" aria-labelledby="bt-feed"><div class="bth"><h2 id="bt-feed">Signals</h2><span>' + flat.length + ' matching</span></div>' +
-      (flat.length ? flat.map(function (i) { return piCardHTML(i); }).join('') : '<p class="bempty">No signals match these filters.</p>') +
-      '</section><button class="bmore" data-tab="signals">All signals</button>';
+      (flat.length ? flat.map(function (i, n) { return piCardHTML(i, n === 0 ? 'lead' : (n === 1 ? 'next' : '')); }).join('') : '<p class="bempty">No signals match these filters.</p>') +
+      '</section>' + coverageHTML() + '<button class="bmore" data-tab="signals">All signals</button>';
   }
 
   // Detail: audit trail and social summary (one tap deeper than the home card)
@@ -1353,13 +1403,37 @@
     return h + '</ol></section>';
   }
   function joinList(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+  function homeChipsHTML() {
+    var chips = [{ id: 'all', label: 'Overview' }];
+    S.follow.forEach(function (id) { chips.push({ id: id, label: topicLabel(id) }); });
+    return '<div class="chips-wrap"><div class="chips" role="tablist" aria-label="Your topics">' + chips.map(function (t) {
+      var on = S.topic === t.id;
+      return '<button role="tab" aria-selected="' + on + '" class="chip' + (on ? ' active' : '') + '" data-topic="' + esc(t.id) + '"><span>' + esc(t.label) + '</span></button>';
+    }).join('') + '</div></div>';
+  }
+  function subtopicBarHTML(id) {
+    var g = taxGroup(id); if (!g || !(g.subs || []).length) return '';
+    return '<div class="chips subtopics" role="group" aria-label="Subtopics, search only">' + g.subs.map(function (s) {
+      var on = S.subtopic === s.id;
+      return '<button type="button" class="chip' + (on ? ' active' : '') + '" data-subtopic="' + esc(s.id) + '" aria-pressed="' + on + '">' + esc(s.label) + '</button>';
+    }).join('') + '</div><p class="sub-note">Subtopics only narrow this desk. They are not separate follows.</p>';
+  }
+  function coverageHTML() {
+    var rows = S.follow.map(function (id) {
+      var g = taxGroup(id), n = deskItems(id).length, coming = !!(g && g.status !== 'active');
+      var meta = coming ? 'Not live coverage' : (n + ' signal' + (n === 1 ? '' : 's') + ' in the feed');
+      return '<button type="button" class="cov-row" data-topic="' + esc(id) + '"><span class="cov-mark" aria-hidden="true"></span><span class="cov-l"><b>' + esc(topicLabel(id)) + '</b><small>' + esc(meta) + '</small></span><span class="cov-s">' + (coming ? 'Coming soon' : 'Following') + '</span></button>';
+    }).join('');
+    return '<section class="coverage" aria-label="Your coverage"><div class="cov-h"><h2>Your coverage</h2><button type="button" class="link-btn" data-managetopics>Manage</button></div>' +
+      (rows || '<p class="bempty">No topics pinned.</p>') + '</section>';
+  }
   function renderFeed() {
     var h = '<div class="ptr" id="ptr"><span class="spin"></span><span class="ptr-l">Pull to refresh</span></div>';
     if (S.booting) return h + skeletonHTML(4);
     if (!S.items.length) return h + '<div class="empty err" role="alert">' + ICON.off + '<h3>Could not load briefings</h3><p>Check your connection and try again. Briefings you open are kept on this device for offline reading.</p><button class="btn primary sm" data-retry>' + ICON.retry + 'Retry</button></div>';
     var list = filtered(S.items);
     if (S.searchOpen || S.query) h += '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="q" type="search" placeholder="Search briefings, places, sources" aria-label="Search briefings" value="' + esc(S.query) + '" autocomplete="off" enterkeyhint="search">' + (S.query ? '<button class="clear" data-clear>Clear</button>' : '') + '</label></div>';
-    h += '<div class="chips-wrap"><div class="chips" role="tablist" aria-label="Topics">' + TOPICS.map(function (t) { var on = S.topic === t.id; return '<button role="tab" aria-selected="' + on + '" class="chip' + (on ? ' active' : '') + '" data-topic="' + t.id + '">' + topicIcon(t.ic) + '<span>' + esc(t.label) + '</span></button>'; }).join('') + '</div></div>';
+    h += homeChipsHTML();
     if (!S.query && !S.searchOpen && S.topic === 'all') {
       var hl = focusOrder(list);
       return h.replace(/<div class="chips-wrap">[\s\S]*?<\/div><\/div>/, '') + briefHTML(hl);
@@ -1367,9 +1441,12 @@
     var desk = !S.query && S.topic !== 'all';
     if (desk) {
       // Topic desk: title, focus line, freshness, then the desk's live data card (no hero when the topic has no real data).
-      var fr = freshness(list);
-      h += '<header class="desk-h"><h2>' + esc(TOPIC_LABEL[S.topic]) + '</h2><p class="desk-focus">' + esc(DESK_FOCUS[S.topic] || '') + '</p>' +
+      var fr = freshness(list), dg = taxGroup(S.topic);
+      var focus = (dg && dg.focus) || DESK_FOCUS[canonKey(S.topic)] || DESK_FOCUS[S.topic] || '';
+      h += '<header class="desk-h"><h2>' + esc(topicLabel(S.topic)) + '</h2><p class="desk-focus">' + esc(focus) + '</p>' +
+        (dg && dg.status !== 'active' ? '<p class="sub-note">Coming soon. Not live coverage.</p>' : '') +
         '<div class="fresh' + (fr.week ? ' live' : '') + '"><span class="fresh-dot" aria-hidden="true"></span>' + esc(fr.text) + '</div></header>';
+      h += subtopicBarHTML(S.topic);
       h += deskHeroHTML(S.topic);
       h += '<div class="section-h"><h2>Briefings</h2><span>' + list.length + ' on this desk</span></div><span id="unread-l" hidden>Unread</span>';
     } else {
@@ -1378,10 +1455,10 @@
       var title = S.query ? 'Results' : S.sigSort === 'top' ? 'Top Signals' : 'Latest signals';
       var sub = S.query ? list.length + ' briefing' + (list.length === 1 ? '' : 's') : freshness(list).text;
       h += '<div class="section-h"><h2>' + esc(title) + '</h2><span>' + esc(sub) + '</span></div>';
-      if (!S.query) h += '<div class="following"><span>Following ' + esc(followsAll() ? 'all ' + CATEGORIES.length + ' topics' : followLabel()) + '</span><button class="link-btn" data-managetopics>Edit topics</button></div>';
+      if (!S.query) h += '<div class="following"><span>Following ' + esc(followsAll() ? 'all ' + CATEGORIES.length + ' topics' : followLabel()) + '</span><button class="link-btn" data-managetopics>Manage topics</button></div>';
       h += '<span id="unread-l" hidden>Unread</span>';
     }
-    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No signals found</h3><p>' + (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or follow more topics in Settings.') + '</p>' +
+    if (!list.length) h += '<div class="empty">' + ICON.search + '<h3>No signals found</h3><p>' + (S.subtopic ? 'Nothing in the current feed mentions ' + esc((subtopicOf(S.subtopic) || {}).label || 'that subtopic') + '. Subtopics are a search refinement, not a live feed.' : (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or open Manage topics.')) + '</p>' +
       (S.query ? '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' : '') + '</div>';
     if (!desk && !S.query) list = S.sigSort === 'top' ? list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); }) : focusOrder(list);
     list.forEach(function (i, n) { h += i.signal ? sigCardHTML(i, n) : cardHTML(i, n === 0 && !S.query && !desk, n); });
@@ -1438,16 +1515,40 @@
       .concat((p.roles || []).map(function (r) { var R = OB_ROLES.filter(function (x) { return x.id === r; })[0]; return R ? R.label : ''; })).filter(Boolean);
     return parts.length ? parts.join(', ') : 'All regions';
   }
+  function taxMatch(g, q) {
+    if (!q) return true;
+    var blob = [g.id, g.label, g.focus].concat(g.aliases || []);
+    (g.subs || []).forEach(function (s) { blob.push(s.id, s.label); (s.aliases || []).forEach(function (a) { blob.push(a); }); });
+    var text = blob.join(' ').toLowerCase();
+    return q.split(/\s+/).filter(Boolean).every(function (w) { return text.indexOf(w) >= 0; });
+  }
   function renderSettingsTopics() {
+    var q = (S.topicQuery || '').trim().toLowerCase();
+    var shown = 0;
     var h = '<div class="settings-inner"><div class="subbar"><button class="back" data-setback>' + ICON.back + '<span>Settings</span></button></div>' +
-      '<div class="section-h"><h2 id="st-h" tabindex="-1">Topics you follow</h2><span>' + S.follow.length + ' of ' + CATEGORIES.length + '</span></div>' +
-      '<p class="set-sub">For you shows briefings, deadlines and signals from these topics. Every desk stays one tap away in the topic row. Your choices stay on this device.</p><div class="group">';
-    OB_TOPICS.forEach(function (t) {
-      var on = isFollowed(t.id), list = deskItems(t.id), fr = freshness(list);
-      h += '<div class="cell tcell"><span class="t-ic' + (on ? ' on' : '') + '" aria-hidden="true">' + topicIcon(t.ic, 'ti') + '</span><div class="l" id="tl-' + t.id + '">' + esc(t.label) + '<small>' + esc(DESK_FOCUS[t.id]) + '</small><small class="tf">' + list.length + ' briefings \u00B7 ' + esc(fr.week ? fr.week + ' new this week' : 'nothing new this week') + '</small></div>' +
-        '<button class="switch' + (on ? ' on' : '') + '" data-follow="' + t.id + '" role="switch" aria-checked="' + on + '" aria-labelledby="tl-' + t.id + '"></button></div>';
+      '<div class="section-h"><h2 id="st-h" tabindex="-1">Manage topics</h2><span>' + S.follow.length + ' pinned</span></div>' +
+      '<p class="set-sub">Home shows the topics you pin, usually 3 to 5. Coming soon topics are not live coverage and cannot be followed. Subtopics are searchable and are not separate follows. Choices stay on this device.</p>' +
+      '<div class="searchwrap topic-search"><label class="search">' + ICON.search + '<input id="topicQ" type="search" placeholder="Search topics and subtopics" aria-label="Search topics" value="' + esc(S.topicQuery || '') + '" autocomplete="off"></label></div>';
+    TAX.forEach(function (g) {
+      if (!taxMatch(g, q)) return;
+      shown++;
+      var live = g.status === 'active', on = isFollowed(g.id), n = deskItems(g.id).length;
+      h += '<section class="topic-block"><div class="cell tcell"><div class="l" id="tl-' + g.id + '"><h3>' + esc(g.label) + '</h3><small>' + esc(g.focus) + '</small><small class="tf">' +
+        (live ? (n + ' signal' + (n === 1 ? '' : 's') + ' in the feed') : 'Coming soon. Not live coverage.') + '</small></div>' +
+        (live ? '<button class="switch' + (on ? ' on' : '') + '" data-follow="' + g.id + '" role="switch" aria-checked="' + on + '" aria-labelledby="tl-' + g.id + '"></button>' : '<span class="soon-tag">Coming soon</span>') +
+        '</div><ul class="sub-list">' + (g.subs || []).map(function (s) {
+          return '<li><span>' + esc(s.label) + '</span><span class="soon-tag">Search only</span></li>';
+        }).join('') + '</ul></section>';
     });
-    h += '</div>' + (followsAll() ? '' : '<div class="set-actions"><button class="btn ghost sm" data-followall>Follow all topics</button></div>') + '</div>';
+    var geoQ = !q || 'geoeconomics'.indexOf(q) >= 0 || 'geo'.indexOf(q) >= 0 || q.indexOf('saved') >= 0;
+    if (geoQ) {
+      shown++;
+      var onG = isFollowed('geo'), nG = deskItems('geo').length;
+      h += '<section class="topic-block"><div class="cell tcell"><div class="l" id="tl-geo"><h3>Geoeconomics</h3><small>Saved desk from the previous catalog. Not merged into a new group.</small><small class="tf">' + nG + ' signals in the feed</small></div>' +
+        '<button class="switch' + (onG ? ' on' : '') + '" data-follow="geo" role="switch" aria-checked="' + onG + '" aria-labelledby="tl-geo"></button></div></section>';
+    }
+    if (!shown) h += '<p class="bempty">No topics match that search.</p>';
+    h += '<div class="set-actions"><button class="btn ghost sm" data-followall>Pin the live desks</button></div></div>';
     return h;
   }
   function renderContact() {
@@ -1487,7 +1588,7 @@
     var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>' + (window.VXSocial ? window.VXSocial.settingsHTML() : '');
     h += '<div class="group-h">Help</div><div class="group"><button class="cell" data-contact><div class="l">Contact us<small>Voxarc Lab support: ' + esc(CFG.supportEmail) + '</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">Your desk</div><div class="group">' +
-      '<button class="cell" data-settopics><div class="l">Topics you follow<small>' + esc(followLabel()) + '</small></div><div class="r">' + S.follow.length + ' of ' + CATEGORIES.length + '</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-settopics><div class="l">Manage topics<small>' + esc(followLabel()) + '</small></div><div class="r">' + S.follow.length + ' pinned</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-editprofile><div class="l">Regions and role<small>' + esc(profileSummary()) + '</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">Reading</div><div class="group">' +
       '<div class="cell"><div class="l" id="fs-l">Text size</div><div class="seg" role="group" aria-labelledby="fs-l">' + [15, 17, 19, 21].map(function (f, n) { return '<button data-fs="' + f + '" aria-pressed="' + (S.prefs.fs === f) + '" aria-label="' + ['Small', 'Medium', 'Large', 'Extra large'][n] + '" class="' + (S.prefs.fs === f ? 'on' : '') + '">' + ['S', 'M', 'L', 'XL'][n] + '</button>'; }).join('') + '</div></div>' +
@@ -1511,7 +1612,7 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Like, Dislike, Share, Comment, Repost and Follow are available when signed in.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Public comments are off.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.termsUrl + '"><div class="l">Terms of Use</div>' + ICON.chev + '</button>' +
@@ -1810,8 +1911,7 @@
     var p = polOf(i), hasPol = i.signal && Object.keys(p).length;
     var h = '<div class="rbar"><button class="back" data-back>' + ICON.back + '<span>Back</span></button><span class="sp"></span>' +
       '<button class="icon-btn" data-textsize aria-label="Text size">' + ICON.aa + '</button>' +
-      '<button class="icon-btn' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>' +
-      '<button class="icon-btn" data-share="' + esc(i.id) + '" aria-label="Share">' + ICON.share + '</button></div><div class="rprog" id="rprog"></div>';
+      '<button class="icon-btn' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button></div><div class="rprog" id="rprog"></div>';
     h += '<div class="rscroll" id="rscroll"><article>';
     // Terminal: no hero image. Instrument summary leads for policy signals.
     if (hasPol) {
@@ -1824,6 +1924,7 @@
     h += '<h1 class="visually-hidden" tabindex="-1" id="rtitle">' + esc(hasPol ? mechTitle(i) : (i.title || '')) + '</h1>';
     // Source + freshness only (no byline, no )
     h += '<div class="ameta signal-meta">' + primaryCueHTML(i) + '<span class="pi-st-a">' + esc(sourceAgo(i) || fmtDate(i.published)) + '</span><span class="bp ai">AI-assisted</span></div>';
+    h += '<div class="pi-tools detail">' + shareSignalBtn(i) + '</div>';
     if (i.signal && !p.instrument_type) h += signalDetailHTML(i);
     h += tablesHTML(i);
     if (i.stat && i.stat.value) h += '<div class="statbox"><b class="tabnum">' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
@@ -1889,7 +1990,7 @@
   var OB_FIRST = ['intro', 'follow', 'regions', 'role', 'stealth'], OB_EDIT = ['regions', 'role', 'stealth'];
   function startOnboarding(edit) {
     var p = S.profile || {};
-    S.ob = { steps: edit ? OB_EDIT : OB_FIRST, step: 0, topics: S.follow.slice(), regions: (p.regions || []).slice(), roles: (p.roles || []).slice(), visibility: S.visibilityMode || 'STEALTH', edit: !!edit };
+    S.ob = { steps: edit ? OB_EDIT : OB_FIRST, step: 0, topics: edit ? S.follow.slice() : RECOMMENDED.slice(), regions: (p.regions || []).slice(), roles: (p.roles || []).slice(), visibility: S.visibilityMode || 'STEALTH', edit: !!edit };
     renderOnboarding(0);
   }
   function obChoice(kind, o, on, extra) {
@@ -1913,8 +2014,12 @@
         '<li>' + ICON.saved + '<span><b>No sign-up, no tracking</b>Your choices stay on this device.</span></li></ul></div></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obnext>Choose my topics</button></div>';
     } else if (step === 'follow') {
-      h = '<div class="ob-body"><div class="ob-k">Your desks</div><h1 id="ob-h" tabindex="-1">Follow your topics</h1><p class="ob-sub">All four are on. Turn off any you do not need. Your For you feed shows only what you follow, and you can change it any time in Settings.</p><div class="ob-list">' +
-        OB_TOPICS.map(function (t) { var fr = freshness(deskItems(t.id)); return obChoice('topics', { id: t.id, label: t.label, ic: t.ic, d: DESK_FOCUS[t.id] }, o.topics.indexOf(t.id) >= 0, countTopic(t.id) + ' briefings \u00B7 ' + (fr.week ? fr.week + ' new this week' : 'nothing new this week')); }).join('') + '</div></div>' +
+      var picks = TAX.map(function (g) {
+        if (g.status !== 'active') return '<div class="ob-opt soon" aria-disabled="true"><span class="ob-tx"><b>' + esc(g.label) + '</b><small>' + esc(g.focus) + '</small><em>Coming soon. Not live coverage.</em></span></div>';
+        return obChoice('topics', { id: g.id, label: g.label, ic: 'M4 7h16M4 12h16M4 17h10', d: g.focus }, o.topics.indexOf(g.id) >= 0, deskItems(g.id).length + ' signals in the feed');
+      }).join('') + obChoice('topics', { id: 'geo', label: 'Geoeconomics', ic: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18', d: 'Saved desk. Not a new topic.' }, o.topics.indexOf('geo') >= 0, deskItems('geo').length + ' signals in the feed');
+      h = '<div class="ob-body"><div class="ob-k">Your desk</div><h1 id="ob-h" tabindex="-1">Choose 3 to 5 topics</h1><p class="ob-sub">Three live topics are suggested. Coming soon topics are listed so you can see the catalog, and they are not followed. You can change this any time in Manage topics.</p><div class="ob-list">' +
+        picks + '</div></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>' + followCta(o.topics.length) + '</button></div>';
     } else if (step === 'regions') {
       h = '<div class="ob-body"><div class="ob-k">Step 1 of 2</div><h1 id="ob-h" tabindex="-1">Which regions matter to you?</h1><p class="ob-sub">We weight your 3 signals toward briefings that name these places.</p><div class="ob-chips">' +
@@ -1927,10 +2032,9 @@
         '<div class="ob-cta"><button class="btn primary" data-obnext>Continue</button></div>';
     } else if (step === 'stealth') {
       var vis = o.visibility || 'STEALTH';
-      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. You may opt into Public below so Find peers can list you and others can see your comments, reposts and follower lists. Watchlists, Private Notes, Forward, Ask history, Helpful/Not Relevant and whom you track are never public.</p><div class="ob-chips">' +
+      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. Public Comment, Cite and Tracked by stay off until you opt in later (not offered in this build). Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
         '<button class="ob-opt' + (vis === 'STEALTH' ? ' on' : '') + '" data-ob="visibility" data-v="STEALTH" aria-pressed="' + (vis === 'STEALTH') + '">Stealth (recommended)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '">Public (opt-in)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        (vis === 'PUBLIC' ? '<p class="ob-note">Public lists you in Find peers and lets others see your comments, reposts and follower lists. Watchlists, Private Notes, Ask history and whom you track stay private.</p>' : '<p class="ob-note">Stealth is the default. You can opt into Public later in Profile → Edit profile.</p>') +
+        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '" disabled title="Public mode ships after server visibility checks">Public (not available yet)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
         '</div><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>Save desk preferences</button></div>';
     } else {
@@ -1942,14 +2046,20 @@
   }
   function obToggle(kind, v) {
     if (kind === 'visibility') {
-      if (v === 'PUBLIC' && S.ob.visibility !== 'PUBLIC') {
-        if (!window.confirm('Opt into Public profile? You will appear in Find peers and others can see your comments, reposts and follower lists. Watchlists, Private Notes, Ask history and whom you track stay private. You can switch back to Stealth anytime.')) return;
-      }
-      S.ob.visibility = (v === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
-      haptic('LIGHT'); renderOnboarding(0); return;
+      if (v !== 'STEALTH') { toast('Public mode is not available in this build'); return; }
+      S.ob.visibility = 'STEALTH';
+      var opts = document.querySelectorAll('#onboard [data-ob="visibility"]');
+      for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === 'STEALTH'; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
+      haptic('LIGHT'); return;
     }
     var a = S.ob[kind], k = a.indexOf(v);
-    if (kind === 'roles') S.ob.roles = k >= 0 ? [] : [v]; else if (k >= 0) a.splice(k, 1); else a.push(v);
+    if (kind === 'roles') S.ob.roles = k >= 0 ? [] : [v];
+    else if (k >= 0) a.splice(k, 1);
+    else {
+      if (kind === 'topics' && a.length >= 5) { toast('Choose up to 5 topics'); return; }
+      if (kind === 'topics' && !canonId(v)) { toast('Coming soon. This topic is not live coverage.'); return; }
+      a.push(v);
+    }
     haptic('LIGHT');
     var btn = document.querySelector('#onboard [data-ob="' + kind + '"][data-v="' + v + '"]');
     // update in place so the screen does not re-animate on every tap
@@ -1961,16 +2071,16 @@
     if (cta && step === 'regions') cta.textContent = S.ob.regions.length ? 'Continue' : 'Continue with all regions';
     if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
   }
-  function followCta(n) { return n && n < CATEGORIES.length ? 'Follow ' + n + ' topic' + (n === 1 ? '' : 's') : 'Follow all topics'; }
+  function followCta(n) { return n ? 'Follow ' + n + ' topic' + (n === 1 ? '' : 's') : 'Choose at least one'; }
   function finishOnboarding(skipped) {
     var o = S.ob, first = !S.onboarded;
-    if (!o.edit) setFollow(skipped ? CATEGORIES : o.topics); // skipping, or turning every topic off, follows all four
+    if (!o.edit) setFollow(o.topics.length ? o.topics : RECOMMENDED); // skip keeps the suggestion; it does not follow every topic
     else if (!skipped) {
       S.profile = { topics: S.follow.slice(), regions: o.regions, roles: o.roles, t: Date.now() };
       store.set('vx.profile', S.profile);
     }
     if (!skipped) {
-      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'PUBLIC' : 'STEALTH';
+      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'STEALTH' : (o.visibility || 'STEALTH'); // PUBLIC not offered yet
       store.set('vx.visibilityMode', S.visibilityMode);
     }
     if (o.edit) {
@@ -1998,11 +2108,13 @@
 
   /* ---------- actions ---------- */
   function toggleFollow(t) {
-    if (CATEGORIES.indexOf(t) < 0) return;
-    if (isFollowed(t) && S.follow.length === 1) { toast('Follow at least one topic'); return; }
-    var on = !isFollowed(t);
-    setFollow(on ? S.follow.concat([t]) : S.follow.filter(function (x) { return x !== t; }));
-    haptic(); render(); toast((on ? 'Following ' : 'Stopped following ') + TOPIC_LABEL[t]);
+    var id = canonId(t);
+    if (!id) { toast('Coming soon. This topic is not live coverage.'); return; }
+    if (isFollowed(id) && S.follow.length === 1) { toast('Follow at least one topic'); return; }
+    var on = !isFollowed(id);
+    if (on && S.follow.length >= 5) { toast('Home shows up to 5 topics. Unpin one to add another.'); return; }
+    setFollow(on ? S.follow.concat([id]) : S.follow.filter(function (x) { return canonKey(x) !== canonKey(id); }));
+    haptic(); render(); toast((on ? 'Following ' : 'Stopped following ') + topicLabel(id));
   }
   function toggleSave(id) {
     var k = S.saved.indexOf(id);
@@ -2011,52 +2123,35 @@
     render(); refreshReader();
   }
   function refreshReader() { if (S.current) { var sc = $('#rscroll'), y = sc ? sc.scrollTop : 0; openArticle(S.current, true); if ($('#rscroll')) $('#rscroll').scrollTop = y; } }
-  function openReactPicker(id) {
-    var cur = reactionOf(id);
-    sheet('<h3>React</h3><p class="sd-note">One reaction per signal. Tap again to clear.</p>' +
-      '<button type="button" class="btn ' + (cur === 'like' ? 'primary' : 'ghost') + ' block" data-react="like" data-rid="' + esc(id) + '" aria-pressed="' + (cur === 'like') + '">Like' + (cur === 'like' ? ' · selected' : '') + '</button>' +
-      '<button type="button" class="btn ' + (cur === 'dislike' ? 'primary' : 'ghost') + ' block" data-react="dislike" data-rid="' + esc(id) + '" aria-pressed="' + (cur === 'dislike') + '">Dislike' + (cur === 'dislike' ? ' · selected' : '') + '</button>' +
-      (cur ? '<button type="button" class="btn ghost block" data-react-clear="' + esc(id) + '">Clear reaction</button>' : '') +
-      '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
-  }
   function toggleReact(id, r) {
     if (!byId(id)) return;
     var off = reactionOf(id) === r;
     if (off) delete S.reactions[id]; else S.reactions[id] = { r: r, t: Date.now() };
     store.set('vx.reactions', S.reactions); haptic(); if (window.VXSocial) window.VXSocial.onReact(id, off ? null : r);
-    if (document.getElementById('sheet') && document.querySelector('#sheet [data-react]')) closeSheet();
     var m = $('#main'), y = m.scrollTop; render(); m.scrollTop = y; refreshReader();
   }
   function linkOf(i) { return safeUrl(i.signal && i.signal.source_url) || (trustOf(i) || {}).url || CFG.siteUrl; }
-  function shareUrlOf(i) {
-    // Prefer a stable Voxarc web deep link; fall back to primary source URL, then site.
-    var base = String(CFG.privacyUrl || 'https://voxarclab-byte.github.io/voxarc-feed-web/privacy.html').replace(/privacy\.html.*$/, '');
-    if (!base) base = 'https://voxarclab-byte.github.io/voxarc-feed-web/';
-    var app = base.replace(/\/?$/, '/') + 'index.html?s=' + encodeURIComponent(i.id);
-    return safeUrl(app) || linkOf(i) || CFG.siteUrl;
-  }
-  function openCardComments(id) {
-    if (window.VXSocial && window.VXSocial.openComments) return window.VXSocial.openComments(id);
-    if (window.VXSocial && window.VXSocial.commentsHTML) { sheet(window.VXSocial.commentsHTML(id)); return; }
-    sheet('<h3>Comment</h3><p>Sign in to comment. Community Guidelines acceptance is required before posting.</p><button class="btn primary" data-sx="signin">Sign in</button><button class="btn ghost" data-closesheet>Close</button>');
-  }
-  function openCardRepost(id) {
+  function shareSignalSheet(id) {
     var i = byId(id); if (!i) return;
-    var signed = window.VXSocial && window.VXSocial.user && window.VXSocial.user();
-    if (!signed) {
-      sheet('<h3>Repost</h3><p>Sign in to repost with an optional note. Your visibility stays Stealth until you opt into a public profile.</p>' +
-        '<button class="btn primary" data-sx="signin">Sign in</button>' +
-        '<button class="btn ghost" data-share="' + esc(id) + '">Share via OS</button>' +
-        '<button class="btn ghost" data-closesheet>Close</button>');
-      return;
-    }
-    sheet('<h3>Repost</h3><p>Optional note (public only if your profile visibility is Public).</p>' +
-      '<textarea id="rpNote" class="sx-ta" rows="3" maxlength="280" placeholder="Add a note (optional)"></textarea>' +
-      '<button class="btn primary" data-repost-go="' + esc(id) + '">Repost</button>' +
-      '<button class="btn ghost" data-share="' + esc(id) + '">Share via OS</button>' +
-      '<button class="btn ghost" data-closesheet>Cancel</button>');
+    sheet('<h3>Share Signal</h3><p>Choose one destination. Nothing is posted until you confirm. Public posting is not available in this build.</p>' +
+      '<label class="share-note-l" for="shareNote">Comment, optional</label><textarea id="shareNote" class="repc" maxlength="280" placeholder="Optional note"></textarea>' +
+      '<button type="button" class="btn primary" data-sharego="team" data-id="' + esc(id) + '">Team Desk</button>' +
+      '<button type="button" class="btn ghost" data-sharego="private" data-id="' + esc(id) + '">Private Desk</button>' +
+      '<button type="button" class="btn ghost" disabled aria-disabled="true">Public, not available in this build</button>' +
+      '<button type="button" class="btn ghost" data-sharego="os" data-id="' + esc(id) + '">Share outside the app</button>' +
+      '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
   }
-  function repostSheet(id) { openCardRepost(id); }
+  function repostSheet(id) { shareSignalSheet(id); }
+  function shareGo(kind, id) {
+    if (S.shareBusy) return;
+    S.shareBusy = true;
+    var note = (($('#shareNote') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 280);
+    closeSheet();
+    if (kind === 'team') forwardTeam(id, note);
+    else if (kind === 'private') { S._noteSeed = note; privateNoteSheet(id); }
+    else shareItem(id, note);
+    setTimeout(function () { S.shareBusy = false; }, 700);
+  }
   function shareItem(id, comment) {
     var i = byId(id); if (!i) return;
     var lead = (i.stat && i.stat.value ? i.stat.value + ': ' + i.stat.label : (i.summary || '')).replace(/\s+/g, ' ');
@@ -2064,10 +2159,9 @@
     var text = (comment ? comment + '\n\n' : '') + (i.signal && i.signal.crux ? String(i.signal.crux).replace(/\s*[\u2014\u2013]\s*/g, ', ') : i.title + '\n\n' + lead) + '\n\nVoxarc Lab policy signal, read more in Voxarc Feed.';
     haptic();
     var sh = plugin('Share');
-    var url = shareUrlOf(i);
-    if (sh) return sh.share({ title: i.title, text: text, url: url, dialogTitle: 'Share signal' }).catch(function () {});
-    if (navigator.share) return navigator.share({ title: i.title, text: text, url: url }).catch(function () {});
-    if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + url).then(function () { toast('Copied to clipboard'); });
+    if (sh) return sh.share({ title: i.title, text: text, url: linkOf(i), dialogTitle: 'Share signal' }).catch(function () {});
+    if (navigator.share) return navigator.share({ title: i.title, text: text, url: linkOf(i) }).catch(function () {});
+    if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + linkOf(i)).then(function () { toast('Copied to clipboard'); });
   }
   function setNotif(on) {
     var ln = plugin('LocalNotifications');
@@ -2096,7 +2190,7 @@
         schedule: { on: { hour: S.prefs.hour, minute: S.prefs.minute }, allowWhileIdle: true }, extra: { tab: 'brief' } }] });
     }).catch(function () {});
   }
-  function sheet(html) { var s = $('#sheet'); if (!s) return; var card = s.querySelector('.sheet-card') || s; card.innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
+  function sheet(html) { var s = $('#sheet'); $('.sheet-card', s).innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
   function closeSheet() { var s = $('#sheet'); if (!s) return; s.hidden = true; s.setAttribute('hidden', ''); s.style.display = 'none'; }
   function confirmClearSaved() {
     if (!S.saved.length) { toast('No saved briefings to clear'); return; }
@@ -2125,9 +2219,9 @@
       if (x.hasAttribute('data-settopics') || x.hasAttribute('data-managetopics')) { if (!wide() && S.current) closeArticle(); S.tab = 'settings'; S.setView = 'topics'; haptic(); render(); $('#main').scrollTop = 0; var sh = $('#st-h'); if (sh) try { sh.focus({ preventScroll: true }); } catch (er) {} return; }
       if (x.hasAttribute('data-setback')) { S.setView = null; render(); $('#main').scrollTop = 0; return; }
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
-      if (x.hasAttribute('data-followall')) { setFollow(CATEGORIES); haptic(); render(); toast('Following all topics'); return; }
+      if (x.hasAttribute('data-followall')) { setFollow(['arctic-security', 'ai-governance', 'critical-minerals', 'geo']); haptic(); render(); toast('Pinned the live desks'); return; }
     }
-    var t = e.target.closest('[data-react-open],[data-react-clear],[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-repost-go],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-card-comment],[data-card-repost],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],[data-sharesignal],[data-sharego],[data-subtopic],#btnSearch,#sheet');
     if (!t) return;
     if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
     if (t.dataset.dossier) { e.stopPropagation(); openArticle(t.dataset.dossier); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .pi-exp') || document.querySelector('#rscroll .audit') || document.querySelector('#rscroll .pi-audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
@@ -2154,11 +2248,7 @@
       if (document.querySelector('#sheet .ff-sheet')) { openFiltersSheet(); render(); return; }
       render(); return;
     }
-    if (t.dataset.reactOpen != null) { e.stopPropagation(); openReactPicker(t.dataset.reactOpen); return; }
-    if (t.dataset.reactClear != null) { e.stopPropagation(); var cid = t.dataset.reactClear; if (S.reactions[cid]) { delete S.reactions[cid]; store.set('vx.reactions', S.reactions); if (window.VXSocial) window.VXSocial.onReact(cid, null); } closeSheet(); render(); return; }
-    if (t.dataset.cardComment != null) { e.stopPropagation(); openCardComments(t.dataset.cardComment); return; }
-    if (t.dataset.cardRepost != null) { e.stopPropagation(); openCardRepost(t.dataset.cardRepost); return; }
-    if (t.dataset.dense) { e.stopPropagation(); S.dense = !S.dense; persistFilters(); if (document.querySelector('#sheet .ff-sheet')) openFiltersSheet(); render(); return; }
+    if (t.dataset.dense) { e.stopPropagation(); S.dense = !S.dense; persistFilters(); if (document.querySelector('#sheet .ff-sheet') && !$('#sheet').hidden) openFiltersSheet(); render(); return; }
     if (t.dataset.saveview) {
       e.stopPropagation();
       var name = 'View ' + ((S.namedViews || []).length + 1);
@@ -2206,13 +2296,16 @@
     if (t.dataset.savedview) { S.savedView = t.dataset.savedview; haptic(); render(); $('#main').scrollTop = 0; return; }
     if (t.dataset.bm) { e.stopPropagation(); toggleSave(t.dataset.bm); return; }
     if (t.dataset.open) { openArticle(t.dataset.open); return; }
+    if (t.dataset.sharesignal) { e.stopPropagation(); shareSignalSheet(t.dataset.sharesignal); return; }
+    if (t.dataset.sharego) { e.stopPropagation(); shareGo(t.dataset.sharego, t.dataset.id); return; }
+    if (t.dataset.subtopic) { e.stopPropagation(); S.subtopic = S.subtopic === t.dataset.subtopic ? '' : t.dataset.subtopic; haptic(); render(); return; }
     if (t.dataset.topic) {
+      if (S.topic !== t.dataset.topic) S.subtopic = '';
       S.topic = t.dataset.topic; haptic(); render(); $('#main').scrollTop = 0;
       if (wide()) { var f0 = filtered(S.items)[0]; if (f0) openArticle(f0.id, true); } // the side reader follows the desk on iPad
       return;
     }
     if (t.dataset.tab) { if (S.tab === t.dataset.tab) { $('#main').scrollTop = 0; } S.tab = t.dataset.tab; S.setView = null; if (!wide() && S.current) closeArticle(); render(); return; }
-    if (t.dataset.repostGo) { e.stopPropagation(); var note = ((document.getElementById('rpNote') || {}).value || '').trim(); S.reposts[t.dataset.repostGo] = { comment: note, createdAt: new Date().toISOString(), synced: false }; store.set('vx.reposts', S.reposts); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repostGo, { comment: note }); closeSheet(); toast('Reposted'); render(); return; }
     if (t.dataset.share) { e.stopPropagation(); shareItem(t.dataset.share); return; }
     if (t.hasAttribute('data-back')) { if (history.state && history.state.a) history.back(); else closeArticle(); return; }
     if (t.dataset.url) { if (t.tagName === 'A') e.preventDefault(); openUrl(t.dataset.url); return; }
@@ -2234,6 +2327,7 @@
   });
   var qT;
   document.addEventListener('input', function (e) {
+    if (e.target.id === 'topicQ') { S.topicQuery = e.target.value; var tp = S.topicQuery.length; render(); var tq = $('#topicQ'); if (tq) { tq.focus(); try { tq.setSelectionRange(tp, tp); } catch (err) {} } return; }
     if (e.target.id === 'q') { var v = e.target.value; clearTimeout(qT); qT = setTimeout(function () { S.query = v; var pos = v.length; render(); var q = $('#q'); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }, 220); }
   });
   document.addEventListener('change', function (e) {
@@ -2352,18 +2446,13 @@
       S.onboarded = !!r[6];
       var pf = r[7], fw = r[8] && typeof r[8] === 'object' ? cleanFollow(r[8].topics) : [];
       // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
-      S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : DESK_ORDER.slice());
+      S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : cleanFollow(DESK_ORDER));
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
       fetch('data/signal_fields_local.json').then(function (x) { return x.json(); }).then(function (j) { S.sigFields = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});
       fetch('data/tables_sample.json').then(function (x) { return x.json(); }).then(function (j) { S.tablesById = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});
       S.booting = false;
       if (!booted) { booted = true; applyFs(); initNative(); }
       var wantContact = location.hash === '#contact';
-    try {
-      var qs = new URLSearchParams(location.search || '');
-      var deep = qs.get('s');
-      if (deep) S.pendingOpen = String(deep);
-    } catch (eDeep) {}
       if (!S.onboarded && S.items.length && !wantContact) startOnboarding(false);
       if (wantContact) { S.tab = 'settings'; S.setView = 'contact'; }
       render();

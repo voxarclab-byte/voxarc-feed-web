@@ -13,8 +13,10 @@
 </head>
 <body>
 <div id="app">
+  <div id="statusGap" aria-hidden="true"></div>
+  <div id="feedBanner">Voxarc Feed</div>
   <header id="topbar">
-    <div class="brand" aria-label="Voxarc Feed"><img src="img/mark.png" alt="" class="mark"><div class="brand-name">Voxarc</div></div>
+    <div class="brand"><img src="img/mark.png" alt="" class="mark"><div class="brand-name">Voxarc</div></div>
     <div class="top-acts"><span id="sxHead"></span><button class="ct-btn" data-contact aria-label="Contact us">Contact us</button><button class="icon-btn bell" data-tab="settings" aria-label="Alerts and settings"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button><button class="icon-btn" id="btnSearch" aria-label="Search" aria-expanded="false" hidden></button></div>
   </header>
   <div id="offlineBar" hidden>Offline. Showing briefings saved on this device.</div>
@@ -43,6 +45,7 @@
 <script src="js/vendor/share.js"></script>
 <script src="js/vendor/splash-screen.js"></script>
 <script src="js/vendor/status-bar.js"></script>
+<script src="js/taxonomy.js"></script>
 <script src="js/app.js"></script>
 <script src="js/social-config.js"></script>
 <script src="js/social.js"></script>

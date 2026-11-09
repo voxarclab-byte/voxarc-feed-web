@@ -27,7 +27,9 @@ svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 :focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-radius:8px}
 [tabindex="-1"]:focus-visible{outline:none}
 #app{position:fixed;inset:0;display:flex;flex-direction:column}
-#topbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:calc(var(--sat) + 8px) var(--gutter) 10px;background:rgba(10,10,10,.96);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line);z-index:5}
+#statusGap{flex:none;height:var(--sat);background:var(--bg)}
+#feedBanner{flex:none;background:var(--orange);color:#fff;font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.2px;line-height:1.2;padding:12px var(--gutter)}
+#topbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px var(--gutter) 10px;background:rgba(10,10,10,.96);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line);z-index:5}
 .brand{display:flex;align-items:center;gap:10px}
 .mark{width:32px;height:auto}
 .brand-name{font-family:"Space Grotesk";font-weight:700;font-size:var(--t-20);letter-spacing:-.3px;line-height:1.1}
@@ -790,97 +792,39 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
   :root{--gutter:16px}
   .bcard.pi{padding:12px}
 }
-
-/* --- ui-desk-refine-nov7: comfortable Signal Desk (preview branch) --- */
-.pi-score{
-  display:inline-flex;align-items:baseline;gap:5px;
-  padding:2px 0;margin:0;background:transparent;border:0;border-radius:0;
-  color:#E8E8E8;font-weight:600;letter-spacing:0;min-width:0;text-align:left;
-}
-.pi-score-band{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#B8B8B8}
-.pi-score.high .pi-score-band{color:#FFB08A}
-.pi-score.medium .pi-score-band{color:#E6C35C}
-.pi-score.low .pi-score-band{color:#9A9A9A}
-.pi-score-n{font-size:15px;font-weight:700;color:#FFF;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.02em}
-.pi-score.high .pi-score-n{color:#FF8F5C}
-.pi-score-n::after{content:"/10";font-size:10px;font-weight:600;color:#8A8A8A;margin-left:1px}
-
-/* kill legacy solid orange tile look if any leftover .pi-badge in cards */
-.bcard.pi .pi-badge{background:transparent;color:#E8E8E8;padding:0;border-radius:0;font-size:12px;font-weight:700;min-width:0}
-
-.bcard.pi{
-  padding:16px 16px 14px;margin:0 0 14px;
-  border:1px solid #222;border-radius:14px;background:#101010;
-  box-shadow:0 1px 0 rgba(255,255,255,.03);
-}
-.bcard.pi .bwhat{
-  font-size:17px;line-height:1.32;margin:8px 0 8px;color:#FAFAF8;font-weight:650;
-  letter-spacing:-.015em;text-align:left;
-}
-.pi-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 2px}
-.pi-card-head .pi-tier{margin-left:0;font-size:10px;padding:2px 8px;opacity:.92}
-.pi-card-head .pi-conf{margin-left:0;font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
-
-.pi-action{margin:0 0 10px;font-size:13px;line-height:1.4;color:#C4C4C0}
-.pi-action .pi-k{display:inline;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#FF8F5C;margin-right:4px}
-
-.pi-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;margin-top:10px;padding-top:10px;border-top:1px solid #1C1C1C;font-size:11px;color:#A3A3A0}
-.pi-meta-dot{margin:0 7px;color:#444;font-weight:700}
-.pi-meta .pi-stage{font-size:11px;font-weight:600;color:#D0D0CC;text-transform:capitalize}
-.pi-meta .pi-st-h{font-size:11px;font-weight:600;color:#FFB08A;text-transform:none}
-.pi-meta .pi-st-src,.pi-meta .pi-st-a{font-size:11px;color:#9A9A96}
-.pi-provline{margin:6px 0 0;font-size:11px;color:#7E7E7A}
-
-/* anchors quieter under title */
-.bcard.pi .pi-anch{margin:4px 0 8px;display:flex;gap:10px}
-.bcard.pi .pi-a{flex:1;min-width:0;padding:8px 10px;border:1px solid #1E1E1E;border-radius:10px;background:#0C0C0C}
-.bcard.pi .pi-a-top b{font-size:16px;color:#FFF}
-.bcard.pi .pi-ch{font-size:10px;color:#9A9A96}
-
-/* Dense: true compact list, small score — not orange slabs */
-.bcard.pi.dense{padding:10px 12px;margin-bottom:8px;border-radius:12px}
-.pi-dense-row{display:flex;align-items:flex-start;gap:10px}
-.pi-dense-row .pi-score{flex:0 0 auto;padding-top:2px;min-width:3.6em}
-.pi-dense-row .pi-score-band{display:none}
-.pi-dense-row .pi-score-n{font-size:14px;color:#FF9A6A}
-.pi-dense-row .bwhat{font-size:14px;line-height:1.3;margin:0;flex:1;font-weight:600;letter-spacing:-.01em}
-.bcard.pi.dense .pi-meta{margin-top:6px;padding-top:0;border-top:0;gap:2px}
-
-/* Comfortable gutters on desk feed */
-.btier{margin:0 var(--gutter,16px) 24px}
-.btier .bcard.pi{max-width:100%}
-.bth{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 0 12px}
-.bth h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#A3A3A0}
-.bth span{font-size:12px;color:#7E7E7A;font-variant-numeric:tabular-nums}
-
-/* Density chip: Comfortable = selected calm state */
-.fchip.densetog.on{background:rgba(255,107,53,.14);border-color:rgba(255,107,53,.45);color:#FFB08A}
-
-/* Safe area: keep tabbar clear of home indicator */
-#tabbar{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
-
-/* Card Comment / Repost — visible preview controls (next patch) */
-.pi-social-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #1C1C1C}
-.bcard.pi.dense .pi-social-row{margin-top:8px;padding-top:8px}
-.pi-soc{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border:1px solid #2A2A2A;border-radius:999px;background:#141414;color:#E8E8E8;font-size:12px;font-weight:650}
-.pi-soc svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.pi-soc:active{border-color:rgba(255,107,53,.45);color:#FFB08A}
-.pi-social-row{flex-wrap:wrap;gap:6px}
-.pi-soc.on{border-color:rgba(255,107,53,.55);color:#FFB08A;background:rgba(255,107,53,.12)}
-.pi-soc-x{font-size:12px;font-weight:800;line-height:1}
-.pi-soc span{white-space:nowrap}
-@media (max-width:360px){
-  .pi-soc{padding:6px 10px;font-size:11px;min-height:34px}
-  .pi-soc svg{width:13px;height:13px}
-}
-.pi-soc.pi-react.on.like{border-color:rgba(255,107,53,.55);color:#FFB08A;background:rgba(255,107,53,.12)}
-.pi-soc.pi-react.on.dislike{border-color:rgba(180,180,180,.45);color:#CFCFCF;background:rgba(255,255,255,.06)}
-
-/* 1.3.5 native shell: hide web wordmark when Capacitor provides app name (avoid duplicate chrome). Keep mark + safe areas. */
-html.native-shell .brand-name{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-html.native-shell .brand{gap:0}
-html.native-shell #topbar{padding-top:max(10px, env(safe-area-inset-top));}
-.sx-vis{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;background:#121212}
-.sx-vis legend{padding:0 4px;color:var(--orange);font-size:13px;font-weight:700}
-.sx-vis .sx-r{display:block;margin:8px 0}
-.sx-vis .sx-r small{display:block;color:var(--dim);font-weight:400;margin-top:2px}
+/* 1.3.6 premium desk: tokens only, one Share Signal, pinned topics */
+.chip{height:44px}
+.desk-tools{display:flex;justify-content:flex-end;padding:0 var(--gutter) 2px}
+.pi-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.pi-card-top .bm,.pi-tools .bm{width:48px;height:48px;display:grid;place-items:center;border-radius:24px;color:var(--dim);flex:none}
+.pi-card-top .bm.on,.pi-tools .bm.on{color:var(--orange)}
+.pi-card-top .bm.on svg,.pi-tools .bm.on svg{fill:var(--orange)}
+.pi-tools{display:flex;align-items:center;gap:8px;margin-top:10px}
+.share-signal{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;min-width:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:15px}
+.share-signal svg{width:18px;height:18px}
+.bcard.pi.pi-lead{border-left:3px solid var(--orange)}
+.pi-idx{display:block;margin-top:8px;font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--orange)}
+.coverage{margin:8px var(--gutter) 18px;border-top:1px solid var(--line);padding-top:8px}
+.cov-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cov-h h2{margin:0;font-family:"Space Grotesk",Inter,sans-serif;font-size:18px}
+.cov-row{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:8px 0;border-bottom:1px solid var(--line);text-align:left}
+.cov-mark{width:8px;height:8px;border-radius:2px;background:var(--orange);flex:none}
+.cov-l{flex:1;min-width:0}
+.cov-l b{display:block;font-size:16px;font-weight:600}
+.cov-l small{display:block;color:var(--dim);font-size:13px;margin-top:2px}
+.cov-s{color:var(--gray);font-size:13px;font-weight:600}
+.topic-search{padding:0 var(--gutter) 8px}
+.topic-block{margin:0 var(--gutter) 4px;padding:8px 0 4px;border-bottom:1px solid var(--line)}
+.topic-block h3{margin:0;font-family:"Space Grotesk",Inter,sans-serif;font-size:17px;font-weight:700}
+.soon-tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--gray);white-space:nowrap}
+.sub-list{list-style:none;margin:8px 0 0;padding:0}
+.sub-list li{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--gray);font-size:15px;border-top:1px solid var(--line)}
+.sub-note{color:var(--dim);font-size:13px;line-height:1.4;margin:6px var(--gutter) 8px}
+.share-note-l{display:block;font-size:13px;color:var(--gray);margin-top:8px}
+.btn[disabled]{opacity:.45}
+.pi-badge.na{border:1px solid var(--line);color:var(--gray);background:transparent}
+.ob-opt.soon{opacity:.72}
+.sx-person{width:16px;height:16px}
+.top-acts{flex:none;align-items:center}
+.ct-btn,.sx-hb{white-space:nowrap;flex:none}
+.sx-hb{padding:0 10px}
