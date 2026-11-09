@@ -1,7 +1,7 @@
 /* Approved topic catalog (1.3.6).
    Groups are followable. Subtopics are searchable refinements, not separate follows.
    status "active" means this build already has a sourced desk in the bundled feed.
-   status "coming" is not live coverage: no dedicated ingestion, review owner or sample.
+   status "coming" is not live coverage yet (no dedicated ingestion), but the topic is still followable and shows an empty desk.
    Reviewed against www/data/feed.json on 2026-11-09:
      arctic 14 items, ai 17, minerals 15, geo 22, with named primary sources.
    Old id -> canonical id (aliases keep saved follows):

@@ -52,8 +52,8 @@ svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .searchwrap{padding:var(--s3) var(--gutter) 2px}
 .search{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:0 12px;height:44px;color:var(--dim);transition:border-color .2s}
 .search:focus-within{border-color:var(--orange)}
-.search svg{width:19px;height:19px;flex:none}
-.search input{flex:1;background:none;border:0;outline:none;color:var(--text);font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
+.search svg{width:19px;height:19px;flex:none;pointer-events:none}
+.search input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text);font:inherit;font-size:16px;-webkit-user-select:text;user-select:text;touch-action:manipulation}
 .search input::placeholder{color:var(--dim)}
 .search .clear{color:var(--gray);font-size:var(--t-13);padding:6px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:var(--s3) var(--gutter) var(--s1);scrollbar-width:none}
@@ -828,3 +828,15 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .top-acts{flex:none;align-items:center}
 .ct-btn,.sx-hb{white-space:nowrap;flex:none}
 .sx-hb{padding:0 10px}
+
+/* Ask tab: send control + suggestion chips use the page gutter */
+.ask-send{flex:none;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px;border-radius:16px;background:var(--orange);color:#0A0A0A;font-size:var(--t-13);font-weight:700}
+.ask-send svg{width:14px;height:14px;stroke-width:2.2}
+.sugg,.ask-sugg{display:flex;flex-wrap:wrap;gap:8px;padding:var(--s3) var(--gutter) var(--s5);margin:0;justify-content:flex-start}
+.empty .sugg{justify-content:center;padding-left:0;padding-right:0}
+/* Onboarding: keep the HTML orange banner visible (native action bar removed on Android) */
+body.ob-open #statusGap,body.ob-open #feedBanner{position:relative;z-index:45;visibility:visible}
+body.ob-open #onboard{top:0}
+body.ob-open .ob-screen{padding-top:calc(var(--sat) + 56px + 8px)}
+.ob-opt.soon{opacity:1}
+.coming-empty{padding-top:48px}

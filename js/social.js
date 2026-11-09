@@ -136,7 +136,7 @@
   function demoSeed() { if (!LIVE) { var d = db(); seedReposts(d); } }
 
   /* ---------- state ---------- */
-  var me = null, blockedIds = [], cache = {}, reported = ls('vx.reported') || {};
+  var me = null, pendingAfterAuth = null, blockedIds = [], cache = {}, reported = ls('vx.reported') || {};
   function refreshMe() { return B.me().then(function (m) { me = m; return B.blocked(); }).then(function (b) { blockedIds = (b || []).map(function (u) { return u && u.id; }); rerender(); }).catch(function () {}); }
   var ccount = {};
   function loadCounts() { return B.commentCounts().then(function (m) { ccount = m || {}; rerender(); }).catch(function () {}); }
@@ -148,11 +148,16 @@
   function rerender() { headerSync(); var x = X(); if (!x) return; x.render(); x.refreshReader(); }
   function toast(m) { var x = X(); if (x) x.toast(m); }
   function sheet(h) { X().sheet('<div class="sx">' + h + '</div>'); }
-  function closeSheet() { X().closeSheet(); }
+  function closeSheet() { pendingAfterAuth = null; X().closeSheet(); }
   function avatar(u, big) { u = u || {}; var ini = String(u.name || u.handle || '?').trim().split(/\s+/).map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
     return u.avatar_url && /^https:\/\//.test(u.avatar_url) ? '<img class="sx-av' + (big ? ' big' : '') + '" src="' + esc(u.avatar_url) + '" alt="">' : '<span class="sx-av' + (big ? ' big' : '') + '" aria-hidden="true">' + esc(ini) + '</span>'; }
   function ago(iso) { var s = (Date.now() - new Date(iso)) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s / 60) + 'm' : s < 86400 ? Math.floor(s / 3600) + 'h' : Math.floor(s / 86400) + 'd'; }
-  function need(fn) { if (me) return fn(); signInSheet('Sign in to join the conversation'); }
+  function requireAuth(why, fn) {
+    if (me) { if (fn) fn(); return; }
+    pendingAfterAuth = typeof fn === 'function' ? fn : null;
+    signInSheet(why || 'Sign in or create a free account.');
+  }
+  function need(fn) { requireAuth('Sign in to join the conversation', fn); }
 
   /* ---------- screens ---------- */
   function signInSheet(why) {
@@ -269,7 +274,16 @@
       x.saveReposts(); rerender();
     }).catch(function () {});
   }
-  function afterAuth(msg) { closeSheet(); return refreshMe().then(function () { syncReposts(); if (me && !me.handle) editSheet(); toast(msg || 'Signed in'); }); }
+  function afterAuth(msg) {
+    var resume = pendingAfterAuth; pendingAfterAuth = null;
+    X().closeSheet();
+    return refreshMe().then(function () {
+      syncReposts();
+      toast(msg || 'Signed in');
+      if (resume) resume();
+      else if (me && !me.handle) editSheet();
+    });
+  }
 
   var pendingCm = '';
   function postComment(id) { var b = pendingCm; if (!b) return; return B.addComment(id, b).then(function () { pendingCm = ''; delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; rerender(); toast('Comment posted'); }).catch(function (er) { toast(er.message); }); }
@@ -325,6 +339,6 @@
     if (/access_token=/.test(location.hash)) B.takeRedirect(location.hash).then(function () { history.replaceState(null, '', location.pathname); afterAuth('Signed in with Google'); });
     if (isNative && P.App) P.App.addListener('appUrlOpen', function (ev) { if (ev && /auth-callback/.test(ev.url || '')) { if (P.Browser) P.Browser.close().catch(function () {}); B.takeRedirect(ev.url).then(function (okk) { if (okk) afterAuth('Signed in with Google'); }); } });
   }
-  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; } };
+  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; }, requireAuth: requireAuth };
   setTimeout(function () { headerSync(); refreshMe().then(syncReposts); loadCounts(); }, 0);
 })();
