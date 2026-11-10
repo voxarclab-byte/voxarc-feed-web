@@ -870,3 +870,8 @@ body.ob-open .ob-screen{padding-top:calc(var(--sat) + 56px + 8px)}
 .ob-opt[data-v="PUBLIC"]{opacity:.72}
 .ob-note{margin:10px 0 0;padding:10px 12px;border-left:2px solid var(--orange);background:rgba(255,107,53,.08);border-radius:6px;color:#E2E2E0;font-size:14px;line-height:1.45}
 .empty-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+
+/* 1.4.1: any number of pinned topics; compact Coming soon tags on a scrollable chip row */
+.chip-soon{display:inline-block;margin-left:1px;padding:2px 6px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-style:normal;font-weight:600;letter-spacing:.02em;color:var(--gray);line-height:1.2;white-space:nowrap}
+.chip.active .chip-soon{border-color:rgba(10,10,10,.28);color:rgba(10,10,10,.72)}
+.set-actions{display:flex;flex-direction:column;gap:8px}

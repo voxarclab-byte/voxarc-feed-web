@@ -12,7 +12,7 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.4.0', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.4.1', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
@@ -186,6 +186,7 @@
         var before = S.items.length, had = {}; S.items.forEach(function (x) { had[x.id] = 1; }); S.items = mergeFeeds(S.items, f.items).filter(isPublished);
         topicAlert(f.items.filter(function (x) { return x && !had[x.id] && inFollow(x); })); S.updated = new Date().toISOString(); if (f.generated && (!S.generated || f.generated > S.generated)) S.generated = f.generated; if (f.signalTrends) S.trends = f.signalTrends;
         if (Array.isArray(f.dataCards) && f.dataCards.length) S.cards = f.dataCards;
+        syncTopicStatus();
         store.set('vx.feedCache', { items: S.items, updated: S.updated, dataCards: S.cards, generated: S.generated, signalTrends: S.trends });
         render(); var n = S.items.length - before;
         if (n > 0) spotlightIndex();
@@ -222,7 +223,7 @@
   }
 
   /* ---------- Week 4: followed topics, freshness and desk data ---------- */
-  // Followed topics live on this device only (vx.follow). All four are followed until the user changes that.
+  // Followed topics live on this device only (vx.follow). Users may pin any number, from one to all 13.
   var DESK_ORDER = ['arctic', 'ai', 'minerals', 'geo'];
   var TAX = window.VX_TAXONOMY || [];
   var RECOMMENDED = window.VX_TOPIC_RECOMMENDED || ['arctic-security', 'ai-governance', 'critical-minerals'];
@@ -265,11 +266,13 @@
     });
     return o;
   }
+  function catalogIds() { return TAX.map(function (g) { return g.id; }).concat(['geo']); }
   function followsAll() {
     var have = {};
     S.follow.forEach(function (t) { have[canonKey(t)] = 1; });
     return CATEGORIES.every(function (t) { return have[t]; });
   }
+  function followsEveryTopic() { return catalogIds().every(function (id) { return isFollowed(id); }); }
   function isFollowed(t) { var k = canonKey(t); return S.follow.some(function (x) { return canonKey(x) === k; }); }
   function topicHit(i, id) {
     var topics = i.topics || [], k = canonKey(id);
@@ -296,7 +299,7 @@
     S.follow = next;
     store.set('vx.follow', { topics: S.follow, pins: S.follow.slice(), t: Date.now(), v: 2 });
   }
-  function followLabel() { return followsAll() ? 'All ' + CATEGORIES.length + ' topics' : joinList(S.follow.map(function (t) { return topicLabel(t); })); }
+  function followLabel() { return followsEveryTopic() ? 'All ' + catalogIds().length + ' topics' : joinList(S.follow.map(function (t) { return topicLabel(t); })); }
   function agoText(ms) {
     var m = Math.floor(ms / 60000);
     if (m < 1) return 'just now';
@@ -315,6 +318,15 @@
     return { week: wk, text: parts.join(' \u00B7 ') };
   }
   function deskItems(t) { return S.items.filter(function (i) { return topicHit(i, t); }); }
+  // Coverage status is data-driven: a Coming soon group goes live as soon as the feed carries a signal tagged with its id
+  // (the signal pipeline tags items with taxonomy ids, Nov 10, 2026). No app release is needed when a topic goes live.
+  function syncTopicStatus() {
+    TAX.forEach(function (g) {
+      if (g.status === 'active' && !g.liveFromFeed) return;
+      var live = S.items.some(function (i) { return (i.topics || []).indexOf(g.id) >= 0; });
+      if (live) { g.status = 'active'; g.liveFromFeed = true; } else if (g.liveFromFeed) { g.status = 'coming'; g.liveFromFeed = false; }
+    });
+  }
   // A desk's data cards: from the feed's dataCards (each lists its desks), else the same cards attached to briefings.
   function deskCards(t) {
     var key = canonKey(t);
@@ -1404,7 +1416,9 @@
     S.follow.forEach(function (id) { chips.push({ id: id, label: topicLabel(id) }); });
     return '<div class="chips-wrap"><div class="chips" role="tablist" aria-label="Your topics">' + chips.map(function (t) {
       var on = S.topic === t.id;
-      return '<button role="tab" aria-selected="' + on + '" class="chip' + (on ? ' active' : '') + '" data-topic="' + esc(t.id) + '"><span>' + esc(t.label) + '</span></button>';
+      var g = t.id === 'all' ? null : taxGroup(t.id);
+      var coming = !!(g && g.status !== 'active');
+      return '<button role="tab" aria-selected="' + on + '" class="chip' + (on ? ' active' : '') + (coming ? ' soon' : '') + '" data-topic="' + esc(t.id) + '"><span>' + esc(t.label) + '</span>' + (coming ? '<em class="chip-soon">Coming soon</em>' : '') + '</button>';
     }).join('') + '</div></div>';
   }
   function subtopicBarHTML(id) {
@@ -1528,7 +1542,7 @@
     var shown = 0;
     var h = '<div class="settings-inner"><div class="subbar"><button class="back" data-setback>' + ICON.back + '<span>Settings</span></button></div>' +
       '<div class="section-h"><h2 id="st-h" tabindex="-1">Manage topics</h2><span>' + S.follow.length + ' pinned</span></div>' +
-      '<p class="set-sub">Home shows the topics you pin, usually 3 to 5. Coming soon topics can be followed and show an empty desk until coverage goes live. Tap a subtopic to see its signals. Subtopics refine a topic and are not separate follows. Choices stay on this device.</p>' +
+      '<p class="set-sub">Home shows the topics you pin. Most people start with 3 to 5, and you can pin any or all of them. Coming soon topics can be followed and show an empty desk until coverage goes live. Tap a subtopic to see its signals. Subtopics refine a topic and are not separate follows. Choices stay on this device.</p>' +
       '<div class="searchwrap topic-search"><label class="search">' + ICON.search + '<input id="topicQ" type="search" placeholder="Search topics and subtopics" aria-label="Search topics" value="' + esc(S.topicQuery || '') + '" autocomplete="off"></label></div>';
     TAX.forEach(function (g) {
       if (!taxMatch(g, q)) return;
@@ -1551,7 +1565,7 @@
         '<button class="switch' + (onG ? ' on' : '') + '" data-follow="geo" role="switch" aria-checked="' + onG + '" aria-labelledby="tl-geo"></button></div></section>';
     }
     if (!shown) h += '<p class="bempty">No topics match that search.</p>';
-    h += '<div class="set-actions"><button class="btn ghost sm" data-followall>Pin the live desks</button></div></div>';
+    h += '<div class="set-actions"><button class="btn ghost sm" data-followall>Pin the live desks</button><button class="btn ghost sm" data-followevery>Pin all ' + catalogIds().length + ' topics</button></div></div>';
     return h;
   }
   function renderContact() {
@@ -2011,7 +2025,7 @@
   }
 
   /* ---------- first-run onboarding ---------- */
-  // Week 4 first run is light: the intro, then one screen to pick the topics to follow (all four on by default).
+  // First run is light: the intro, then one screen to pick any of the 13 topics (3 live desks are suggested).
   // Skip is always visible and follows everything. Regions and role are optional and live in Settings.
   // Every choice is stored on this device only; nothing is sent anywhere and there is no account.
   var OB_FIRST = ['intro', 'follow', 'regions', 'role', 'stealth'], OB_EDIT = ['regions', 'role', 'stealth'];
@@ -2046,7 +2060,7 @@
         var meta = live ? (deskItems(g.id).length + ' signals in the feed') : 'Coming soon';
         return obChoice('topics', { id: g.id, label: g.label, ic: 'M4 7h16M4 12h16M4 17h10', d: g.focus }, o.topics.indexOf(g.id) >= 0, meta);
       }).join('') + obChoice('topics', { id: 'geo', label: 'Geoeconomics', ic: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18', d: 'Saved desk. Not a new topic.' }, o.topics.indexOf('geo') >= 0, deskItems('geo').length + ' signals in the feed');
-      h = '<div class="ob-body"><div class="ob-k">Your desk</div><h1 id="ob-h" tabindex="-1">Choose 3 to 5 topics</h1><p class="ob-sub">Three live topics are suggested. You can also follow Coming soon topics; their desks stay empty until coverage goes live. Change this any time in Manage topics.</p><div class="ob-list">' +
+      h = '<div class="ob-body"><div class="ob-k">Your desk</div><h1 id="ob-h" tabindex="-1">Choose the topics you want to follow</h1><p class="ob-sub">Most people start with 3 to 5. You can follow any or all of them, including Coming soon topics; their desks stay empty until coverage goes live. Change this any time in Manage topics.</p><div class="ob-list">' +
         picks + '</div></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>' + followCta(o.topics.length) + '</button></div>';
     } else if (step === 'regions') {
@@ -2085,7 +2099,6 @@
     if (kind === 'roles') S.ob.roles = k >= 0 ? [] : [v];
     else if (k >= 0) a.splice(k, 1);
     else {
-      if (kind === 'topics' && a.length >= 5) { toast('Choose up to 5 topics'); return; }
       if (kind === 'topics' && !canonId(v)) { toast('That topic is not available'); return; }
       a.push(v);
     }
@@ -2130,7 +2143,7 @@
     var el = $('#onboard');
     if (skipped) { el.hidden = true; el.innerHTML = ''; S.tab = 'feed'; S.topic = 'all'; S.rendered = false; render(); return; }
     haptic('MEDIUM');
-    el.innerHTML = '<div class="ob-screen building" role="status"><div class="ob-build">' + POLAR_SVG(!reducedMotion()) + '<h2>Building your feed</h2><p>Ranking ' + S.items.filter(inFollow).length + ' briefings from ' + esc(followsAll() ? 'all four desks' : joinList(S.follow.map(function (t) { return TOPIC_LABEL[t]; }))) + '\u2026</p></div>' + skeletonHTML(2) + '</div>';
+    el.innerHTML = '<div class="ob-screen building" role="status"><div class="ob-build">' + POLAR_SVG(!reducedMotion()) + '<h2>Building your feed</h2><p>Ranking ' + S.items.filter(inFollow).length + ' briefings from ' + esc(followsEveryTopic() ? 'all ' + S.follow.length + ' desks' : joinList(S.follow.map(function (t) { return topicLabel(t); }))) + '\u2026</p></div>' + skeletonHTML(2) + '</div>';
     setTimeout(function () {
       el.classList.add('out');
       S.tab = 'feed'; S.topic = 'all'; S.query = ''; S.searchOpen = false; S.rendered = false; render(); $('#main').scrollTop = 0;
@@ -2144,7 +2157,6 @@
     if (!id) { toast('That topic is not available'); return; }
     if (isFollowed(id) && S.follow.length === 1) { toast('Follow at least one topic'); return; }
     var on = !isFollowed(id);
-    if (on && S.follow.length >= 5) { toast('Home shows up to 5 topics. Unpin one to add another.'); return; }
     setFollow(on ? S.follow.concat([id]) : S.follow.filter(function (x) { return canonKey(x) !== canonKey(id); }));
     haptic(); render(); toast((on ? 'Following ' : 'Stopped following ') + topicLabel(id));
   }
@@ -2299,7 +2311,7 @@
         return;
       }
     }
-    var x = e.target.closest('[data-retry],[data-suggest],[data-asksend],[data-editprofile],[data-settopics],[data-setback],[data-follow],[data-followall],[data-managetopics]');
+    var x = e.target.closest('[data-retry],[data-suggest],[data-asksend],[data-editprofile],[data-settopics],[data-setback],[data-follow],[data-followall],[data-followevery],[data-managetopics]');
     if (x) {
       if (x.hasAttribute('data-retry')) { S.booting = true; render(); loadAll(); return; }
       if (x.dataset.suggest) {
@@ -2312,6 +2324,7 @@
       if (x.hasAttribute('data-setback')) { S.setView = null; render(); $('#main').scrollTop = 0; return; }
       if (x.dataset.follow) { toggleFollow(x.dataset.follow); return; }
       if (x.hasAttribute('data-followall')) { setFollow(['arctic-security', 'ai-governance', 'critical-minerals', 'geo']); haptic(); render(); toast('Pinned the live desks'); return; }
+      if (x.hasAttribute('data-followevery')) { setFollow(catalogIds()); haptic(); render(); toast('Pinned all ' + S.follow.length + ' topics'); return; }
     }
     var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],[data-sharesignal],[data-sharego],[data-subtopic],#btnSearch,#sheet');
     if (!t) return;
@@ -2536,6 +2549,7 @@
       S.generated = validFeed(bundled) ? bundled.generated : null; if (cache && cache.generated && (!S.generated || cache.generated > S.generated)) S.generated = cache.generated;
       S.trends = validFeed(bundled) && bundled.signalTrends ? bundled.signalTrends : null;
       S.items = mergeFeeds(validFeed(bundled) ? bundled.items : [], cache && Array.isArray(cache.items) ? cache.items : []).filter(isPublished);
+      syncTopicStatus();
       S.saved = Array.isArray(r[2]) ? r[2] : []; S.read = r[3] || {}; if (cache && cache.updated) S.updated = cache.updated;
       if (r[4]) for (var k in r[4]) S.prefs[k] = r[4][k];
       S.reactions = r[5] && typeof r[5] === 'object' ? r[5] : {}; Object.keys(S.reactions).forEach(function (k) { var v = S.reactions[k]; if (v === 'amused' || v === 'like') S.reactions[k] = typeof v === 'object' ? v : { r: 'useful', t: Date.now() }; if (v && v.r === 'amused') v.r = 'useful'; if (v && v.r === 'like') v.r = 'useful'; }); Object.keys(S.reactions).forEach(function (k) { if (S.reactions[k] === 'amused') S.reactions[k] = 'useful'; });
@@ -2555,7 +2569,7 @@
       S.signalFeedback = r[13] && typeof r[13] === 'object' ? r[13] : {};
       S.onboarded = !!r[6];
       var pf = r[7], fw = r[8] && typeof r[8] === 'object' ? cleanFollow(r[8].topics) : [];
-      // Followed topics: the saved choice, else the Week 1 interest topics, else all four.
+      // Followed topics: the saved choice, else the profile topics, else the four live desks.
       S.follow = fw.length ? fw : (pf && Array.isArray(pf.topics) && cleanFollow(pf.topics).length ? cleanFollow(pf.topics) : cleanFollow(DESK_ORDER));
       S.profile = pf && typeof pf === 'object' && Array.isArray(pf.topics) ? { topics: pf.topics.filter(function (t) { return TOPIC_LABEL[t]; }), regions: (pf.regions || []).filter(function (x) { return typeof x === 'string'; }), roles: (pf.roles || []).filter(function (x) { return typeof x === 'string'; }) } : null;
       fetch('data/signal_fields_local.json').then(function (x) { return x.json(); }).then(function (j) { S.sigFields = j && j.items || {}; render(); if (S.current) refreshReader(); }).catch(function () {});

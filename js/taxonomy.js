@@ -10,6 +10,8 @@
      minerals -> critical-minerals
      geo -> geo (kept as the existing Geoeconomics desk; not merged into another group)
    Coming-soon groups are not auto-followed and cannot be pinned as live desks.
+   Nov 10, 2026: status below is only the bundled default. app.js syncTopicStatus() marks a group live when the
+   loaded feed has at least one item tagged with the group id, and back to coming soon when none remain.
 */
 window.VX_TAXONOMY = [
   { id: 'arctic-security', label: 'Arctic security', status: 'active', aliases: ['arctic', 'arctic security'], focus: 'Sovereignty, shipping and subsea infrastructure',
