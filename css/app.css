@@ -820,7 +820,12 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .topic-block h3{margin:0;font-family:"Space Grotesk",Inter,sans-serif;font-size:17px;font-weight:700}
 .soon-tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--gray);white-space:nowrap}
 .sub-list{list-style:none;margin:8px 0 0;padding:0}
-.sub-list li{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--gray);font-size:15px;border-top:1px solid var(--line)}
+.sub-list li{border-top:1px solid var(--line)}
+.sub-go{width:100%;min-height:48px;display:flex;align-items:center;gap:8px;color:var(--text);font-size:15px;text-align:left;padding:0}
+.sub-go:active{background:var(--panel2)}
+.sub-go .sub-l{flex:1;min-width:0;color:#D8D8D6}
+.sub-go .chev{width:16px;height:16px;flex:none;stroke:var(--dim);fill:none;stroke-width:2}
+.soon-tag.live{color:var(--orange);border-color:rgba(255,107,53,.45)}
 .sub-note{color:var(--dim);font-size:13px;line-height:1.4;margin:6px var(--gutter) 8px}
 .share-note-l{display:block;font-size:13px;color:var(--gray);margin-top:8px}
 .btn[disabled]{opacity:.45}
@@ -842,3 +847,26 @@ body.ob-open #onboard{top:0}
 body.ob-open .ob-screen{padding-top:calc(var(--sat) + 56px + 8px)}
 .ob-opt.soon{opacity:1}
 .coming-empty{padding-top:48px}
+
+/* 1.3.9: tappable Visibility rows, trust pages, refresh state, onboarding Public note */
+.cell-spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.trust-page .set-sub{margin:0 var(--gutter) 12px}
+.trust-body{margin:0 var(--gutter)}
+.tr-sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.tr-sec:last-child{border-bottom:0}
+.tr-sec h3{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--text)}
+.tr-sec p{margin:0;color:#BDBDBB;font-size:15px;line-height:1.45}
+.trust-page .sd-note{margin:12px var(--gutter)}
+.vis-p{color:#BDBDBB;font-size:15px;line-height:1.45}
+.vis-state{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
+.vis-state div{display:flex;flex-direction:column;gap:2px;font-size:14px;color:#BDBDBB;line-height:1.4}
+#sheet .vis-state b.vis-b{display:block;color:var(--text);font-size:15px;margin:0}
+.vis-dot{width:10px;height:10px;border-radius:50%;background:#555;margin-top:5px;flex:none}
+.vis-dot.on{background:var(--orange)}
+.vis-list{margin:4px 0 12px;padding-left:18px;color:#BDBDBB;font-size:14px;line-height:1.5}
+.vis-later{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;margin:0 0 14px}
+.vis-later p{margin:6px 0 0;color:#BDBDBB;font-size:14px;line-height:1.45}
+.ob-opt[data-v="PUBLIC"]{opacity:.72}
+.ob-note{margin:10px 0 0;padding:10px 12px;border-left:2px solid var(--orange);background:rgba(255,107,53,.08);border-radius:6px;color:#E2E2E0;font-size:14px;line-height:1.45}
+.empty-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}

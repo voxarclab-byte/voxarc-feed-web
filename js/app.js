@@ -12,7 +12,7 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.8', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.3.9', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
@@ -1442,7 +1442,7 @@
         (dg && dg.status !== 'active' ? '<p class="sub-note">Coming soon. Signals will appear here when coverage goes live.</p>' : '') +
         '<div class="fresh' + (fr.week ? ' live' : '') + '"><span class="fresh-dot" aria-hidden="true"></span>' + esc(fr.text) + '</div></header>';
       h += subtopicBarHTML(S.topic);
-      h += deskHeroHTML(S.topic);
+      if (!S.subtopic) h += deskHeroHTML(S.topic); // a chosen subtopic shows its signals first
       h += '<div class="section-h"><h2>Briefings</h2><span>' + list.length + ' on this desk</span></div><span id="unread-l" hidden>Unread</span>';
     } else {
       S.sigIds = null; h += signalsHTML();
@@ -1456,8 +1456,9 @@
     if (!list.length) {
       var comingDesk = desk && taxGroup(S.topic) && taxGroup(S.topic).status !== 'active';
       if (comingDesk) h += '<div class="empty coming-empty" role="status">' + ICON.spark + '<h3>Coverage coming soon</h3><p>Coverage for this topic is coming soon. You\u2019ll see signals here as soon as it goes live.</p><button type="button" class="btn ghost sm" data-managetopics>Manage topics</button></div>';
-      else h += '<div class="empty">' + ICON.search + '<h3>No signals found</h3><p>' + (S.subtopic ? 'Nothing in the current feed mentions ' + esc((subtopicOf(S.subtopic) || {}).label || 'that subtopic') + '. Subtopics are a search refinement, not a live feed.' : (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or open Manage topics.')) + '</p>' +
-        (S.query ? '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' : '') + '</div>';
+      else h += '<div class="empty">' + ICON.search + '<h3>' + (S.subtopic ? 'Coverage coming soon' : 'No signals found') + '</h3><p>' + (S.subtopic ? 'Dedicated coverage of ' + esc((subtopicOf(S.subtopic) || {}).label || 'this subtopic') + ' is coming soon. Nothing in the current feed mentions it yet.' : (S.query ? 'Nothing matches \u201C' + esc(S.query.trim()) + '\u201D. Try a place, a mineral or a policy name.' : 'Try another topic, or open Manage topics.')) + '</p>' +
+        (S.query ? '<div class="sugg">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) { return '<button class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' : '') +
+        (S.subtopic ? '<div class="empty-acts"><button type="button" class="btn ghost sm" data-subtopic="' + esc(S.subtopic) + '">Show all ' + esc(topicLabel(S.topic)) + '</button><button type="button" class="btn ghost sm" data-managetopics>Manage topics</button></div>' : '') + '</div>';
     }
     if (!desk && !S.query) list = S.sigSort === 'top' ? list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); }) : focusOrder(list);
     list.forEach(function (i, n) { h += i.signal ? piCardHTML(i, n === 0 ? 'lead' : '') : cardHTML(i, n === 0 && !S.query && !desk, n); });
@@ -1526,7 +1527,7 @@
     var shown = 0;
     var h = '<div class="settings-inner"><div class="subbar"><button class="back" data-setback>' + ICON.back + '<span>Settings</span></button></div>' +
       '<div class="section-h"><h2 id="st-h" tabindex="-1">Manage topics</h2><span>' + S.follow.length + ' pinned</span></div>' +
-      '<p class="set-sub">Home shows the topics you pin, usually 3 to 5. Coming soon topics can be followed and show an empty desk until coverage goes live. Subtopics are searchable and are not separate follows. Choices stay on this device.</p>' +
+      '<p class="set-sub">Home shows the topics you pin, usually 3 to 5. Coming soon topics can be followed and show an empty desk until coverage goes live. Tap a subtopic to see its signals. Subtopics refine a topic and are not separate follows. Choices stay on this device.</p>' +
       '<div class="searchwrap topic-search"><label class="search">' + ICON.search + '<input id="topicQ" type="search" placeholder="Search topics and subtopics" aria-label="Search topics" value="' + esc(S.topicQuery || '') + '" autocomplete="off"></label></div>';
     TAX.forEach(function (g) {
       if (!taxMatch(g, q)) return;
@@ -1536,7 +1537,9 @@
         (live ? (n + ' signal' + (n === 1 ? '' : 's') + ' in the feed') : 'Coming soon') + '</small></div>' +
         '<button class="switch' + (on ? ' on' : '') + '" data-follow="' + g.id + '" role="switch" aria-checked="' + on + '" aria-labelledby="tl-' + g.id + '"></button>' +
         '</div><ul class="sub-list">' + (g.subs || []).map(function (s) {
-          return '<li><span>' + esc(s.label) + '</span><span class="soon-tag">Search only</span></li>';
+          var sn = live ? S.items.filter(function (i) { return topicHit(i, g.id) && subtopicHit(i, s.id); }).length : 0;
+          var meta = !live ? 'Coming soon' : sn ? sn + ' signal' + (sn === 1 ? '' : 's') : 'No signals yet';
+          return '<li><button type="button" class="sub-go" data-subgo="' + esc(s.id) + '" data-group="' + esc(g.id) + '" aria-label="' + esc(s.label + ', ' + meta + ', view signals') + '"><span class="sub-l">' + esc(s.label) + '</span><span class="soon-tag' + (live && sn ? ' live' : '') + '">' + esc(meta) + '</span>' + ICON.chev + '</button></li>';
         }).join('') + '</ul></section>';
     });
     var geoQ = !q || 'geoeconomics'.indexOf(q) >= 0 || 'geo'.indexOf(q) >= 0 || q.indexOf('saved') >= 0;
@@ -1564,25 +1567,34 @@
   window.addEventListener('hashchange', function () { if (location.hash === '#contact') openContact(); });
   function trustPageHTML(view) {
     var disc = '<p class="sd-note">Informational only, not legal or trade-compliance advice.</p>';
-    if (view === 'methodology') return '<header class="tb"><button class="back" data-backset>Back</button><h1>Methodology</h1></header><div class="set-block"><p>Signals are extracted from primary sources first. Identifiers (HS, ECCN, dockets) appear only when quoted in the source. Impact tier (1-4) rates the instrument; importance (High/Medium/Low) and score /10 are separate. Prompt Stack v4 separates ingestion, copilot, validation and app layers. Slack/Teams/email brief delivery and external LLM calls are not available in this build.</p>' + disc + '</div>';
+    if (view === 'methodology') return trustHead('Methodology', 'How Voxarc Lab turns public sources into signals.') + '<div class="group trust-body">' +
+      '<div class="tr-sec"><h3>Sources first</h3><p>Every signal starts from a primary source: a law, regulation, docket, agency notice or official dataset. Each briefing names its source and links to it.</p></div>' +
+      '<div class="tr-sec"><h3>Identifiers</h3><p>HS codes, ECCNs and docket numbers appear only when the source itself quotes them. Voxarc Lab does not infer them.</p></div>' +
+      '<div class="tr-sec"><h3>Ratings</h3><p>Impact tier (1 to 4) rates the instrument itself. Importance (High, Medium, Low) and the score out of 10 are separate editorial judgments on the cited sources.</p></div>' +
+      '<div class="tr-sec"><h3>Checks</h3><p>Ingestion, drafting and validation are separate steps, and a signal is published only after its source check passes. Corrections are logged with a date and linked to the original signal.</p></div>' +
+      '<div class="tr-sec"><h3>Not in this build</h3><p>Slack, Teams or email brief delivery, and calls to external AI models.</p></div></div>' + disc;
     if (view === 'corrections') {
       var rows = []; S.items.forEach(function (i) { var p = polOf(i); (p.corrections_log || []).forEach(function (c) { rows.push({ i: i, c: c }); }); });
-      return '<header class="tb"><button class="back" data-backset>Back</button><h1>Corrections log</h1></header><div class="set-block">' +
+      return trustHead('Corrections log', 'Dated fixes linked to the original signal.') + '<div class="set-block">' +
         (rows.length ? '<ul>' + rows.map(function (r) { return '<li><button data-open="' + esc(r.i.id) + '">' + esc(mechTitle(r.i)) + '</button> \u00B7 ' + esc(JSON.stringify(r.c)) + '</li>'; }).join('') + '</ul>'
           : '<p>No corrections published yet. Any fix creates a dated entry linked to the original signal.</p>') + disc + '</div>';
     }
     if (view === 'track') {
       var calls = S.items.filter(function (i) { return polOf(i).impact_tier >= 3; }).slice(0, 12);
-      return '<header class="tb"><button class="back" data-backset>Back</button><h1>Track record</h1></header><div class="set-block"><p>Timestamped published calls. Outcomes are appended as separate records; published calls are never edited.</p><ul>' +
+      return trustHead('Track record', 'Published calls with hits and misses.') + '<div class="set-block"><p>Timestamped published calls. Outcomes are appended as separate records; published calls are never edited.</p><ul>' +
         (calls.length ? calls.map(function (i) { var p = polOf(i); return '<li><span class="tabnum">' + esc(fmtDate(p.ingested_at || i.published)) + '</span> Tier ' + esc(String(p.impact_tier)) + ' \u00B7 ' + esc(mechTitle(i)) + ' \u00B7 ' + esc(p.confidence_rating || '') + '</li>'; }).join('')
           : '<li>No tier 3+ calls in the current desk.</li>') + '</ul>' + disc + '</div>';
     }
     return '';
   }
+  function trustHead(title, sub) {
+    return '<div class="settings-inner trust-page"><div class="subbar"><button class="back" data-backset>' + ICON.back + '<span>Settings</span></button></div>' +
+      '<div class="section-h"><h2 id="tr-h" tabindex="-1">' + esc(title) + '</h2></div><p class="set-sub">' + esc(sub) + '</p>';
+  }
   function renderSettings() {
     var times = []; for (var hh = 5; hh <= 21; hh++) times.push(hh);
     if (S.setView === 'topics') return renderSettingsTopics();
-    if (S.setView === 'methodology' || S.setView === 'corrections' || S.setView === 'track') return trustPageHTML(S.setView);
+    if (S.setView === 'methodology' || S.setView === 'corrections' || S.setView === 'track') return trustPageHTML(S.setView) + '</div>';
     if (S.setView === 'contact') return renderContact();
     var h = '<div class="settings-inner"><div class="section-h"><h2>Settings</h2></div>' + (window.VXSocial ? window.VXSocial.settingsHTML() : '');
     h += '<div class="group-h">Help</div><div class="group"><button class="cell" data-contact><div class="l">Contact us<small>Voxarc Lab support: ' + esc(CFG.supportEmail) + '</small></div>' + ICON.chev + '</button></div>';
@@ -1592,13 +1604,14 @@
     h += '<div class="group-h">Reading</div><div class="group">' +
       '<div class="cell"><div class="l" id="fs-l">Text size</div><div class="seg" role="group" aria-labelledby="fs-l">' + [15, 17, 19, 21].map(function (f, n) { return '<button data-fs="' + f + '" aria-pressed="' + (S.prefs.fs === f) + '" aria-label="' + ['Small', 'Medium', 'Large', 'Extra large'][n] + '" class="' + (S.prefs.fs === f ? 'on' : '') + '">' + ['S', 'M', 'L', 'XL'][n] + '</button>'; }).join('') + '</div></div>' +
       '<div class="cell"><div class="l">Offline library<small>' + S.items.length + ' briefings stored on this device' + (S.updated ? ', checked ' + (fmtDate(S.updated) === 'Today' ? 'today' : fmtDate(S.updated) === 'Yesterday' ? 'yesterday' : fmtDate(S.updated)) : '') + '</small></div><div class="r">' + (S.online ? 'Ready' : 'Offline') + '</div></div>' +
-      '<button class="cell" data-refresh><div class="l">Check for new briefings</div>' + ICON.chev + '</button></div>';
+      '<button class="cell" data-refresh aria-live="polite"><div class="l">' + (S.refreshing ? 'Checking for new briefings\u2026' : 'Check for new briefings') + '<small>' + esc(S.refreshing ? 'Contacting the Voxarc feed' : (S.lastCheck ? S.lastCheck : 'Downloads any briefings published since your last check')) + '</small></div>' + (S.refreshing ? '<span class="cell-spin" aria-hidden="true"></span>' : ICON.chev) + '</button></div>';
+    var nNotes = Object.keys(S.privateNotes || {}).length, nFb = Object.keys(S.signalFeedback || {}).length;
     h += '<div class="group-h">Visibility</div><div class="group">' +
-      '<div class="cell"><div class="l">Stealth Corporate Mode<small>Stealth is on by default. Public posting stays off unless you opt in later (not offered in this build).</small></div><div class="r">On</div></div>' +
-      '<div class="cell"><div class="l">Comment &amp; Annotate<small>Private Note on this device (or your account when signed in). Not team chat.</small></div><div class="r">Private</div></div>' +
-      '<div class="cell"><div class="l">Cite &amp; Annotate<small>Saves to your Private Desk on this device. Not sent to a team.</small></div><div class="r">Private</div></div>' +
-      '<div class="cell"><div class="l">Tracked by<small>Public analyst profile off until server checks ship</small></div><div class="r">Off</div></div>' +
-      '<div class="cell"><div class="l">Helpful Signal / Not Relevant<small>Always private telemetry on this device</small></div><div class="r">Private</div></div>' +
+      '<button class="cell" data-vis="stealth"><div class="l">Stealth Corporate Mode<small>On by default. Nothing you do in Voxarc Feed is published.</small></div><div class="r">On</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="comment"><div class="l">Comment &amp; Annotate<small>' + nNotes + ' Private Note' + (nNotes === 1 ? '' : 's') + ' on this device. Not team chat.</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="cite"><div class="l">Cite &amp; Annotate<small>Saves to your Private Desk on this device. Not sent to a team.</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="tracked"><div class="l">Tracked by<small>Public analyst profiles are coming later</small></div><div class="r">Off</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="feedback"><div class="l">Helpful Signal / Not Relevant<small>' + nFb + ' mark' + (nFb === 1 ? '' : 's') + ', kept private on this device</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
       '<p class="set-sub" style="padding:8px 16px 12px">Never public: Watchlists, Private Notes, Forward to Team, Helpful/Not Relevant, Ask history, and whom you track.</p></div>';
     h += '<div class="group-h">Trust</div><div class="group">' +
       '<button class="cell" data-trust="methodology"><div class="l">Methodology<small>How tiers, provenance and scores work</small></div><div class="r">\u203A</div></button>' +
@@ -2046,8 +2059,8 @@
       var vis = o.visibility || 'STEALTH';
       h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. Public Comment, Cite and Tracked by stay off until you opt in later (not offered in this build). Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
         '<button class="ob-opt' + (vis === 'STEALTH' ? ' on' : '') + '" data-ob="visibility" data-v="STEALTH" aria-pressed="' + (vis === 'STEALTH') + '">Stealth (recommended)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '" disabled title="Public mode ships after server visibility checks">Public (not available yet)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        '</div><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
+        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="false" aria-describedby="obVisNote">Public (coming later)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        '</div><p class="ob-note" id="obVisNote" role="status" aria-live="polite" hidden></p><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>Save desk preferences</button></div>';
     } else {
       h = '<div class="ob-body"><h1 id="ob-h">Continue</h1></div><div class="ob-cta"><button class="btn primary" data-obdone>Done</button></div>';
@@ -2058,7 +2071,11 @@
   }
   function obToggle(kind, v) {
     if (kind === 'visibility') {
-      if (v !== 'STEALTH') { toast('Public mode is not available in this build'); return; }
+      if (v !== 'STEALTH') {
+        var nt = document.getElementById('obVisNote');
+        if (nt) { nt.textContent = 'Public mode comes in a later update, once verified accounts and visibility checks are live. Stealth stays selected for now.'; nt.hidden = false; }
+        haptic('LIGHT'); return;
+      }
       S.ob.visibility = 'STEALTH';
       var opts = document.querySelectorAll('#onboard [data-ob="visibility"]');
       for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === 'STEALTH'; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
@@ -2208,6 +2225,61 @@
   }
   function sheet(html) { var s = $('#sheet'); $('.sheet-card', s).innerHTML = html; s.hidden = false; s.removeAttribute('hidden'); s.style.display = 'flex'; }
   function closeSheet() { var s = $('#sheet'); if (!s) return; s.hidden = true; s.setAttribute('hidden', ''); s.style.display = 'none'; }
+  function visSheet(kind) {
+    var nNotes = Object.keys(S.privateNotes || {}).length, fb = S.signalFeedback || {}, nH = 0, nN = 0;
+    Object.keys(fb).forEach(function (k) { if (fb[k] && fb[k].v === 'helpful') nH++; else nN++; });
+    var ok = '<button class="btn ghost" data-closesheet>Done</button>';
+    var later = function (what) { return '<div class="vis-later"><span class="soon-tag">Coming later</span><p>' + what + '</p></div>'; };
+    if (kind === 'stealth') {
+      sheet('<h3>Stealth Corporate Mode</h3><div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">On</b><span>Nothing you read, save, note or mark is published.</span></div></div>' +
+        '<ul class="vis-list"><li>Watchlists, Private Notes and Helpful/Not Relevant stay on this device.</li><li>Forward to Team opens your share sheet. You pick the recipient; nothing is auto-sent.</li><li>No public profile, comments or citations exist for your account.</li></ul>' +
+        later('Public mode, where you can choose to publish comments and citations, needs verified accounts and server visibility checks. It is not live yet, so Stealth stays on.') +
+        '<button class="btn primary" data-closesheet>Keep Stealth on</button>');
+      return;
+    }
+    if (kind === 'comment' || kind === 'cite') {
+      var c = kind === 'cite';
+      sheet('<h3>' + (c ? 'Cite &amp; Annotate' : 'Comment &amp; Annotate') + '</h3>' +
+        '<p class="vis-p">' + (c ? 'Cite a signal from its dossier to save a citation note to your Private Desk. It is not sent to a team and not published.' : 'Add a Private Note from any signal\u2019s dossier. Notes are your own analysis, not team chat and not public comments.') + '</p>' +
+        '<div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">' + nNotes + ' saved</b><span>Stored on this device. Account sync is not switched on yet.</span></div></div>' +
+        later(c ? 'Public citations, credited to your analyst profile, need verified accounts and moderation.' : 'Public comments need verified accounts and moderation.') +
+        '<button class="btn primary" data-visnotes>Open ' + (c ? 'Private Desk' : 'Private Notes') + '</button>' +
+        (nNotes ? '<button class="btn ghost" data-visclear="notes">Delete all Private Notes on this device</button>' : '') + ok);
+      return;
+    }
+    if (kind === 'tracked') {
+      sheet('<h3>Tracked by</h3><div class="vis-state"><span class="vis-dot" aria-hidden="true"></span><div><b class="vis-b">Off</b><span>Nobody can follow or track your activity.</span></div></div>' +
+        later('A public analyst profile that others can follow is planned. It needs verified accounts and server checks, which are not live yet. When it ships it will be opt-in, and whom you track will still stay private.') + ok);
+      return;
+    }
+    if (kind === 'feedback') {
+      sheet('<h3>Helpful Signal / Not Relevant</h3><p class="vis-p">Mark a signal from its dossier. Marks stay on this device and are never shown to anyone.</p>' +
+        '<div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">' + nH + ' Helpful \u00B7 ' + nN + ' Not Relevant</b><span>Stored privately on this device.</span></div></div>' +
+        (nH + nN ? '<button class="btn ghost" data-visclear="feedback">Clear my marks</button>' : '') + ok);
+      return;
+    }
+  }
+  function visClear(what, confirmed) {
+    if (what === 'notes') {
+      var n = Object.keys(S.privateNotes || {}).length;
+      if (!confirmed) { sheet('<h3>Delete all Private Notes?</h3><p class="vis-p">This deletes ' + n + ' Private Note' + (n === 1 ? '' : 's') + ' from this device. It cannot be undone.</p><button class="btn primary" data-visclearok="notes">Delete notes</button><button class="btn ghost" data-vis="comment">Cancel</button>'); return; }
+      S.privateNotes = {}; saveNotes(); closeSheet(); render(); toast('Private Notes deleted from this device'); return;
+    }
+    if (what === 'feedback') { S.signalFeedback = {}; store.set('vx.signalFeedback', S.signalFeedback); closeSheet(); render(); toast('Helpful / Not Relevant marks cleared'); }
+  }
+  function manualRefresh() {
+    if (S.refreshing) return;
+    S.refreshing = true; render();
+    var started = Date.now();
+    refreshRemote(true).then(function (okR) {
+      setTimeout(function () {
+        S.refreshing = false;
+        var now = new Date();
+        S.lastCheck = (okR ? 'Checked at ' : 'Could not reach the feed at ') + fmtTime(now.getHours(), now.getMinutes()) + (okR ? '' : '. Showing saved briefings');
+        render();
+      }, Math.max(0, 500 - (Date.now() - started)));
+    });
+  }
   function confirmClearSaved() {
     if (!S.saved.length) { toast('No saved briefings to clear'); return; }
     sheet('<h3>Clear saved briefings?</h3><p>This removes all ' + S.saved.length + ' saved briefing' + (S.saved.length === 1 ? '' : 's') + ' from this device. The briefings stay in the feed.</p>' +
@@ -2226,6 +2298,20 @@
       if (ob.hasAttribute('data-obback')) { S.ob.step = Math.max(0, S.ob.step - 1); renderOnboarding(-1); return; }
       if (ob.hasAttribute('data-obskip')) { finishOnboarding(true); return; }
       if (ob.hasAttribute('data-obdone')) { finishOnboarding(false); return; }
+    }
+    var vz = e.target.closest('[data-vis],[data-visnotes],[data-visclear],[data-visclearok],[data-subgo]');
+    if (vz) {
+      if (vz.dataset.vis) { visSheet(vz.dataset.vis); haptic('LIGHT'); return; }
+      if (vz.hasAttribute('data-visnotes')) { closeSheet(); S.tab = 'saved'; S.savedView = 'notes'; S.setView = null; render(); $('#main').scrollTop = 0; return; }
+      if (vz.dataset.visclear) { visClear(vz.dataset.visclear, false); return; }
+      if (vz.dataset.visclearok) { visClear(vz.dataset.visclearok, true); return; }
+      if (vz.dataset.subgo) {
+        if (!wide() && S.current) closeArticle();
+        S.tab = 'feed'; S.setView = null; S.query = ''; S.searchOpen = false; S.topicQuery = '';
+        S.topic = vz.dataset.group; S.subtopic = vz.dataset.subgo; haptic(); render(); $('#main').scrollTop = 0;
+        var ac = document.querySelector('#main .chips.subtopics .chip.active'); if (ac && ac.parentNode) ac.parentNode.scrollLeft = Math.max(0, ac.offsetLeft - 16);
+        return;
+      }
     }
     var x = e.target.closest('[data-retry],[data-suggest],[data-asksend],[data-editprofile],[data-settopics],[data-setback],[data-follow],[data-followall],[data-managetopics]');
     if (x) {
@@ -2297,8 +2383,8 @@
     if (t.dataset.forward) { e.stopPropagation(); forwardTeam(t.dataset.forward); return; }
     if (t.dataset.privnote) { e.stopPropagation(); privateNoteSheet(t.dataset.privnote); return; }
     if (t.dataset.notesave) { e.stopPropagation(); savePrivateNote(t.dataset.notesave); return; }
-    if (t.dataset.trust) { e.stopPropagation(); S.setView = t.dataset.trust; S.tab = 'settings'; render(); return; }
-    if (t.hasAttribute('data-backset')) { e.stopPropagation(); S.setView = null; render(); return; }
+    if (t.dataset.trust) { e.stopPropagation(); S.setView = t.dataset.trust; S.tab = 'settings'; render(); $('#main').scrollTop = 0; var trh = $('#tr-h'); if (trh) try { trh.focus({ preventScroll: true }); } catch (er) {} return; }
+    if (t.hasAttribute('data-backset')) { e.stopPropagation(); S.setView = null; render(); $('#main').scrollTop = 0; return; }
     if (t.dataset.watch) { e.stopPropagation(); toggleWatch(t.dataset.watch); return; }
     if (t.dataset.sinfo) { e.stopPropagation(); infoSheet(); return; }
     if (t.hasAttribute('data-tipdone')) { e.stopPropagation(); S.tipDone = true; store.set('vx.tipSignals', 1); render(); return; }
@@ -2335,7 +2421,7 @@
     if (t.hasAttribute('data-clearsavedok')) { closeSheet(); S.saved = []; store.set('vx.saved', S.saved); haptic(); render(); toast('Saved briefings cleared'); return; }
     if (t.hasAttribute('data-closesheet')) { closeSheet(); return; }
     if (t.dataset.mail) { closeSheet(); mail(t.dataset.mail); return; }
-    if (t.hasAttribute('data-refresh')) { refreshRemote(true); return; }
+    if (t.hasAttribute('data-refresh')) { if (S.tab === 'settings') manualRefresh(); else refreshRemote(true); return; }
     if (t.hasAttribute('data-clearread')) { S.read = {}; store.set('vx.read', S.read); render(); toast('Reading history cleared. All briefings are unread'); return; }
     if (t.hasAttribute('data-clear')) { S.query = ''; render(); return; }
     if (t.hasAttribute('data-textsize')) { var o = [15, 17, 19, 21]; S.prefs.fs = o[(o.indexOf(S.prefs.fs) + 1) % o.length]; applyFs(); store.set('vx.prefs', S.prefs); return; }
