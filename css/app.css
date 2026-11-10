@@ -848,7 +848,7 @@ body.ob-open .ob-screen{padding-top:calc(var(--sat) + 56px + 8px)}
 .ob-opt.soon{opacity:1}
 .coming-empty{padding-top:48px}
 
-/* 1.3.9: tappable Visibility rows, trust pages, refresh state, onboarding Public note */
+/* 1.3.9 (kept in 1.4.0): tappable Visibility rows, trust pages, refresh state, onboarding Public note */
 .cell-spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .trust-page .set-sub{margin:0 var(--gutter) 12px}

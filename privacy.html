@@ -37,53 +37,43 @@
     <div class="brand"><b>Voxarc Feed</b><span>Policy intelligence by Voxarc Lab</span></div>
   </header>
   <h1>Voxarc Feed Privacy Policy</h1>
-  <p class="updated">Last updated: November 7, 2026 (app version 1.3.5)</p>
-  <div class="summary"><p><strong>In short:</strong> You can read Voxarc Feed without an account. Without an account, Watchlist, Private Notes, reading history, topics and settings stay on your device and are not sent to us. Stealth (private) is the default visibility in 1.3.5. If you create an optional email account, we store identity data and may sync Watchlist, Private Notes and Ask (copilot) answer logs to your account under owner-only row-level security. Optional social features (reactions, comments, reposts, follow/be-followed, Find peers, report/block) are available when you opt in; profiles stay Stealth until you confirm Public. Google sign-in and Slack/Teams/email team briefs are not enabled. Deleting your account removes your profile and cascaded social rows. We do not sell data, show ads or use analytics or crash-reporting tools.</p></div>
+  <p class="updated">Last updated: November 9, 2026 (app version 1.4.0)</p>
+  <div class="summary"><p><strong>In short:</strong> You can read Voxarc Feed without an account. Watchlist, Private Notes, Helpful/Not Relevant marks, Ask history, reading history, topics and settings stay on your device and are never sent to us. Accounts are optional and start in <b>Stealth</b>, where nothing you do is public. If you choose <b>Public mode</b>, your display name, handle, optional headline and avatar, the comments and citations you post, and how many people track you become visible to other readers. Whom you track is never public. You can switch back to Stealth at any time, and deleting your account deletes all of it. We do not sell data, show ads or use analytics or crash-reporting tools.</p></div>
 
   <h2>Who we are</h2>
-  <p>Voxarc Feed is published by Voxarc Lab Inc. ("Voxarc Lab", "we"), Whitby, Ontario, Canada. Contact: <a href="mailto:support@voxarc.io">support@voxarc.io</a>. Canonical policy URL: <a href="https://voxarclab.io/privacy">https://voxarclab.io/privacy</a>. A matching static copy is also published at <a href="https://voxarclab-byte.github.io/voxarc-feed-web/privacy.html">GitHub Pages</a>.</p>
+  <p>Voxarc Feed is published by Voxarc Lab Inc. ("Voxarc Lab", "we"), Whitby, Ontario, Canada. Contact: <a href="mailto:support@voxarc.io">support@voxarc.io</a>.</p>
 
   <h2>Reading without an account</h2>
-  <p>Accounts are optional. Without one, your saved briefings, Watchlist, Private Notes, reactions, reading history, topics, region and role choices and settings are stored only on your device and are never sent to us.</p>
+  <p>Accounts are optional. Without one, your saved briefings, Watchlist, Private Notes, Helpful/Not Relevant marks, Ask history, reading history, topic, region and role choices and settings are stored only on your device and are never sent to us. The same items stay on your device when you are signed in; this version does not sync them to your account.</p>
 
   <h2>Data we collect if you create an account</h2>
-  <p><b>Identity data</b>, collected when you create an account:</p>
-  <ul><li>Name (as you enter it) and the handle you choose</li><li>Email address (used to sign in and for account messages)</li><li>A unique user ID created by our sign-in system</li><li>Profile avatar, only if you add an avatar image link</li></ul>
-  <p><b>Account-synced content</b> (owner-only; not shown to other members):</p>
-  <ul>
-    <li><b>Private Notes:</b> when signed in, notes you save sync to your account (<code>private_notes</code>) and are readable only by your user ID via row-level security. They are not team-visible and not public. Until you sign in, notes remain on-device only.</li>
-    <li><b>Watchlist:</b> signals you watch may sync to your account so they appear on your other signed-in devices.</li>
-    <li><b>Ask / copilot answer logs:</b> if you use Ask while signed in, grounded template answers over retrieved desk fields may be stored in <code>copilot_answer_log</code> for your account only (owner-only RLS). This build does not call an external LLM and does not send Ask answers to Slack, Teams or email.</li>
-  </ul>
-  <p><b>Optional social content</b> (1.3.5; Stealth default, Public opt-in):</p>
-  <ul>
-    <li><b>Reactions</b> (Like/Dislike), <b>comments</b>, <b>reposts</b>, <b>follows</b>, and related safety records (reports, blocks, Community Guidelines acceptance, rate-limit audit log) when you use those features while signed in.</li>
-    <li>Stealth profiles are not listed in Find peers; your comments and reposts are not shown to others until you opt into Public in Profile → Edit profile (with an explicit confirmation).</li>
-    <li>Public profiles may appear in Find peers; others can see your public comments, reposts and follower/following lists. Watchlists, Private Notes, Ask history and whom you track remain private in every mode.</li>
-    <li>Reporting a comment hides it for everyone immediately while Voxarc Lab reviews it. Blocking someone removes follows both ways and hides their content from you.</li>
-  </ul>
-  <p><b>Technical data:</b> our backend provider (Supabase, servers in Canada, ca-central-1) records the IP address and basic request details (time, endpoint and browser or app user agent) in short-lived security logs when your device contacts it. The app itself does not collect your device model, OS version, advertising ID or location, and it does not include analytics or crash-reporting tools. If we ever add crash diagnostics we will update this policy first.</p>
+  <p><b>Account data</b>, collected when you create an account:</p>
+  <ul><li>Email address and a password (stored only as a salted hash by our sign-in system), used to sign you in</li><li>Display name, and the public handle and optional headline you choose</li><li>Profile avatar, only if you add an avatar image link</li><li>A unique user ID, and the time you accepted the Community Guidelines</li></ul>
+  <p><b>Your visibility mode</b> (Stealth or Public). Stealth is the default for every account.</p>
+  <p><b>User content you post in Public mode:</b></p>
+  <ul><li><b>Public comments</b> on signals, and <b>public citations</b> (a quoted passage plus your annotation). They are shown under the signal with your display name and handle, to signed-in and signed-out readers, while you are in Public mode. When you switch to Stealth they are hidden from everyone; switching back shows them again. You can delete any of them at any time.</li><li><b>Public analyst profile (Tracked by):</b> your name, handle, headline, avatar, public posts and the number of people tracking you.</li></ul>
+  <p><b>Private account records</b>, never shown to other readers:</p>
+  <ul><li><b>Analysts you track.</b> Only you can see your list. The analysts you track see a count. If you are in Public mode yourself, they can also see that you track them; if you are in Stealth you are counted but never named.</li><li>Blocks you make, reports you file, and reactions and saves you make while signed in</li><li>A short audit log of social actions used to enforce rate limits</li></ul>
+  <p><b>Technical data:</b> our backend provider (Supabase, servers in Canada, ca-central-1) records the IP address and basic request details (time, endpoint, app or browser user agent) in short-lived security logs. When you create an account we keep the network address for up to one hour to limit abuse (20 new accounts per network per hour). The app does not collect your device model, advertising ID or location, and has no analytics or crash-reporting tools.</p>
 
   <h2>Why we use it</h2>
-  <ul>
-    <li>To run your account and sync Watchlist, Private Notes and Ask logs for you alone</li>
-    <li>To run optional social features you use (comments, follows, reactions, reposts) and enforce rate limits and safety rules</li>
-    <li>To keep the service safe: review reports, enforce blocks and the Community Guidelines where those records still apply</li>
-    <li>To answer messages you send to support@voxarc.io</li>
-  </ul>
-  <p>We do not sell or rent personal data, use it for advertising, or share it with data brokers. Private Notes and Ask logs are not shared with other users.</p>
+  <ul><li>To run your account and sign you in</li><li>To show your public comments, citations and analyst profile when you choose Public mode, and to keep everything hidden in Stealth</li><li>To keep the community safe: automatic filtering of abusive language, rate limits, reports, blocks, moderation and enforcement of the Community Guidelines</li><li>To answer messages you send to support@voxarc.io</li></ul>
+  <p>We do not sell or rent personal data, use it for advertising, or share it with data brokers.</p>
+
+  <h2>Safety and moderation</h2>
+  <p>Posting requires an account, acceptance of the <a href="https://voxarclab-byte.github.io/voxarc-feed-web/community-guidelines.html">Community Guidelines</a>, and Public mode. Posts and profile names are checked by an automatic abusive-language filter. Anyone signed in can report a comment or account, or block a user. A reported comment is hidden for everyone right away while Voxarc Lab reviews it, normally within 24 hours, and we may restore it, remove it, or suspend the account. Blocking hides each other's posts and profiles and removes tracking both ways. Contact: <a href="mailto:support@voxarc.io">support@voxarc.io</a>.</p>
 
   <h2>Who processes it</h2>
-  <ul><li><b>Supabase</b> (database and sign-in), our service provider, under its data processing terms.</li><li><b>Google</b> would process sign-in only if Continue with Google were enabled in a future build; it is <b>not enabled</b> in 1.3.5.</li><li><b>GitHub</b> hosts the public briefing file the app downloads. That request contains no personal data, but GitHub receives your IP address under its own privacy statement.</li></ul>
+  <p>Supabase (database, sign-in and server functions, hosted in Canada), our service provider, under its data processing terms. GitHub hosts the public briefing file and this web app; those requests contain no personal data, but GitHub receives your IP address under its own privacy statement. Google sign-in is not enabled.</p>
 
   <h2>Security</h2>
-  <p>All data is encrypted in transit over HTTPS (TLS). Row level security limits each account to its own private notes, Ask logs and other private rows. Passwords are stored only as salted hashes by our sign-in provider.</p>
+  <p>All data is encrypted in transit (TLS). Row level security on our database lets each account change only its own content and read only its own private records. Public content is readable only while its author is in Public mode and not suspended.</p>
 
   <h2>Retention</h2>
-  <ul><li>Account data and content (including Private Notes, Watchlist sync, Ask logs and any retained historical comments/reposts): kept while your account exists, and deleted when you delete the account.</li><li>Reports you filed: kept without your identity for up to 90 days for safety review.</li><li>Server security logs: kept by Supabase for a short period (days), then deleted.</li><li>Data on your device: kept until you clear it in Settings or uninstall the app.</li></ul>
+  <ul><li>Account data and your public posts: kept while your account exists and deleted when you delete it. Posts you delete are removed immediately.</li><li>Reports you filed: kept without your identity for up to 90 days for safety review.</li><li>Sign-up network addresses: up to one hour. Server security logs: a few days.</li><li>Data on your device: until you clear it in Settings or uninstall the app.</li></ul>
 
   <h2>Your rights: access, export, correction and deletion</h2>
-  <ul><li><b>Correct:</b> edit your name, handle and avatar in Profile, Edit profile.</li><li><b>Delete in the app:</b> Settings, Account, Delete account. This permanently deletes your auth user and cascades profile, comments, follows, reactions, saves, reposts, blocks, reports you filed as reporter, watchlists, private notes and social audit rows tied to your ID.</li><li><b>Delete on the web, without the app:</b> <a href="https://voxarclab-byte.github.io/voxarc-feed-web/delete-account.html">voxarclab-byte.github.io/voxarc-feed-web/delete-account.html</a>.</li><li><b>Access or export:</b> email <a href="mailto:support@voxarc.io">support@voxarc.io</a> from your account email and we will send a copy of your data in a machine-readable format within 30 days.</li><li><b>Delete by email:</b> email support@voxarc.io with the subject "Delete my Voxarc Feed account". We delete it within 30 days and confirm.</li></ul>
+  <ul><li><b>Correct:</b> edit your name, handle, headline and avatar in Profile, Edit profile.</li><li><b>Go private:</b> Settings, Visibility, switch to Stealth. Your public content is hidden from everyone at once.</li><li><b>Delete in the app:</b> Settings, Account, Delete account. This permanently deletes your account and cascades your profile, public comments and citations, tracking, blocks, reactions, saves and audit rows. Reports you filed are kept without your identity.</li><li><b>Delete on the web, without the app:</b> <a href="https://voxarclab-byte.github.io/voxarc-feed-web/delete-account.html">voxarclab-byte.github.io/voxarc-feed-web/delete-account.html</a>.</li><li><b>Access or export:</b> email <a href="mailto:support@voxarc.io">support@voxarc.io</a> from your account email and we will send a copy of your data in a machine-readable format within 30 days.</li><li><b>Delete by email:</b> email support@voxarc.io with the subject "Delete my Voxarc Feed account". We delete it within 30 days and confirm.</li></ul>
   <p>You may also have rights under Canadian privacy law (PIPEDA) or the laws where you live, including the right to complain to a privacy regulator.</p>
 
   <h2>Daily brief reminders</h2>
@@ -93,7 +83,7 @@
   <p>Voxarc Feed is a business intelligence app and is not directed at children under 16. Accounts are not intended for them.</p>
 
   <h2>AI-assisted content</h2>
-  <p>Signal summaries and impact ratings are drafted with AI from public sources and reviewed by Voxarc Lab. Your personal data is not used to train AI models. Ask answers in this build are grounded templates over retrieved desk fields only; there is no external model call and no Slack/Teams/email team-brief delivery. Private Desk saves stay on-device or owner-only; they are not a team delivery channel. For information only. Not legal advice. No warranty or obligation; non-binding.</p>
+  <p>Signal summaries and impact ratings are drafted with AI from public sources and reviewed by Voxarc Lab. Your personal data and posts are not used to train AI models. Ask answers are grounded templates over desk fields on your device; there is no external model call. For information only. Not legal advice. No warranty or obligation; non-binding.</p>
 
   <h2>Changes</h2>
   <p>We will update this page and the date above when our practices change, and tell account holders in the app about material changes.</p>

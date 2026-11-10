@@ -12,12 +12,12 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.3.9', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.4.0', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
-    flags: { marketOdds: false, marketLinkOut: false, publicSocial: false },
-    // Part D/E: stealth is the default visibility. Public comment/cite/follow gated until server checks ship.
+    flags: { marketOdds: false, marketLinkOut: false, publicSocial: true },
+    // 1.4.0: Stealth is the default. Public mode is opt-in per account; the server (RLS) enforces it for comments, citations and Tracked by.
     defaultVisibility: 'STEALTH'
   };
   (function () { var o = window.__VX_FLAGS; if (o && typeof o === 'object') for (var k in CFG.flags) if (typeof o[k] === 'boolean') CFG.flags[k] = o[k]; })();
@@ -794,7 +794,7 @@
   function watchRulesHTML() {
     var rows = S.watchRules || [];
     var h = '<div class="section-h"><h2>Watch rules</h2><span>Private · HS / material / country</span></div>';
-    h += '<p class="sd-note">Local alerts only in this build. Rules stay on this device (and sync to your account watchlists row when signed in). Never public.</p>';
+    h += '<p class="sd-note">Local alerts on this device. Rules stay on this device. Never public, in any mode.</p>';
     h += '<div class="wr-add group">' +
       '<label class="l">Add rule</label>' +
       '<select id="wrKind" aria-label="Watch rule type"><option value="hs">HS code</option><option value="material">Material</option><option value="country">Country / jurisdiction</option></select>' +
@@ -925,7 +925,8 @@
       '<button type="button" class="btn ghost block' + (fb.v === 'helpful' ? ' on' : '') + '" data-sigfb="helpful" data-id="' + esc(id) + '" aria-pressed="' + (fb.v === 'helpful') + '">Helpful Signal' + (fb.v === 'helpful' ? ' · saved privately' : '') + '</button>' +
       '<button type="button" class="btn ghost block' + (fb.v === 'not_relevant' ? ' on' : '') + '" data-sigfb="not_relevant" data-id="' + esc(id) + '" aria-pressed="' + (fb.v === 'not_relevant') + '">Not Relevant' + (fb.v === 'not_relevant' ? ' · saved privately' : '') + '</button>';
     if (publicSocial) {
-      h += '<button type="button" class="btn ghost block" data-citepub="' + esc(id) + '">Cite &amp; Annotate</button>';
+      h += '<button type="button" class="btn ghost block" data-citepub="' + esc(id) + '">Cite &amp; Annotate publicly' + (window.VXSocial && window.VXSocial.isPublic() ? '' : ' \u00B7 Public mode') + '</button>' +
+        '<button type="button" class="btn ghost block" data-citepriv="' + esc(id) + '">Cite &amp; Annotate (Private Desk)</button>';
     } else {
       h += '<button type="button" class="btn ghost block" data-citepriv="' + esc(id) + '">Cite &amp; Annotate (Private Desk)</button>' +
         '<p class="sd-note">Public Comment &amp; Annotate, public citations and Track Analyst stay off until server visibility checks ship (Part E order).</p>';
@@ -992,8 +993,8 @@
     var seed = S._noteSeed || ''; S._noteSeed = '';
     var title = cite ? 'Cite &amp; Annotate (Private Desk)' : 'Private Note';
     var blurb = cite
-      ? 'Saves a citation note to your Private Desk on this device (or your account when signed in). Not sent to a team and not published.'
-      : 'Private by default. On this device until you sign in; if signed in, synced to your account private_notes row (not public). Not a team-visible comment.';
+      ? 'Saves a citation note to your Private Desk on this device. Not sent to a team and not published.'
+      : 'Private in every mode. Stored on this device only. Not a team-visible comment and never public.';
     sheet('<h3>' + title + '</h3><p>' + blurb + '</p>' +
       '<textarea id="privNote" class="repc" maxlength="2000" placeholder="Private analysis note">' + esc((cur && cur.body) || seed || '') + '</textarea>' +
       '<button class="btn primary" data-notesave="' + esc(id) + '">' + (cite ? 'Save to Private Desk' : 'Save Private Note') + '</button><button class="btn ghost" data-closesheet>Cancel</button>');
@@ -1483,7 +1484,7 @@
       '<button role="tab" data-savedview="notes" aria-selected="' + notes + '" class="' + (notes ? 'on' : '') + '">Private Notes \u00B7 ' + Object.keys(S.privateNotes || {}).length + '</button></div>';
     if (!notes) h += watchRulesHTML();
     if (notes) return h + (list.length ? list.map(function (i) { var n = noteOf(i.id); return '<div class="rp-h"><span>Private Note \u00B7 ' + esc(fmtDate(n.updatedAt)) + '</span></div><p class="rp-c">' + esc(n.body) + '</p>' + (i.signal ? piCardHTML(i) : cardHTML(i, false)); }).join('')
-      : '<div class="empty"><h3>No private notes yet</h3><p>Add a Private Note from a Regulatory Dossier. Device-local until sign-in; then account-private (RLS), never a public comment.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>');
+      : '<div class="empty"><h3>No private notes yet</h3><p>Add a Private Note from a Regulatory Dossier. Stored on this device, never a public comment.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>');
     if (!list.length) return h + '<div class="empty">' + ICON.saved + '<h3>Nothing watched yet</h3><p>Tap Watch on a dossier to keep it here. Watchlists are private by default.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>';
     return h + list.map(function (i) { return i.signal ? piCardHTML(i) : cardHTML(i, false); }).join('');
   }
@@ -1606,13 +1607,15 @@
       '<div class="cell"><div class="l">Offline library<small>' + S.items.length + ' briefings stored on this device' + (S.updated ? ', checked ' + (fmtDate(S.updated) === 'Today' ? 'today' : fmtDate(S.updated) === 'Yesterday' ? 'yesterday' : fmtDate(S.updated)) : '') + '</small></div><div class="r">' + (S.online ? 'Ready' : 'Offline') + '</div></div>' +
       '<button class="cell" data-refresh aria-live="polite"><div class="l">' + (S.refreshing ? 'Checking for new briefings\u2026' : 'Check for new briefings') + '<small>' + esc(S.refreshing ? 'Contacting the Voxarc feed' : (S.lastCheck ? S.lastCheck : 'Downloads any briefings published since your last check')) + '</small></div>' + (S.refreshing ? '<span class="cell-spin" aria-hidden="true"></span>' : ICON.chev) + '</button></div>';
     var nNotes = Object.keys(S.privateNotes || {}).length, nFb = Object.keys(S.signalFeedback || {}).length;
+    var SX = window.VXSocial, pubOn = !!(SX && SX.isPublic()), meU = SX && SX.user(), nTr = (meU && meU.tracked_by_count) || 0;
     h += '<div class="group-h">Visibility</div><div class="group">' +
-      '<button class="cell" data-vis="stealth"><div class="l">Stealth Corporate Mode<small>On by default. Nothing you do in Voxarc Feed is published.</small></div><div class="r">On</div>' + ICON.chev + '</button>' +
-      '<button class="cell" data-vis="comment"><div class="l">Comment &amp; Annotate<small>' + nNotes + ' Private Note' + (nNotes === 1 ? '' : 's') + ' on this device. Not team chat.</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
-      '<button class="cell" data-vis="cite"><div class="l">Cite &amp; Annotate<small>Saves to your Private Desk on this device. Not sent to a team.</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
-      '<button class="cell" data-vis="tracked"><div class="l">Tracked by<small>Public analyst profiles are coming later</small></div><div class="r">Off</div>' + ICON.chev + '</button>' +
+      (pubOn ? '<button class="cell" data-vis="stealth"><div class="l">Public mode<small>Public as @' + esc(meU.handle) + '. Tap to switch back to Stealth.</small></div><div class="r on">Public</div>' + ICON.chev + '</button>'
+        : '<button class="cell" data-vis="stealth"><div class="l">Stealth Corporate Mode<small>On by default. Nothing you do in Voxarc Feed is published.</small></div><div class="r">On</div>' + ICON.chev + '</button>') +
+      '<button class="cell" data-vis="comment"><div class="l">Comment &amp; Annotate<small>' + (pubOn ? 'Public comments under your name. ' : '') + nNotes + ' Private Note' + (nNotes === 1 ? '' : 's') + ' on this device.</small></div><div class="r' + (pubOn ? ' on' : '') + '">' + (pubOn ? 'Public' : 'Private') + '</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="cite"><div class="l">Cite &amp; Annotate<small>' + (pubOn ? 'Public citations under your name, plus your Private Desk.' : 'Private Desk on this device. Public citations need Public mode.') + '</small></div><div class="r' + (pubOn ? ' on' : '') + '">' + (pubOn ? 'Public' : 'Private') + '</div>' + ICON.chev + '</button>' +
+      '<button class="cell" data-vis="tracked"><div class="l">Tracked by<small>' + (pubOn ? 'Your public analyst profile. Tap to see who tracks you.' : 'Public analyst profile others can track. Needs Public mode.') + '</small></div><div class="r' + (pubOn ? ' on' : '') + '">' + (pubOn ? nTr : 'Off') + '</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-vis="feedback"><div class="l">Helpful Signal / Not Relevant<small>' + nFb + ' mark' + (nFb === 1 ? '' : 's') + ', kept private on this device</small></div><div class="r">Private</div>' + ICON.chev + '</button>' +
-      '<p class="set-sub" style="padding:8px 16px 12px">Never public: Watchlists, Private Notes, Forward to Team, Helpful/Not Relevant, Ask history, and whom you track.</p></div>';
+      '<p class="set-sub" style="padding:8px 16px 12px">Never public: Watchlists, Private Notes, Forward to Team, Helpful/Not Relevant, Ask history, and whom you track. If you use a company email, your employer policy may restrict public activity.</p></div>';
     h += '<div class="group-h">Trust</div><div class="group">' +
       '<button class="cell" data-trust="methodology"><div class="l">Methodology<small>How tiers, provenance and scores work</small></div><div class="r">\u203A</div></button>' +
       '<button class="cell" data-trust="corrections"><div class="l">Corrections log<small>Dated fixes linked to original signals</small></div><div class="r">\u203A</div></button>' +
@@ -1624,7 +1627,7 @@
       '<button class="cell" data-clearsaved><div class="l">Clear saved briefings<small>' + S.saved.length + ' saved on this device</small></div>' + ICON.chev + '</button>' +
       '<button class="cell" data-clearread><div class="l">Clear reading history<small>Marks every briefing as unread</small></div>' + ICON.chev + '</button></div>';
     h += '<div class="group-h">About</div><div class="group">' +
-      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Optional account syncs Watch and Private Notes to your account (RLS). Public comments are off.</p></div></div>' +
+      '<div class="about"><img src="img/mark.png" alt=""><div><b>Voxarc Signal Desk</b><p>Policy intelligence from Voxarc Lab. Private team workspace by default. Stealth by default. Optional accounts can turn on Public mode for comments, citations and a public analyst profile.</p></div></div>' +
       '<button class="cell" data-url="' + CFG.siteUrl + '"><div class="l">About Voxarc Lab</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.privacyUrl + '"><div class="l">Privacy Policy</div>' + ICON.chev + '</button>' +
       '<button class="cell" data-url="' + CFG.termsUrl + '"><div class="l">Terms of Use</div>' + ICON.chev + '</button>' +
@@ -1968,7 +1971,7 @@
     if (i.sources && i.sources.length) h += '<div class="sources"><h5>Sources</h5>' + i.sources.map(function (s) {
       var u = safeUrl(s.url);
       return (u ? '<button class="src" data-url="' + esc(u) + '">' : '<div class="src">') + '<span class="pub">Source: ' + esc(s.publisher) + '</span> · ' + esc(s.title) + '<small class="tabnum">' + esc(s.date || '') + '</small>' + (u ? '</button>' : '</div>'); }).join('') + '</div>';
-    // Public Comments UI removed (Part D). Private Note is the annotation path.
+    if (window.VXSocial && CFG.flags.publicSocial) h += window.VXSocial.commentsHTML(i);
     h += '<p class="disclaimer"><b>AI-assisted.</b> Summary, impact and horizon ratings are drafted with AI from the linked public sources and reviewed by Voxarc Lab. Check the originals before acting. For information only. Not legal advice. No warranty or obligation; non-binding.</p>' +
       '<button class="btn ghost sm" data-sx="sigreport" data-id="' + esc(i.id) + '">Report inaccurate or misleading signal</button>' +
       detailSocialHTML(i) +
@@ -2057,9 +2060,9 @@
         '<div class="ob-cta"><button class="btn primary" data-obnext>Continue</button></div>';
     } else if (step === 'stealth') {
       var vis = o.visibility || 'STEALTH';
-      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth Corporate Mode</h1><p class="ob-sub">Stealth is on by default. Public Comment, Cite and Tracked by stay off until you opt in later (not offered in this build). Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
+      h = '<div class="ob-body"><div class="ob-k">Visibility</div><h1 id="ob-h" tabindex="-1">Stealth or Public</h1><p class="ob-sub">Stealth is on by default. Choose Public to post comments and citations under your name and get a public analyst profile others can track. Watchlists, Private Notes, Forward and Helpful/Not Relevant are never public.</p><div class="ob-chips">' +
         '<button class="ob-opt' + (vis === 'STEALTH' ? ' on' : '') + '" data-ob="visibility" data-v="STEALTH" aria-pressed="' + (vis === 'STEALTH') + '">Stealth (recommended)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
-        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="false" aria-describedby="obVisNote">Public (coming later)<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
+        '<button class="ob-opt' + (vis === 'PUBLIC' ? ' on' : '') + '" data-ob="visibility" data-v="PUBLIC" aria-pressed="' + (vis === 'PUBLIC') + '" aria-describedby="obVisNote">Public<span class="ob-tick" aria-hidden="true">' + ICON.check + '</span></button>' +
         '</div><p class="ob-note" id="obVisNote" role="status" aria-live="polite" hidden></p><p class="ob-sub">If you later use a company email, your employer policy may restrict public activity.</p></div>' +
         '<div class="ob-cta"><button class="btn primary" data-obdone>Save desk preferences</button></div>';
     } else {
@@ -2071,14 +2074,11 @@
   }
   function obToggle(kind, v) {
     if (kind === 'visibility') {
-      if (v !== 'STEALTH') {
-        var nt = document.getElementById('obVisNote');
-        if (nt) { nt.textContent = 'Public mode comes in a later update, once verified accounts and visibility checks are live. Stealth stays selected for now.'; nt.hidden = false; }
-        haptic('LIGHT'); return;
-      }
-      S.ob.visibility = 'STEALTH';
+      S.ob.visibility = v === 'PUBLIC' ? 'PUBLIC' : 'STEALTH';
+      var nt = document.getElementById('obVisNote');
+      if (nt) { nt.textContent = S.ob.visibility === 'PUBLIC' ? 'Next you sign in or create a free account and choose your public handle. You stay in Stealth until you confirm.' : ''; nt.hidden = S.ob.visibility !== 'PUBLIC'; }
       var opts = document.querySelectorAll('#onboard [data-ob="visibility"]');
-      for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === 'STEALTH'; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
+      for (var n = 0; n < opts.length; n++) { var on = opts[n].dataset.v === S.ob.visibility; opts[n].classList.toggle('on', on); opts[n].setAttribute('aria-pressed', String(on)); }
       haptic('LIGHT'); return;
     }
     var a = S.ob[kind], k = a.indexOf(v);
@@ -2109,8 +2109,11 @@
       store.set('vx.profile', S.profile);
     }
     if (!skipped) {
-      S.visibilityMode = (o.visibility === 'PUBLIC') ? 'STEALTH' : (o.visibility || 'STEALTH'); // PUBLIC not offered yet
-      store.set('vx.visibilityMode', S.visibilityMode);
+      // PUBLIC is only real once the account switch succeeds on the server, so open the Public mode setup after the desk is built.
+      var wantPublic = o.visibility === 'PUBLIC' && window.VXSocial && !window.VXSocial.isPublic();
+      if (o.visibility !== 'PUBLIC' && window.VXSocial && window.VXSocial.isPublic()) setTimeout(function () { window.VXSocial.modeSheet(); }, o.edit ? 50 : 1700);
+      if (wantPublic) setTimeout(function () { window.VXSocial.publicSheet(); }, o.edit ? 50 : 1700);
+      if (!window.VXSocial) { S.visibilityMode = 'STEALTH'; store.set('vx.visibilityMode', S.visibilityMode); }
     }
     if (o.edit) {
       S.ob = null; document.body.classList.remove('ob-open'); var ee = $('#onboard'); ee.hidden = true; ee.innerHTML = '';
@@ -2166,11 +2169,11 @@
     if (window.VXSocial && !window.VXSocial.user()) {
       return window.VXSocial.requireAuth('Sign in or create a free account to share a signal. Reading stays free without an account.', function () { shareSignalSheet(id); });
     }
-    sheet('<h3>Share Signal</h3><p>Choose one destination. Nothing is posted until you confirm. Public posting is not available in this build.</p>' +
+    sheet('<h3>Share Signal</h3><p>Choose one destination. Nothing is posted until you confirm.</p>' +
       '<label class="share-note-l" for="shareNote">Comment, optional</label><textarea id="shareNote" class="repc" maxlength="280" placeholder="Optional note"></textarea>' +
       '<button type="button" class="btn primary" data-sharego="team" data-id="' + esc(id) + '">Team Desk</button>' +
       '<button type="button" class="btn ghost" data-sharego="private" data-id="' + esc(id) + '">Private Desk</button>' +
-      '<button type="button" class="btn ghost" disabled aria-disabled="true">Public, not available in this build</button>' +
+      '<button type="button" class="btn ghost" data-sharego="public" data-id="' + esc(id) + '">Public comment on this signal' + (window.VXSocial && window.VXSocial.isPublic() ? '' : ' \u00B7 Public mode') + '</button>' +
       '<button type="button" class="btn ghost" data-sharego="os" data-id="' + esc(id) + '">Share outside the app</button>' +
       '<button type="button" class="btn ghost" data-closesheet>Cancel</button>');
   }
@@ -2182,6 +2185,7 @@
     closeSheet();
     if (kind === 'team') forwardTeam(id, note);
     else if (kind === 'private') { S._noteSeed = note; privateNoteSheet(id); }
+    else if (kind === 'public') { if (window.VXSocial) window.VXSocial.postFromShare(id, note); }
     else shareItem(id, note);
     setTimeout(function () { S.shareBusy = false; }, 700);
   }
@@ -2229,29 +2233,11 @@
     var nNotes = Object.keys(S.privateNotes || {}).length, fb = S.signalFeedback || {}, nH = 0, nN = 0;
     Object.keys(fb).forEach(function (k) { if (fb[k] && fb[k].v === 'helpful') nH++; else nN++; });
     var ok = '<button class="btn ghost" data-closesheet>Done</button>';
-    var later = function (what) { return '<div class="vis-later"><span class="soon-tag">Coming later</span><p>' + what + '</p></div>'; };
-    if (kind === 'stealth') {
-      sheet('<h3>Stealth Corporate Mode</h3><div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">On</b><span>Nothing you read, save, note or mark is published.</span></div></div>' +
-        '<ul class="vis-list"><li>Watchlists, Private Notes and Helpful/Not Relevant stay on this device.</li><li>Forward to Team opens your share sheet. You pick the recipient; nothing is auto-sent.</li><li>No public profile, comments or citations exist for your account.</li></ul>' +
-        later('Public mode, where you can choose to publish comments and citations, needs verified accounts and server visibility checks. It is not live yet, so Stealth stays on.') +
-        '<button class="btn primary" data-closesheet>Keep Stealth on</button>');
-      return;
-    }
-    if (kind === 'comment' || kind === 'cite') {
-      var c = kind === 'cite';
-      sheet('<h3>' + (c ? 'Cite &amp; Annotate' : 'Comment &amp; Annotate') + '</h3>' +
-        '<p class="vis-p">' + (c ? 'Cite a signal from its dossier to save a citation note to your Private Desk. It is not sent to a team and not published.' : 'Add a Private Note from any signal\u2019s dossier. Notes are your own analysis, not team chat and not public comments.') + '</p>' +
-        '<div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">' + nNotes + ' saved</b><span>Stored on this device. Account sync is not switched on yet.</span></div></div>' +
-        later(c ? 'Public citations, credited to your analyst profile, need verified accounts and moderation.' : 'Public comments need verified accounts and moderation.') +
-        '<button class="btn primary" data-visnotes>Open ' + (c ? 'Private Desk' : 'Private Notes') + '</button>' +
-        (nNotes ? '<button class="btn ghost" data-visclear="notes">Delete all Private Notes on this device</button>' : '') + ok);
-      return;
-    }
-    if (kind === 'tracked') {
-      sheet('<h3>Tracked by</h3><div class="vis-state"><span class="vis-dot" aria-hidden="true"></span><div><b class="vis-b">Off</b><span>Nobody can follow or track your activity.</span></div></div>' +
-        later('A public analyst profile that others can follow is planned. It needs verified accounts and server checks, which are not live yet. When it ships it will be opt-in, and whom you track will still stay private.') + ok);
-      return;
-    }
+    // 1.4.0: every Visibility control is live. Mode, public comments, public citations and Tracked by run on the account backend (js/social.js).
+    var SX = window.VXSocial;
+    if (SX && kind === 'stealth') { SX.modeSheet(); return; }
+    if (SX && (kind === 'comment' || kind === 'cite')) { SX.annotateSheet(kind); return; }
+    if (SX && kind === 'tracked') { SX.trackedSheet(); return; }
     if (kind === 'feedback') {
       sheet('<h3>Helpful Signal / Not Relevant</h3><p class="vis-p">Mark a signal from its dossier. Marks stay on this device and are never shown to anyone.</p>' +
         '<div class="vis-state"><span class="vis-dot on" aria-hidden="true"></span><div><b class="vis-b">' + nH + ' Helpful \u00B7 ' + nN + ' Not Relevant</b><span>Stored privately on this device.</span></div></div>' +
@@ -2337,7 +2323,7 @@
     if (t.dataset.moredesk) { e.stopPropagation(); moreDeskSheet(t.dataset.moredesk); return; }
     if (t.dataset.sigfb) { e.stopPropagation(); setSignalFeedback(t.dataset.id, t.dataset.sigfb); return; }
     if (t.dataset.citepriv) { e.stopPropagation(); citePrivate(t.dataset.citepriv); return; }
-    if (t.dataset.citepub) { e.stopPropagation(); toast('Public citation requires verified email and capability switch — not enabled in this build'); return; }
+    if (t.dataset.citepub) { e.stopPropagation(); closeSheet(); if (window.VXSocial) window.VXSocial.cite(t.dataset.citepub); return; }
     if (t.hasAttribute('data-wradd')) {
       e.stopPropagation();
       var kind = (($('#wrKind') || {}).value) || 'hs';
