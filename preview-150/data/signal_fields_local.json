@@ -1,0 +1,513 @@
+{
+ "note": "Local backfill from signal_pipeline/fields.py. Not published.",
+ "items": {
+  "fr-2026-22094": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Federal Register",
+    "url": "https://www.federalregister.gov/documents/2026/10/29/2026-22094/notice-regarding-the-uyghur-forced-labor-prevention-act-entity-list",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "eu-32026d2457": {
+   "key_number": null,
+   "primary_source": {
+    "name": "EUR-Lex (Official Journal of the EU)",
+    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026D2457",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "nrcan-canada-invests-to-unlock-lithium-potential-and-improve-conne": {
+   "key_number": {
+    "value": "$1.2M",
+    "unit": "",
+    "label": "into lithium potential and connectivity in",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Natural Resources Canada",
+    "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/canada-invests-to-unlock-lithium-potential-and-improve-connectivity-and-industry-in-northern-quebec.html",
+    "kind": "government or agency"
+   },
+   "reported_by": null
+  },
+  "6ae0c5aae1ae795666cb028a": {
+   "key_number": {
+    "value": "€2bn",
+    "unit": "",
+    "label": "EU Critical Raw Materials Centre that",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "European Parliament",
+    "url": "https://www.europarl.europa.eu/news/en/press-room/20261018IPR48253/",
+    "kind": "government or agency"
+   },
+   "reported_by": "European Parliamentary Research Service"
+  },
+  "6ae0fb95987facb4c57e55ac": {
+   "key_number": {
+    "value": "A$1.2 billion",
+    "unit": "",
+    "label": "critical minerals reserve",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Minister for Resources (Australia)",
+    "url": "https://www.minister.industry.gov.au/king/media/critical-minerals-strategy-update-build-resilience-and-security",
+    "kind": "government or agency"
+   },
+   "reported_by": "Department of Industry, Science and Resources"
+  },
+  "fr-2026-21896": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Federal Register",
+    "url": "https://www.federalregister.gov/documents/2026/10/27/2026-21896/notice-of-publication-of-us-resources-management-industry-listing-and-opportunity-to-apply-for-the",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "eu-32026r2374": {
+   "key_number": null,
+   "primary_source": {
+    "name": "EUR-Lex (Official Journal of the EU)",
+    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026R2374",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "6adfaa09c6ab4e86516a9cb5": {
+   "key_number": {
+    "value": "85%",
+    "unit": "",
+    "label": "of the world's helium",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "US Department of Energy",
+    "url": "https://www.energy.gov/articles/energy-department-designates-helium-critical-material-strengthen-american-manufacturing",
+    "kind": "government or agency"
+   },
+   "reported_by": "Federal Register"
+  },
+  "6adfaa09c6ab4e86516a9cb3": {
+   "key_number": {
+    "value": "$14,759",
+    "unit": "",
+    "label": "a tonne",
+    "kind": "money"
+   },
+   "primary_source": null,
+   "reported_by": "Wood Mackenzie"
+  },
+  "6adf4da21af33188f8df116a": {
+   "key_number": null,
+   "primary_source": {
+    "name": "State Council General Office (gov.cn)",
+    "url": "https://www.gov.cn/zhengce/content/202610/content_7084107.htm",
+    "kind": "government or agency"
+   },
+   "reported_by": "Xinhua via english.gov.cn"
+  },
+  "fr-2026-21786": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Federal Register",
+    "url": "https://www.federalregister.gov/documents/2026/10/26/2026-21786/outbound-investment-security-program-regulations",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "6adbb54da4c20d730fe656d6": {
+   "key_number": null,
+   "primary_source": null,
+   "reported_by": "National Conference of State Legislatures"
+  },
+  "6adbb54da4c20d730fe656b9": {
+   "key_number": {
+    "value": "72%",
+    "unit": "",
+    "label": "on Oct 1 against a 90%",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "European Parliament",
+    "url": "https://www.europarl.europa.eu/news/en/press-room/20261021IPR48321/methane-rules-parliament-backs-longer-delay-for-energy-importers-and-producers",
+    "kind": "government or agency"
+   },
+   "reported_by": "ENTSOG"
+  },
+  "6adbb54da4c20d730fe656c5": {
+   "key_number": {
+    "value": "US$1,150",
+    "unit": "",
+    "label": "/kg",
+    "kind": "money"
+   },
+   "primary_source": null,
+   "reported_by": "The Japan Times (AFP-Jiji)"
+  },
+  "6ad91237fa09b1e62e3c12ab": {
+   "key_number": {
+    "value": "£237,500",
+    "unit": "",
+    "label": "to £712",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Ofgem",
+    "url": "https://www.ofgem.gov.uk/sites/default/files/2026-07/Proposed-data-centre-connection-reforms-curate-consultation-document.pdf",
+    "kind": "regulator"
+   },
+   "reported_by": "GOV.UK (DSIT)"
+  },
+  "6ad7c0a0a69d84a91a2bf0be": {
+   "key_number": {
+    "value": "€107 million",
+    "unit": "",
+    "label": "for Greenland connectivity work",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "European Commission",
+    "url": "https://digital-strategy.ec.europa.eu/en/news/eu-sets-out-new-strategy-arctic",
+    "kind": "government or agency"
+   },
+   "reported_by": "European Commission (International Partnerships)"
+  },
+  "fr-2026-21462": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Federal Register",
+    "url": "https://www.federalregister.gov/documents/2026/10/20/2026-21462/american-samoa-outer-continental-shelf-pacific-mineral-lease-sale-1",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "6ad7c0a0a69d84a91a2bf0c2": {
+   "key_number": {
+    "value": "$3M",
+    "unit": "",
+    "label": "minimum bid per area",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "BOEM",
+    "url": "https://www.boem.gov/newsroom/press-releases/mma-announces-final-leasing-notice-first-ever-offshore-mineral-lease-sale",
+    "kind": "government or agency"
+   },
+   "reported_by": "Federal Register"
+  },
+  "6ad66e84a07c63635f9885ed": {
+   "key_number": {
+    "value": "$580",
+    "unit": "",
+    "label": "/kg",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "USGS",
+    "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-gallium.pdf",
+    "kind": "government or agency"
+   },
+   "reported_by": "US Department of Energy"
+  },
+  "6ad66e84a07c63635f9885f2": {
+   "key_number": {
+    "value": "40",
+    "unit": "items",
+    "label": "",
+    "kind": "count"
+   },
+   "primary_source": {
+    "name": "Ministry of Commerce of China (MOFCOM) & Ministry of Science and Technology",
+    "url": "https://www.mofcom.gov.cn/zcfb/blgg/gg/2026/art/2026/art_05e2643a8ca04eb9adf9dd0542991fe4.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "EUR-Lex"
+  },
+  "fr-2026-21371": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Federal Register",
+    "url": "https://www.federalregister.gov/documents/2026/10/19/2026-21371/marine-mammals-incidental-take-of-polar-bears-and-pacific-walruses-in-the-beaufort-sea-and-north",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "cg-2026-10-17-reg1": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Canada Gazette, Part I",
+    "url": "https://gazette.gc.ca/rp-pr/p1/2026/2026-10-17/html/reg1-eng.html",
+    "kind": "official journal"
+   },
+   "reported_by": null
+  },
+  "6ad66e84a07c63635f98861a": {
+   "key_number": {
+    "value": "$859,200",
+    "unit": "",
+    "label": "in total",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Statistics Canada",
+    "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260708/dq260708d-eng.htm",
+    "kind": "government or agency"
+   },
+   "reported_by": "AECO"
+  },
+  "6ad66e84a07c63635f9885eb": {
+   "key_number": {
+    "value": "$581B",
+    "unit": "",
+    "label": "",
+    "kind": "money"
+   },
+   "primary_source": null,
+   "reported_by": "Goldman Sachs Research"
+  },
+  "nrcan-thompson-mine-complex-transaction-closes-helping-secure-a-st": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Natural Resources Canada",
+    "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/10/thompson-mine-complex-transaction-closes-helping-secure-a-stronger-future-for-canadian-nickel.html",
+    "kind": "government or agency"
+   },
+   "reported_by": null
+  },
+  "6ad66e84a07c63635f9885f4": {
+   "key_number": {
+    "value": "$50 million",
+    "unit": "",
+    "label": "for Grays Bay planning and preconstruction",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Natural Resources Canada",
+    "url": "https://www.canada.ca/en/natural-resources-canada/news/2026/05/canada-invests-in-arctic-infrastructure-to-bring-critical-minerals-to-market-and-strengthen-northern-communities.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "Major Projects Office"
+  },
+  "6ad66e84a07c63635f9885fc": {
+   "key_number": {
+    "value": "$250 million",
+    "unit": "",
+    "label": "and the Government of Nunavut up",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Housing, Infrastructure and Communities Canada",
+    "url": "https://www.canada.ca/en/housing-infrastructure-communities/news/2026/01/delivering-on-more-homes-for-nunavut.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "CMHC"
+  },
+  "6ad66e84a07c63635f9885fa": {
+   "key_number": {
+    "value": "C$40 million",
+    "unit": "",
+    "label": "to Les fraises de l'Île d'Orléans",
+    "kind": "money"
+   },
+   "primary_source": null,
+   "reported_by": "PROOF (University of Toronto)"
+  },
+  "6ad66e84a07c63635f98860f": {
+   "key_number": {
+    "value": "C$2.3B",
+    "unit": "",
+    "label": "Telesat deal for secure military satellite",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Defence Investment Agency",
+    "url": "https://www.canada.ca/en/defence-investment-agency/news/2026/08/the-government-of-canada-awards-a-military-communications-contract-to-support-arctic-sovereignty-and-national-security0.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "Prime Minister of Canada"
+  },
+  "6ad0c1add38f38895d8ec75b": {
+   "key_number": {
+    "value": "60%",
+    "unit": "",
+    "label": "of Hong Kong's GenAI sandbox use",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "Hong Kong Monetary Authority",
+    "url": "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2026/10/20261015-3/",
+    "kind": "regulator"
+   },
+   "reported_by": "Monetary Authority of Singapore"
+  },
+  "6acf6f0f0708b0daf40ec136": {
+   "key_number": {
+    "value": "29%",
+    "unit": "",
+    "label": "shorter",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "Ministry of Foreign Affairs of the People's Republic of China",
+    "url": "https://www.fmprc.gov.cn/mfa_eng/wjbzhd/202610/t20261014_12040281.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "TASS"
+  },
+  "6ad66e84a07c63635f988615": {
+   "key_number": {
+    "value": "$500M",
+    "unit": "",
+    "label": "",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "FedDev Ontario / Government of Canada",
+    "url": "https://www.canada.ca/en/economic-development-southern-ontario/news/2026/10/government-of-canada-expands-support-to-adopt-and-commercialize-artificial-intelligence.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "Prime Minister of Canada"
+  },
+  "6ad66e84a07c63635f9885ef": {
+   "key_number": {
+    "value": "26%",
+    "unit": "",
+    "label": "",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "Global Affairs Canada",
+    "url": "https://www.canada.ca/en/global-affairs/news/2026/10/pledge-on-maintaining-the-integrity-of-the-international-law-of-the-sea--no-fees--no-tolls.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "Centre for High North Logistics (CHNL)"
+  },
+  "6ace51427d6da06c8ebdbdc9": {
+   "key_number": {
+    "value": "$197.95",
+    "unit": "",
+    "label": "vs $132",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Meta",
+    "url": "https://datacenters.atmeta.com/wp-content/uploads/2025/02/Metas-Odense-Data-Center.pdf",
+    "kind": "company publication"
+   },
+   "reported_by": null
+  },
+  "6ace51427d6da06c8ebdbdd9": {
+   "key_number": {
+    "value": "US$30",
+    "unit": "",
+    "label": ", 60 per MWh",
+    "kind": "money"
+   },
+   "primary_source": null,
+   "reported_by": "DatacenterDynamics (DCD)"
+  },
+  "6ace51427d6da06c8ebdbdcd": {
+   "key_number": {
+    "value": "$672M",
+    "unit": "",
+    "label": "Meteoric acquisition is expected to be",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Presidência da República (Brazil)",
+    "url": "https://www.presidencia.gov.br/ccivil_03/_ato2023-2026/2026/lei/l15506.htm",
+    "kind": "government or agency"
+   },
+   "reported_by": "Moneycontrol"
+  },
+  "6ace51427d6da06c8ebdbde8": {
+   "key_number": {
+    "value": "7%",
+    "unit": "",
+    "label": "of global turnover",
+    "kind": "percent"
+   },
+   "primary_source": {
+    "name": "European Commission (Have Your Say)",
+    "url": "https://ec.europa.eu/info/law/better-regulation/have-your-say/initiatives/19292-AI-Act-Implementing-Act-Articles-75c-75d_en",
+    "kind": "government or agency"
+   },
+   "reported_by": "European Commission (draft text)"
+  },
+  "6ace51427d6da06c8ebdbdd1": {
+   "key_number": null,
+   "primary_source": {
+    "name": "The White House",
+    "url": "https://www.whitehouse.gov/briefings-statements/2026/09/agreement-between-the-government-of-the-united-states-of-america-and-the-government-of-the-kingdom-of-denmark-together-with-the-government-of-greenland-to-amend-and-supplement-the-agreement-of-27-apri/",
+    "kind": "government or agency"
+   },
+   "reported_by": "KNR"
+  },
+  "6ace51427d6da06c8ebdbdf3": {
+   "key_number": {
+    "value": "€21.1 billion",
+    "unit": "",
+    "label": "",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "European Commission",
+    "url": "https://ec.europa.eu/commission/presscorner/detail/en/ip_26_2113",
+    "kind": "government or agency"
+   },
+   "reported_by": "European Commission (Q&A)"
+  },
+  "6acab8dbf6dba531c0671d1b": {
+   "key_number": {
+    "value": "€4 billion",
+    "unit": "",
+    "label": "in current EU exports",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "China Ministry of Commerce / GACC (Notice 70)",
+    "url": "https://www.mofcom.gov.cn/zfxxgk/gkml/art/2025/art_b1bff63a6bdd412a99c84203dd30fd39.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "The Japan Times (AFP)"
+  },
+  "6acab8dbf6dba531c0671d0a": {
+   "key_number": null,
+   "primary_source": {
+    "name": "UK Information Commissioner's Office (ICO)",
+    "url": "https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2026/10/ico-secures-changes-from-leading-ai-developers-as-scrutiny-extends-to-ai-agents/",
+    "kind": "regulator"
+   },
+   "reported_by": "ABC News (Australia)"
+  },
+  "6acab8dbf6dba531c0671d32": {
+   "key_number": null,
+   "primary_source": {
+    "name": "Global Affairs Canada",
+    "url": "https://www.canada.ca/en/global-affairs/news/2026/10/canada-iceland-joint-statement.html",
+    "kind": "government or agency"
+   },
+   "reported_by": "Department of National Defence (Defence Stories)"
+  },
+  "gg-363481": {
+   "key_number": {
+    "value": "$100,000,000",
+    "unit": "",
+    "label": "estimated total funding",
+    "kind": "money"
+   },
+   "primary_source": {
+    "name": "Grants.gov",
+    "url": "https://www.grants.gov/search-results-detail/363481",
+    "kind": "government or agency"
+   },
+   "reported_by": null
+  }
+ }
+}
