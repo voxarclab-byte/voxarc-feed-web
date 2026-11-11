@@ -71,6 +71,12 @@
     blocked: function () { return uid() ? req('/rest/v1/blocks?blocker=eq.' + uid() + '&select=p:profiles!blocks_blocked_fkey(' + PF + ')').then(function (a) { return a.map(function (x) { return x.p; }); }) : Promise.resolve([]); },
     react: function (sid, kind) { return kind ? req('/rest/v1/reactions', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: { user_id: uid(), story_id: sid, kind: kind } }) : req('/rest/v1/reactions?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
     save: function (sid, on) { return on ? req('/rest/v1/saves', { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates' }, body: { user_id: uid(), story_id: sid } }) : req('/rest/v1/saves?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
+    mySaves: function () { return uid() ? req('/rest/v1/saves?user_id=eq.' + uid() + '&select=story_id,created_at') : Promise.resolve([]); },
+    myWatch: function () { return uid() ? req('/rest/v1/watchlists?user_id=eq.' + uid() + '&select=story_id,hs_code,eccn,jurisdiction,created_at') : Promise.resolve([]); },
+    upsertWatch: function (row) { return req('/rest/v1/watchlists?on_conflict=user_id,story_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: { user_id: uid(), story_id: row.storyId, hs_code: row.hs_code || null, eccn: row.eccn || null, jurisdiction: row.jurisdiction || null } }); },
+    deleteWatch: function (sid) { return req('/rest/v1/watchlists?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
+    myViews: function () { return uid() ? req('/rest/v1/saved_views?user_id=eq.' + uid() + '&select=name,filters,created_at&order=created_at.asc') : Promise.resolve([]); },
+    addView: function (name, filters) { return req('/rest/v1/saved_views', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: { user_id: uid(), name: name, filters: filters } }); },
     repost: function (sid, r) { return r ? req('/rest/v1/reposts', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: { user_id: uid(), story_id: sid, comment: r.comment || '' } }) : req('/rest/v1/reposts?user_id=eq.' + uid() + '&story_id=eq.' + encodeURIComponent(sid), { method: 'DELETE' }); },
     userReposts: function (id) { return req('/rest/v1/reposts?user_id=eq.' + id + '&order=created_at.desc&limit=50&select=story_id,comment,created_at,user_id'); },
     followingFeed: function () { return uid() ? req('/rest/v1/follows?follower=eq.' + uid() + '&select=followee').then(function (f) { var ids = f.map(function (x) { return x.followee; }); if (!ids.length) return [];
@@ -136,7 +142,15 @@
     myFollowing: function () { var d = db(); return ok(d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return x[1]; })); },
     acceptGuidelines: function () { var d = db(); if (d.users[d.me]) d.users[d.me].guidelines_accepted_at = new Date().toISOString(); sv(d); return ok(); },
     reportSignal: function (sid, reason) { var d = db(); d.reports.push({ type: 'signal', id: sid, reason: reason }); sv(d); return ok(); },
-    react: function () { return ok(); }, save: function () { return ok(); }, repost: function () { return ok(); }, myReposts: function () { return ok([]); },
+    react: function () { return ok(); },
+    save: function (sid, on) { var d = db(); d.saves = d.saves || []; if (on) { if (!d.saves.some(function (s) { return s.story_id === sid; })) d.saves.push({ story_id: sid, created_at: new Date().toISOString() }); } else d.saves = d.saves.filter(function (s) { return s.story_id !== sid; }); sv(d); return ok(); },
+    mySaves: function () { return ok((db().saves || []).slice()); },
+    myWatch: function () { return ok((db().watches || []).slice()); },
+    upsertWatch: function (row) { var d = db(); d.watches = d.watches || []; d.watches = d.watches.filter(function (w) { return w.story_id !== row.storyId; }); d.watches.push({ story_id: row.storyId, hs_code: row.hs_code || null, eccn: row.eccn || null, jurisdiction: row.jurisdiction || null, created_at: row.createdAt || new Date().toISOString() }); sv(d); return ok(); },
+    deleteWatch: function (sid) { var d = db(); d.watches = (d.watches || []).filter(function (w) { return w.story_id !== sid; }); sv(d); return ok(); },
+    myViews: function () { return ok((db().views || []).slice()); },
+    addView: function (name, filters) { var d = db(); d.views = d.views || []; d.views.push({ name: name, filters: filters, created_at: new Date().toISOString() }); sv(d); return ok(); },
+    repost: function () { return ok(); }, myReposts: function () { return ok([]); },
     setVisibility: function (m) { var d = db(); if (d.users[d.me]) d.users[d.me].visibility_mode = m; sv(d); return ok(d.users[d.me]); },
     myTrackers: function () { return ok([]); }, tracking: function () { var d = db(); return ok(d.follows.filter(function (x) { return x[0] === d.me; }).map(function (x) { return d.users[x[1]]; }).filter(Boolean)); },
     userComments: function (id) { return ok(db().comments.filter(function (c) { return c.user_id === id && !c.hidden; })); }, trackingFeed: function () { return ok([]); },
@@ -178,7 +192,7 @@
 
   /* ---------- screens ---------- */
   function signInSheet(why) {
-    sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Reading, Watch and Private Notes work without an account. Sign in to use Public mode, post public comments and citations, and track analysts.') + '</p>' +
+    sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Reading stays free without an account. Sign in to save signals and views, or to use Public mode.') + '</p>' +
       (GOOGLE ? '<button class="btn primary sx-g" data-sx="google"><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button><div class="sx-or"><span>or use email</span></div>' : '') +
       '<input id="sxName" class="sx-in" placeholder="Name (new accounts)" autocomplete="name" maxlength="60">' +
       '<input id="sxEmail" class="sx-in" type="email" placeholder="Email" autocomplete="email">' +
@@ -339,7 +353,7 @@
         '<button class="cell" data-sx="tfeed"><div class="l">From analysts you track<small>Their latest public comments and citations</small></div>' + chev + '</button>' +
         '<button class="cell" data-sx="people"><div class="l">Find public analysts<small>Readers who turned on Public mode</small></div>' + chev + '</button>' +
         '<button class="cell" data-sx="delete"><div class="l sx-danger">Delete account<small>Removes your account and all of its data</small></div></button>'
-      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>' + (GOOGLE ? 'Google or email' : 'Email') + '. Needed for Public mode. Reading, Watch and Private Notes stay free without an account.</small></div>' + chev + '</button>') + '</div>';
+      : '<button class="cell" data-sx="signin"><div class="l">Sign in or create account<small>' + (GOOGLE ? 'Google or email' : 'Email') + '. Needed to save a signal, a watchlist item or a view, and for Public mode. Reading stays free without an account.</small></div>' + chev + '</button>') + '</div>';
   }
   function commentsHTML(i) {
     var id = i.id, list = cache[id];
@@ -357,7 +371,16 @@
     return h + '</section>';
   }
   function onReact(sid, kind) { if (me && LIVE) B.react(sid, kind).catch(function () {}); }
-  function onSave(sid, on) { if (me && LIVE) B.save(sid, on).catch(function () {}); }
+  function onSave(sid, on) { if (me) B.save(sid, on).catch(function () {}); }
+  function onWatch(id, on, row) { if (!me) return; var p = on ? B.upsertWatch(row || { storyId: id }) : B.deleteWatch(id); if (p && p.catch) p.catch(function () {}); }
+  function onView(name, filters) { if (me) B.addView(name, filters).catch(function () {}); }
+  function pullAccount() {
+    if (!me) return Promise.resolve();
+    var x = X(); if (!x || !x.applyAccount) return Promise.resolve();
+    return Promise.all([B.mySaves(), B.myWatch(), B.myViews()]).then(function (r) {
+      x.applyAccount({ saves: r[0] || [], watches: r[1] || [], views: r[2] || [] });
+    }).catch(function () {});
+  }
   function onRepost(sid, r) { if (me && LIVE) B.repost(sid, r).then(function () { var x = X(); if (r && x.S.reposts[sid]) { x.S.reposts[sid].synced = true; x.S.reposts[sid].userId = me.id; x.saveReposts(); } }).catch(function () {}); }
   function syncReposts() {
     if (!me || !LIVE) return;
@@ -370,7 +393,7 @@
   function afterAuth(msg) {
     var resume = pendingAfterAuth; pendingAfterAuth = null;
     X().closeSheet();
-    return refreshMe().then(function () {
+    return refreshMe().then(function () { return pullAccount(); }).then(function () {
       syncReposts();
       toast(msg || 'Signed in');
       if (resume) resume();
@@ -451,9 +474,9 @@
     if (/access_token=/.test(location.hash)) B.takeRedirect(location.hash).then(function () { history.replaceState(null, '', location.pathname); afterAuth('Signed in with Google'); });
     if (isNative && P.App) P.App.addListener('appUrlOpen', function (ev) { if (ev && /auth-callback/.test(ev.url || '')) { if (P.Browser) P.Browser.close().catch(function () {}); B.takeRedirect(ev.url).then(function (okk) { if (okk) afterAuth('Signed in with Google'); }); } });
   }
-  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onRepost: onRepost, live: LIVE, user: function () { return me; }, requireAuth: requireAuth,
+  window.VXSocial = { count: function (id) { return ccount[id] || 0; }, settingsHTML: settingsHTML, commentsHTML: commentsHTML, onReact: onReact, onSave: onSave, onWatch: onWatch, onView: onView, pullAccount: pullAccount, onRepost: onRepost, live: LIVE, user: function () { return me; }, requireAuth: requireAuth,
     isPublic: isPublic, publicSheet: publicSheet, modeSheet: fresh(modeSheet), trackedSheet: fresh(trackedSheet), annotateSheet: fresh(annotateSheet),
     cite: function (id) { needPublic(function () { citeSheet(id); }); },
     postFromShare: function (id, note) { needPublic(function () { if (!note) { cmKind = 'comment'; var x = X(); x.closeSheet(); x.openArticle(id); return toast('Write your public comment under the signal'); } post(id, note, 'comment'); }); } };
-  setTimeout(function () { headerSync(); refreshMe().then(syncReposts); loadCounts(); }, 0);
+  setTimeout(function () { headerSync(); refreshMe().then(function () { syncReposts(); return pullAccount(); }); loadCounts(); }, 0);
 })();

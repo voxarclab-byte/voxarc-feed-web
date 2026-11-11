@@ -12,7 +12,7 @@
     maxAgeDays: 90, // Google Play News policy: show only content less than 3 months old
     siteUrl: 'https://voxarclab.io',
     feedbackEmail: 'support@voxarc.io',
-    version: '1.4.1', // replaced on device by the native version (build) from App.getInfo()
+    version: '1.5.0', // replaced on device by the native version (build) from App.getInfo()
     // Feature flags. marketOdds stays OFF until the Kalshi/Polymarket data-licence check, the Canadian legal review
     // and the App Store / Play age-rating re-check are done (first_run_spec.md, P1-9). Only a test or preview harness
     // can turn it on, through window.__VX_FLAGS set before this script runs; there is no user-facing switch.
@@ -89,7 +89,7 @@
   var S = {
     items: [], reposts: {}, sigSort: 'top', fImp: 'all', fHz: 'all', trends: null, tab: 'feed', topic: 'all', query: '', searchOpen: false,
     saved: [], read: {}, reactions: {}, signalFeedback: {}, watchlist: {}, watchRules: [], watchSeen: {}, privateNotes: {}, privacyPublicShare: false, visibilityMode: 'STEALTH', savedView: 'saved', current: null, online: true, dense: false, fJuris: 'all', fMineral: 'all', fStage: 'all', fImpact: 'all', fScore: 'all', fHorizon: 'all', fGeo: 'all', fIndustry: 'all', namedViews: [],
-    subtopic: '', topicQuery: '', shareBusy: false,
+    subtopic: '', topicQuery: '', sigQuery: '', shareBusy: false,
     prefs: { fs: 17, notif: false, hour: 7, minute: 0 }, feedSource: 'bundled', updated: null,
     booting: true, loadError: false, onboarded: true, profile: null, ob: null, rendered: false,
     follow: ['arctic', 'ai', 'minerals', 'geo'], cards: [], setView: null, tipDone: false
@@ -143,7 +143,7 @@
   function openUrl(url) {
     url = safeUrl(url); if (!url) return; // only https:// links are opened; anything else is ignored
     var b = plugin('Browser');
-    if (b) return b.open({ url: url, presentationStyle: 'popover', toolbarColor: '#0A0A0A' }).catch(function () {});
+    if (b) return b.open({ url: url, presentationStyle: 'popover', toolbarColor: '#E0541A' }).catch(function () {});
     window.open(url, '_blank', 'noopener');
   }
   var ICON = {
@@ -585,10 +585,17 @@
     ai: '<rect width="120" height="150" fill="#111"/><g fill="#222"><rect x="10" y="20" width="28" height="120"/><rect x="46" y="20" width="28" height="120"/><rect x="82" y="20" width="28" height="120"/></g><g fill="#FF6B35"><circle cx="16" cy="34" r="2"/><circle cx="52" cy="54" r="2"/><circle cx="88" cy="40" r="2"/><circle cx="16" cy="80" r="2"/><circle cx="52" cy="104" r="2"/><circle cx="88" cy="92" r="2"/></g><g stroke="#333"><path d="M12 46h24M48 70h24M84 60h24M12 96h24M48 118h24M84 110h24"/></g>',
     geo: '<rect width="120" height="150" fill="#2b2f3a"/><rect y="100" width="120" height="50" fill="#1a2230"/><g><rect x="8" y="80" width="22" height="10" fill="#FF6B35"/><rect x="30" y="80" width="22" height="10" fill="#3b6e8f"/><rect x="8" y="90" width="22" height="10" fill="#8a8f94"/><rect x="30" y="90" width="22" height="10" fill="#c0392b"/><rect x="60" y="86" width="22" height="14" fill="#3b6e8f"/></g><path d="M90 100V30h4v70M70 34h40" stroke="#d0a040" stroke-width="3" fill="none"/><path d="M100 34v24" stroke="#999"/>'
   };
+  function topicPhotoFor(i) {
+    var ids = (i.topics || []).map(function (t) { return canonId(t) || t; });
+    ids.push(category(i));
+    for (var k = 0; k < ids.length; k++) if (TOPIC_PHOTO[ids[k]]) return TOPIC_PHOTO[ids[k]];
+    return TOPIC_PHOTO.geo;
+  }
   function thumbHTML(i) {
     if (i.image && safeUrl(i.image)) return '<img class="hthumb" src="' + esc(i.image) + '" alt="">';
     if (localPhoto(i)) return '<img class="hthumb" src="' + esc(i.photo.src) + '" alt="" loading="lazy" decoding="async">';
-    return '<svg class="hthumb" viewBox="0 0 120 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + (TOPIC_ART[category(i)] || TOPIC_ART.geo) + '</svg>';
+    var src = topicPhotoFor(i);
+    return src ? '<img class="hthumb" src="' + esc(src) + '" alt="">' : '<svg class="hthumb" viewBox="0 0 120 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + (TOPIC_ART[category(i)] || TOPIC_ART.geo) + '</svg>';
   }
   function localPhoto(i) { return i.photo && /^img\/photos\/[a-z0-9-]+\.webp$/.test(i.photo.src || '') ? i.photo : null; }
   function photoHeroHTML(i) {
@@ -845,15 +852,29 @@
     if (p.hs_code) return '<span class="pi-hs">HS ' + esc(p.hs_code) + '</span>';
     return '<span class="pi-hs unver">HS Unverified</span>';
   }
+  function metricTilesHTML(i) {
+    var g = sigOf(i), p = polOf(i), tiles = [];
+    var sc = scoreOf10(i);
+    if (sc != null && isFinite(+sc)) tiles.push({ k: 'Impact', v: (+sc).toFixed(1) + '/10', c: 'impact' });
+    var risk = g.risk_level || p.risk_level;
+    if (risk) tiles.push({ k: 'Risk', v: risk, c: lvl(risk) });
+    if (g.opportunity_level) tiles.push({ k: 'Opportunity', v: g.opportunity_level, c: lvl(g.opportunity_level) });
+    if (p.jurisdiction) tiles.push({ k: 'Region', v: jurisFlag(p.jurisdiction) + ' ' + p.jurisdiction, c: '' });
+    if (!tiles.length) return '';
+    return '<div class="metric-row" aria-label="Signal measures">' + tiles.map(function (t) {
+      return '<div class="metric ' + t.c + '"><span>' + esc(t.k) + '</span><b>' + esc(t.v) + '</b></div>';
+    }).join('') + '</div>';
+  }
   function policyFieldsHTML(i) {
     var p = polOf(i); if (!p || !Object.keys(p).length) return '';
     function row(l, v) { if (v == null || v === '') return ''; return '<div class="pi-row"><span class="pi-l">' + l + '</span><span class="pi-v tabnum">' + v + '</span></div>'; }
     var srcName = p.primary_source_type || '';
     var docketLabel = 'View on ' + (srcName && srcName.indexOf('Secondary') < 0 ? srcName : 'source');
     var docket = p.docket_url && safeUrl(p.docket_url) ? '<button class="link-btn docket" data-url="' + esc(p.docket_url) + '">' + esc(docketLabel) + '</button>' : '';
-    var h = '<section class="sd pi-exp" aria-label="Instrument summary"><div class="sd-h"><span>Instrument summary</span>' + stageHTML(p) + '</div>' +
+    var h = '<section class="sd pi-exp" aria-label="Signal"><div class="sd-hero">' + thumbHTML(i) + '<div class="sd-hero-b"><div class="sd-h"><span>Signal</span>' + stageHTML(p) + '</div>' +
       '<h2 class="sd-t">' + esc(mechTitle(i)) + '</h2>' +
-      '<div class="pi-grid">' +
+      (i.summary ? '<p class="sd-sub">' + esc(String(i.summary).slice(0, 180)) + '</p>' : '') +
+      '</div></div><div class="pi-grid">' +
         row('Body', esc((srcName && srcName.indexOf('Secondary') < 0 ? srcName : '') || p.jurisdiction || '')) +
         row('Instrument', esc(p.instrument_type || '')) +
         row('Stage', esc(p.procedural_stage || '')) +
@@ -1019,28 +1040,59 @@
     saveNotes(); closeSheet(); toast('Saved to Private Desk on this device — not sent to a team'); haptic(); render(); if (S.current === id) refreshReader();
   }
 
-  function exportPdf(id) {
-    var i = byId(id); if (!i) return;
-    var p = polOf(i), g = sigOf(i);
-    var el = document.getElementById('printBrief');
-    if (!el) { el = document.createElement('div'); el.id = 'printBrief'; document.body.appendChild(el); }
-    var rows = [
+  function pdfStamp() { return 'Generated ' + new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'; }
+  function signalSections(i) {
+    var p = polOf(i), g = sigOf(i), w = soWhatOf(i);
+    var fields = [
       ['Instrument', p.instrument_type], ['Stage', p.procedural_stage], ['Jurisdiction', p.jurisdiction],
       ['HS code', p.hs_code], ['ECCN', p.eccn], ['Effective', p.effective_date],
-      ['Primary source', p.primary_source_type], ['Docket', p.docket_url], ['Confidence', p.confidence]
-    ].filter(function (x) { return x[1]; }).map(function (x) { return '<div class="print-sec"><h5>' + esc(x[0]) + '</h5><div>' + esc(String(x[1])) + '</div></div>'; }).join('');
-    el.innerHTML = '<div class="print-brand"><span>Voxarc Lab</span><b>Signal Brief</b></div>' +
-      '<h1 class="print-h">' + esc(mechTitle(i)) + '</h1>' +
-      '<p class="print-meta">' + esc(fmtDate(i.published)) + (p.jurisdiction ? ' · ' + esc(p.jurisdiction) : '') + '</p>' +
-      '<div class="print-sec"><h5>What changed</h5><div>' + esc(p.body || g.crux || i.summary) + '</div></div>' +
-      '<div class="print-sec"><h5>Impact</h5><div>' + esc(impactLine(i)) + '</div></div>' + rows +
-      '<p class="print-foot">Prepared by Voxarc Lab. For information only. Not legal advice. No warranty or obligation; non-binding. Black and orange brand brief.</p>';
-    try { window.print(); } catch (e) {}
-    // Also offer share of the text brief
-    var text = 'Voxarc Lab Signal Brief\n' + mechTitle(i) + '\n\n' + (p.body || g.crux || '') + '\n\nImpact: ' + impactLine(i) +
-      (p.docket_url ? '\nDocket: ' + p.docket_url : '') + '\n\nFor information only. Not legal advice. No warranty or obligation; non-binding.';
-    if (navigator.share) { try { navigator.share({ title: mechTitle(i), text: text }); } catch (e2) {} }
-    toast('PDF brief ready (print or share)');
+      ['Primary source', p.primary_source_type], ['Docket', p.docket_url]
+    ].filter(function (x) { return x[1]; }).map(function (x) { return x[0] + ': ' + x[1]; }).join('. ');
+    var sources = (i.sources || []).map(function (s) {
+      return [s.publisher, s.date, s.title, s.url].filter(Boolean).join(' | ');
+    }).join(' ');
+    return [
+      { h: 'What changed', body: (w && w.changed) || p.body || g.crux || i.summary || '' },
+      { h: 'Why it matters', body: (g.so_what || i.summary || '') },
+      { h: 'Who it affects', body: (w && w.who) || '' },
+      { h: 'What to watch', body: (w && w.watch) || g.watch_next || '' },
+      { h: 'Record', body: fields },
+      { h: 'Sources', body: sources }
+    ];
+  }
+  function exportPdf(id) {
+    var i = byId(id); if (!i || !window.VXPdf) return;
+    var p = polOf(i);
+    var title = mechTitle(i);
+    var pages = window.VXPdf.paginate('Signal brief', title, [{ h: 'Published', body: fmtDate(i.published) + (p.jurisdiction ? ' | ' + p.jurisdiction : '') }].concat(signalSections(i)), pdfStamp());
+    var name = 'voxarc-' + String(id).replace(/[^a-z0-9-]+/gi, '').slice(0, 40) + '.pdf';
+    window.VXPdf.deliver(window.VXPdf.build(pages), name, title);
+    toast('PDF ready to save or share');
+  }
+  function exportBrief() {
+    if (!window.VXPdf) return;
+    var savedQ = S.query, savedTopic = S.topic;
+    if (S.tab === 'signals') S.query = '';
+    var list = filtered(S.items);
+    S.query = savedQ; S.topic = savedTopic;
+    if (S.tab === 'signals' && S.sigQuery) {
+      var sq = S.sigQuery.trim().toLowerCase();
+      list = list.filter(function (i) {
+        var p = polOf(i);
+        var hay = [i.title, i.summary, p.jurisdiction || '', (i.topics || []).join(' ')].join(' ').toLowerCase();
+        return sq.split(/\s+/).every(function (w) { return w && hay.indexOf(w) >= 0; });
+      });
+    }
+    list = list.slice(0, 20);
+    var title = S.topic && S.topic !== 'all' ? topicLabel(S.topic) : (S.tab === 'signals' ? 'Signals' : 'Your desk');
+    var sections = [{ h: 'As of', body: asOfText() + '. ' + list.length + ' signal' + (list.length === 1 ? '' : 's') + ' from the current feed.' }];
+    list.forEach(function (i, n) {
+      var p = polOf(i), src = (i.sources || [])[0];
+      sections.push({ h: (n + 1) + '. ' + mechTitle(i), body: [fmtDate(i.published), p.jurisdiction, i.summary, src ? ('Source: ' + src.publisher + (src.date ? ', ' + src.date : '')) : ''].filter(Boolean).join(' | ') });
+    });
+    var pages = window.VXPdf.paginate('Desk brief', title, sections, pdfStamp());
+    window.VXPdf.deliver(window.VXPdf.build(pages), 'voxarc-desk.pdf', title);
+    toast('Desk PDF ready to save or share');
   }
   function flagLegal(id) {
     var i = byId(id); if (!i) return;
@@ -1056,7 +1108,7 @@
     var text = 'Flag for Legal / Procurement\n\n' + mechTitle(i) + '\n' + (p.jurisdiction ? 'Jurisdiction: ' + p.jurisdiction + '\n' : '') +
       (p.hs_code ? 'HS: ' + p.hs_code + '\n' : '') + (p.eccn ? 'ECCN: ' + p.eccn + '\n' : '') +
       (p.docket_url ? 'Docket: ' + p.docket_url + '\n' : '') + '\nNote: ' + (note || '(none)') +
-      '\n\nFor information only. Not legal advice. No warranty or obligation; non-binding.\n— Voxarc Lab';
+      '\n\nFor information only. Not legal advice. No warranty or obligation; non-binding.\nVoxarc Lab';
     closeSheet();
     if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Share) {
       Capacitor.Plugins.Share.share({ title: 'Voxarc Lab flag: ' + mechTitle(i), text: text, dialogTitle: 'Flag to Legal / Procurement' });
@@ -1068,10 +1120,17 @@
     }
     toast('Flag ready to send');
   }
+  function needAccount(why, fn) {
+    if (window.VXSocial && !window.VXSocial.user()) return window.VXSocial.requireAuth(why, fn);
+    fn();
+  }
   function toggleWatch(id) {
     S.watchlist = S.watchlist || {};
+    if (window.VXSocial && !window.VXSocial.user()) {
+      return needAccount('Sign in or create a free account to save this signal. Reading stays free without an account.', function () { toggleWatch(id); });
+    }
     var i = byId(id), p = polOf(i || {});
-    if (S.watchlist[id]) { delete S.watchlist[id]; saveWatch(); toast('Removed from Watchlist'); render(); if (S.current === id) refreshReader(); return; }
+    if (S.watchlist[id]) { delete S.watchlist[id]; saveWatch(); if (window.VXSocial && window.VXSocial.onWatch) window.VXSocial.onWatch(id, false); if (window.VXSocial && window.VXSocial.onSave) window.VXSocial.onSave(id, false); toast('Removed from Watchlist'); render(); if (S.current === id) refreshReader(); return; }
     S.watchlist[id] = {
       v: 1, storyId: id, hs_code: p.hs_code || null, eccn: p.eccn || null, jurisdiction: p.jurisdiction || null,
       title: mechTitle(i), createdAt: new Date().toISOString()
@@ -1084,6 +1143,8 @@
         Capacitor.Plugins.LocalNotifications.schedule({ notifications: [{ id: Math.abs(hashCode(id)) % 100000 + 20000, title: 'Voxarc Lab Watchlist', body: body, schedule: { at: new Date(Date.now() + 1500) } }] });
       }
     } catch (e) {}
+    if (window.VXSocial && window.VXSocial.onWatch) window.VXSocial.onWatch(id, true, S.watchlist[id]);
+    if (window.VXSocial && window.VXSocial.onSave) window.VXSocial.onSave(id, true);
     toast('Added to Watchlist'); haptic(); render(); if (S.current === id) refreshReader();
   }
   function hashCode(str) { var h = 0; for (var i = 0; i < str.length; i++) h = ((h << 5) - h) + str.charCodeAt(i) | 0; return h; }
@@ -1102,12 +1163,21 @@
     var same = impact && action && String(impact).slice(0,120) === String(action).slice(0,120);
     var variant = tier === 'lead' || tier === 'next' ? tier : '';
     var idx = tier === 'next' ? '<span class="pi-idx" aria-hidden="true">02</span>' : '';
+    var whySrc = impact || i.summary || '';
+    var why = whySrc ? '<p class="pi-impact"><b>Why it matters:</b> ' + esc(String(whySrc).slice(0, 220)) + '</p>' : '';
+    var topicId = (i.topics || []).map(canonId).filter(Boolean)[0] || category(i);
+    var tchip = topicId ? '<span class="topic-chip">' + esc(topicLabel(topicId)) + '</span>' : '';
+    var jur = p.jurisdiction ? '<span class="region-chip">' + jurisFlag(p.jurisdiction) + ' ' + esc(p.jurisdiction) + '</span>' : '';
     // 1.3.8: always render the full card. Dense only tightens spacing (CSS), it never hides detail.
+    // 1.5.0: thumbnail and why-it-matters sit above the same summary, price, source check and bookmark.
     return '<article class="bcard pi' + (S.dense ? ' dense' : '') + (variant ? ' pi-' + variant : '') + '" data-open="' + esc(i.id) + '">' +
       '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div>' + watchBtn(i) + '</div>' +
       idx +
+      '<div class="sig-face"><div class="sig-thumb">' + thumbHTML(i) + '</div><div class="sig-face-b">' +
       '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
-      (impact ? '<p class="pi-impact">' + esc(String(impact).slice(0, 160)) + '</p>' : '') +
+      why +
+      '<div class="sig-meta-row">' + jur + tchip + '<span class="sig-when">' + esc(fmtDate(i.published)) + '</span></div></div>' +
+      '<span class="sig-chev" aria-hidden="true">' + ICON.chev + '</span></div>' +
       ((!same && action) ? '<p class="bimp"><b>Directive:</b> ' + esc(String(action).slice(0, 160)) + '</p>' : '') +
       anchorsHTML(i) +
       '<div class="pi-cues">' + hsCue(i) + (prov ? '<span class="pi-prov">' + esc(prov) + '</span>' : '') + primaryCueHTML(i) + '</div>' +
@@ -1220,6 +1290,53 @@
       return true;
     });
   }
+  var TOPIC_PHOTO = {
+    'arctic-security': 'img/photos/arctic-sea-ice.webp',
+    arctic: 'img/photos/arctic-sea-ice.webp',
+    'ai-governance': 'img/photos/ai-chip.webp',
+    ai: 'img/photos/ai-chip.webp',
+    'critical-minerals': 'img/photos/minerals-rare-earth.webp',
+    minerals: 'img/photos/minerals-rare-earth.webp',
+    'ai-investment-infrastructure': 'img/photos/ai-datacenter.webp',
+    'energy-power': 'img/photos/grid-power.webp',
+    'trade-sanctions': 'img/photos/geo-tanker.webp',
+    'strategic-supply-chains': 'img/photos/geo-port.webp',
+    semiconductors: 'img/photos/ai-chip.webp',
+    'economic-security': 'img/photos/geo-capitol.webp',
+    geo: 'img/photos/geo-eu.webp',
+    'defense-technology': 'img/photos/defense-technology.webp',
+    'cyber-digital-sovereignty': 'img/photos/cyber-sovereignty.webp',
+    'space-satellites': 'img/photos/space-satellites.webp'
+  };
+  function globeSVG() {
+    return '<div class="hh-globe" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><radialGradient id="hg" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#FFB088"/><stop offset=".45" stop-color="#E0541A"/><stop offset="1" stop-color="#7A240C"/></radialGradient></defs>' +
+      '<circle cx="60" cy="60" r="46" fill="url(#hg)"/><g fill="none" stroke="#FFE2D2" stroke-width="1" opacity=".75"><ellipse cx="60" cy="60" rx="46" ry="18"/><ellipse cx="60" cy="60" rx="18" ry="46"/><path d="M14 60h92M60 14v92"/></g>' +
+      '<g fill="#FFF6F1"><circle cx="78" cy="36" r="2"/><circle cx="42" cy="48" r="1.6"/><circle cx="70" cy="72" r="1.8"/><circle cx="50" cy="28" r="1.4"/></g></svg></div>';
+  }
+  function homeHeroHTML() {
+    var n = S.items.filter(inFollow).length;
+    return '<section class="home-hero"><div class="hh-copy"><h1>Structured intelligence<br><em>for a clearer tomorrow</em></h1>' +
+      '<p>' + esc(asOfText()) + '. ' + n + ' signal' + (n === 1 ? '' : 's') + ' in your feed. ' + catalogIds().length + ' topics.</p></div>' + globeSVG() + '</section>';
+  }
+  function homeStatHTML() {
+    var list = S.items.filter(inFollow);
+    var hi = list.filter(function (i) { return (polOf(i).importance_tier || sigOf(i).importance) === 'High'; }).length;
+    var wk = list.filter(function (i) { return Date.now() - d(i.published) < 7 * 86400000; }).length;
+    function tile(n, l) { return '<div class="hstat"><b class="tabnum">' + n + '</b><span>' + esc(l) + '</span></div>'; }
+    return '<div class="hstats" aria-label="Counts from the feed">' + tile(list.length, 'In your feed') + tile(hi, 'High impact') + tile(S.follow.length, 'Topics pinned') + tile(wk, 'New this week') + '</div>';
+  }
+  function topicsGridHTML() {
+    var ids = catalogIds();
+    var cards = ids.map(function (id) {
+      var g = taxGroup(id), coming = !!(g && g.status !== 'active');
+      var label = topicLabel(id), focus = (g && g.focus) || DESK_FOCUS[canonKey(id)] || '';
+      var photo = TOPIC_PHOTO[id] || TOPIC_PHOTO[canonKey(id)];
+      var art = photo ? '<img src="' + esc(photo) + '" alt="">' : '<div class="tmono" aria-hidden="true">' + esc(label.slice(0, 1)) + '</div>';
+      return '<button type="button" class="tcard" data-topic="' + esc(id) + '">' + art + '<span class="tbx"><b>' + esc(label) + '</b><small>' + esc(focus) + '</small>' +
+        (coming ? '<em class="chip-soon">Coming soon</em>' : '') + '</span></button>';
+    }).join('');
+    return '<div class="section-h"><h2>Topics</h2><button type="button" class="sec-link" data-managetopics>Manage &gt;</button></div><div class="topic-grid">' + cards + '</div>';
+  }
   function briefHTML(list) {
     list = applyPiFilters(list);
     var T = briefTiers(list);
@@ -1229,14 +1346,14 @@
     var seen = {}, flat = [];
     cards.forEach(function (i) { if (i && !seen[i.id]) { seen[i.id] = 1; flat.push(i); } });
     flat.sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
-    return homeChipsHTML() +
+    return homeHeroHTML() + homeStatHTML() + homeChipsHTML() +
       '<div class="desk-tools"><button type="button" class="link-btn" data-managetopics>Manage topics</button></div>' +
       '<header class="tb brief-h"><div class="bk">Your desk</div><h1 id="sig-h" tabindex="-1">Intelligence desk</h1><p>' + esc(asOfText()) + '</p></header>' +
       '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="q" type="search" placeholder="Search topics, signals, sources" aria-label="Search" value="' + esc(S.query) + '" autocomplete="off" enterkeyhint="search"></label></div>' +
       filterBarHTML() +
-      '<section class="btier" aria-labelledby="bt-feed"><div class="bth"><h2 id="bt-feed">Signals</h2><span>' + flat.length + ' matching</span></div>' +
+      '<section class="btier" aria-labelledby="bt-feed"><div class="bth"><h2 id="bt-feed">Signals</h2><button type="button" class="sec-link" data-pdfbrief="1">Export PDF</button></div>' +
       (flat.length ? flat.map(function (i, n) { return piCardHTML(i, n === 0 ? 'lead' : (n === 1 ? 'next' : '')); }).join('') : '<p class="bempty">No signals match these filters.</p>') +
-      '</section>' + coverageHTML() + '<button class="bmore" data-tab="signals">All signals</button>';
+      '</section>' + topicsGridHTML() + coverageHTML() + '<button class="bmore" data-tab="signals">All signals</button>';
   }
 
   // Detail: audit trail and social summary (one tap deeper than the home card)
@@ -1493,14 +1610,21 @@
         return S.saved.indexOf(b.id) - S.saved.indexOf(a.id);
       });
     }
-    var h = '<div class="section-h"><h2>Watchlist' + (notes ? ' \u00B7 Private Notes' : '') + '</h2><span>' + list.length + ' on this device \u00B7 private by default</span></div>';
+    var h = '<section class="home-hero"><div class="hh-copy"><h1>Stay ahead<br><em>of what matters.</em></h1><p>Your watchlist is private to your account. It is not public. Topics you follow stay on this device.</p></div>' + globeSVG() + '</section>' +
+      topicsGridHTML().replace('>Topics<', '>My watchlist<') +
+      '<div class="section-h"><h2>Watchlist' + (notes ? ' \u00B7 Private Notes' : '') + '</h2><span>' + list.length + ' private to your account</span></div>';
         h += '<div class="segbar" role="tablist"><button role="tab" data-savedview="saved" aria-selected="' + (!notes) + '" class="' + (notes ? '' : 'on') + '">Watching \u00B7 ' + Object.keys(S.watchlist || {}).length + '</button>' +
       '<button role="tab" data-savedview="notes" aria-selected="' + notes + '" class="' + (notes ? 'on' : '') + '">Private Notes \u00B7 ' + Object.keys(S.privateNotes || {}).length + '</button></div>';
     if (!notes) h += watchRulesHTML();
     if (notes) return h + (list.length ? list.map(function (i) { var n = noteOf(i.id); return '<div class="rp-h"><span>Private Note \u00B7 ' + esc(fmtDate(n.updatedAt)) + '</span></div><p class="rp-c">' + esc(n.body) + '</p>' + (i.signal ? piCardHTML(i) : cardHTML(i, false)); }).join('')
       : '<div class="empty"><h3>No private notes yet</h3><p>Add a Private Note from a Regulatory Dossier. Stored on this device, never a public comment.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>');
     if (!list.length) return h + '<div class="empty">' + ICON.saved + '<h3>Nothing watched yet</h3><p>Tap Watch on a dossier to keep it here. Watchlists are private by default.</p><button class="btn ghost sm" data-tab="feed">Browse Signal Desk</button></div>';
-    return h + list.map(function (i) { return i.signal ? piCardHTML(i) : cardHTML(i, false); }).join('');
+    return h + list.map(function (i) {
+      var seen = (S.watchSeen || {})[i.id];
+      var changed = seen && d(i.published).getTime() > seen;
+      var tag = changed ? '<p class="wl-chg"><span class="wl-dot"></span>New change detected</p>' : '';
+      return tag + (i.signal ? piCardHTML(i) : cardHTML(i, false));
+    }).join('');
   }
   function switchHTML(on, label) { return '<button class="switch' + (on ? ' on' : '') + '" data-notif role="switch" aria-checked="' + on + '" aria-label="' + esc(label) + '"></button>'; }
   function renderBrief() {
@@ -1783,9 +1907,44 @@
     S.query = q; S.topic = tp; S.searchOpen = so;
     var q2 = S.query; S.query = ''; var list = filtered(S.items); S.query = q2;
     if (S.sigSort === 'top') list = list.slice().sort(function (a, b) { var sb = scoreOf10(b), sa = scoreOf10(a); if (sb == null) sb = -1; if (sa == null) sa = -1; if (sb !== sa) return sb - sa; return d(b.published) - d(a.published); });
-    var h = '<header class="tb"><h1>Signals</h1><p>' + list.length + ' signals \u00B7 ' + esc(asOfText()) + '</p></header>' + sigControlsHTML() + trendHTML() +
-      '<div class="section-h"><h2>' + (S.sigSort === 'top' ? 'Top Signals' : 'Latest signals') + '</h2><span>' + list.length + ' shown</span></div><span id="unread-l" hidden>Unread</span>';
+    if (S.sigQuery) {
+      var sq = S.sigQuery.trim().toLowerCase();
+      list = list.filter(function (i) {
+        var p = polOf(i);
+        var topicHay = (i.topics || []).map(function (t) { return topicLabel(canonId(t) || t); }).join(' ');
+        var hay = [i.title, i.summary, i.body, topicHay, p.jurisdiction || '', (p.geo_impact || []).join(' '), (p.industry_impact || []).join(' ')].join(' ').toLowerCase();
+        return sq.split(/\s+/).every(function (w) { return w && hay.indexOf(w) >= 0; });
+      });
+    }
+    var allOn = S.fImpact === 'all' && S.fJuris === 'all' && S.fIndustry === 'all' && !S.sigQuery;
+    function qchip(attrs, label, on) { return '<button type="button" class="chip' + (on ? ' active' : '') + '" ' + attrs + '>' + label + '</button>'; }
+    var quick = '<div class="chips sig-quick" role="toolbar" aria-label="Signal filters">' +
+      qchip('data-sigclear="1"', 'All', allOn) +
+      qchip('data-ff="fImpact" data-fv="' + (S.fImpact === 'High' ? 'all' : 'High') + '"', 'High Impact', S.fImpact === 'High') +
+      qchip('data-ff="fJuris" data-fv="' + (S.fJuris === 'Canada' ? 'all' : 'Canada') + '"', 'Canada', S.fJuris === 'Canada') +
+      qchip('data-ff="fIndustry" data-fv="' + (S.fIndustry === 'semiconductors' ? 'all' : 'semiconductors') + '"', 'Semiconductors', S.fIndustry === 'semiconductors') +
+      '<button type="button" class="chip icon-chip' + (activeFilterCount() ? ' active' : '') + '" data-opensfilters="1" aria-label="All filters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg></button></div>';
+    var h = '<header class="tb"><h1>Signals</h1><p>' + list.length + ' signals \u00B7 ' + esc(asOfText()) + '</p></header>' +
+      '<div class="searchwrap"><label class="search">' + ICON.search + '<input id="sigQ" type="search" placeholder="Search signals, topics, regions" aria-label="Search signals, topics, regions" value="' + esc(S.sigQuery) + '" autocomplete="off" enterkeyhint="search"></label></div>' +
+      quick + sigControlsHTML() + trendHTML() +
+      '<div class="section-h"><h2>' + (S.sigSort === 'top' ? 'Top Signals' : 'Latest signals') + '</h2><button type="button" class="sec-link" data-pdfbrief="1">Export PDF</button></div><span id="unread-l" hidden>Unread</span>';
     return h + (list.length ? list.map(function (i, n) { return i.signal ? piCardHTML(i, n === 0 ? 'lead' : '') : cardHTML(i, false); }).join('') : '<div class="empty"><h3>No signals match</h3><p>Try another importance or horizon.</p></div>');
+  }
+  function todayTile(n, label) {
+    return '<div class="ttile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-7M21 19H3"/></svg><b class="tabnum">' + n + '</b><span>' + esc(label) + '</span></div>';
+  }
+  function trendCounts() {
+    var t = S.trends; if (!t || !t.topics) return null;
+    var c = { up: 0, down: 0, steady: 0, n: 0 };
+    Object.keys(t.topics).forEach(function (k) {
+      var x = t.topics[k] && t.topics[k]['7'];
+      if (!x || !x.reliable) return;
+      c.n++;
+      if (x.dir === 'up') c.up++;
+      else if (x.dir === 'down') c.down++;
+      else c.steady++;
+    });
+    return c.n ? c : null;
   }
   function renderDashboard() {
     if (S.booting) return '<div class="skel-wrap" aria-hidden="true"><div class="sk-card"><div class="sk sk-t"></div><div class="sk sk-t short"></div></div></div>';
@@ -1865,7 +2024,17 @@
     } else {
       wlHTML = '<p class="bempty">Watch signals from a detail page to track them here.</p>';
     }
-    return '<div class="brief-top"><div class="brief-date">' + esc(longDate(new Date())) + '</div><h2>Dashboard</h2><p>Signal terminal overview from the live feed. Tap a cell or bar to filter Signals.</p></div>' +
+    var tc = trendCounts();
+    var today = '<div class="today-row" aria-label="Today, counted from the feed">' +
+      todayTile(byImp.High, 'High impact') + todayTile(byImp.Medium, 'Medium') + todayTile(byImp.Low, 'Low') +
+      todayTile(S.items.filter(function (i) { return !S.read[i.id]; }).length, 'Unread') + '</div>';
+    var trend = tc ? '<div class="section-h"><h2>Trending</h2><span>7-day volume vs prior week</span></div><div class="trend-row">' +
+      '<div class="ttile"><b class="up tabnum">' + tc.up + '</b><span>Up</span></div>' +
+      '<div class="ttile"><b class="tabnum">' + tc.steady + '</b><span>Steady</span></div>' +
+      '<div class="ttile"><b class="down tabnum">' + tc.down + '</b><span>Down</span></div></div>' : '';
+    return '<div class="brief-top"><div class="brief-date">' + esc(longDate(new Date())) + '</div><h2>Dashboard</h2><p>Counts from the live feed. Tap a cell or bar to filter Signals. No estimated percent change.</p></div>' +
+      homeHeroHTML().replace('Structured intelligence<br><em>for a clearer tomorrow</em>', 'The live feed<br><em>at a glance</em>') +
+      today + trend +
       '<section class="dash-sec"><h3>Importance</h3>' + countPills(byImp, 'fImpact') + '</section>' +
       '<section class="dash-sec"><h3>Time horizon</h3>' + countPills(byHz, 'fHorizon') + '</section>' +
       '<section class="dash-sec"><h3>Jurisdiction by stage</h3>' + heat + '</section>' +
@@ -1877,11 +2046,11 @@
 
   function renderAsk() {
     var q = S.query || '';
-    var h = '<div class="brief-top"><h2>Ask</h2><p>Grounded answers from Official Dockets and retrieved signals only. Outside knowledge is never used. Private by default.</p></div>' +
+    var h = '<div class="brief-top"><h2>Your AI intelligence assistant.</h2><p>Answers are built only from signals already on this desk, with source tags. Nothing is guessed and no outside model is called.</p></div>' +
       '<div class="searchwrap ask-wrap"><label class="search" for="askQ">' + ICON.search +
       '<input id="askQ" type="search" placeholder="Ask about a docket, mineral, HS code or filing" aria-label="Ask Signal Desk" value="' + esc(q) + '" autocomplete="off" enterkeyhint="search">' +
       (q ? '<button type="button" class="clear" data-clear aria-label="Clear">Clear</button>' : '') +
-      '<button type="button" class="ask-send" data-asksend aria-label="Ask">' + ICON.spark + '<span>Ask</span></button></label></div>';
+      '<button type="button" class="ask-send" data-asksend aria-label="Ask"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6"/></svg><span>Ask</span></button></label></div>';
     if (!q) return h + '<div class="sugg ask-sugg" role="list">' + ['Greenland', 'Rare earths', 'Export controls', 'Northern Sea Route'].map(function (w) {
       return '<button type="button" class="chip" data-suggest="' + esc(w) + '">' + esc(w) + '</button>';
     }).join('') + '</div>';
@@ -1950,9 +2119,9 @@
 
   function articleHTML(i) {
     var p = polOf(i), hasPol = i.signal && Object.keys(p).length;
-    var h = '<div class="rbar"><button class="back" data-back>' + ICON.back + '<span>Back</span></button><span class="sp"></span>' +
+    var h = '<div class="rbar"><button class="back" data-back>' + ICON.back + '<span>Back</span></button><span class="rbar-title">Signal</span><span class="sp"></span>' +
       '<button class="icon-btn" data-textsize aria-label="Text size">' + ICON.aa + '</button>' +
-      '<button class="icon-btn' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button></div><div class="rprog" id="rprog"></div>';
+      '<button class="icon-btn save-pill' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Save signal') + '">' + ICON.bm + '<span>Save</span></button></div><div class="rprog" id="rprog"></div>';
     h += '<div class="rscroll" id="rscroll"><article>';
     // Terminal: no hero image. Instrument summary leads for policy signals.
     if (hasPol) {
@@ -1966,6 +2135,7 @@
     // Source + freshness only (no byline, no )
     h += '<div class="ameta signal-meta">' + primaryCueHTML(i) + '<span class="pi-st-a">' + esc(sourceAgo(i) || fmtDate(i.published)) + '</span><span class="bp ai">AI-assisted</span></div>';
     h += '<div class="pi-tools detail">' + shareSignalBtn(i) + '</div>';
+    h += metricTilesHTML(i);
     if (i.signal && !p.instrument_type) h += signalDetailHTML(i);
     h += tablesHTML(i);
     if (i.stat && i.stat.value) h += '<div class="statbox"><b class="tabnum">' + esc(i.stat.value) + '</b><span>' + esc(i.stat.label) + '</span></div>';
@@ -2161,9 +2331,12 @@
     haptic(); render(); toast((on ? 'Following ' : 'Stopped following ') + topicLabel(id));
   }
   function toggleSave(id) {
+    if (window.VXSocial && !window.VXSocial.user()) {
+      return needAccount('Sign in or create a free account to bookmark this signal. Reading stays free without an account.', function () { toggleSave(id); });
+    }
     var k = S.saved.indexOf(id);
     if (k >= 0) S.saved.splice(k, 1); else S.saved.push(id);
-    store.set('vx.saved', S.saved); haptic(); if (window.VXSocial) window.VXSocial.onSave(id, k < 0); toast(k >= 0 ? 'Removed from Saved' : 'Saved for offline reading');
+    store.set('vx.saved', S.saved); haptic(); if (window.VXSocial) window.VXSocial.onSave(id, k < 0); toast(k >= 0 ? 'Removed from Saved' : 'Saved to your account');
     render(); refreshReader();
   }
   function refreshReader() { if (S.current) { var sc = $('#rscroll'), y = sc ? sc.scrollTop : 0; openArticle(S.current, true); if ($('#rscroll')) $('#rscroll').scrollTop = y; } }
@@ -2326,11 +2499,12 @@
       if (x.hasAttribute('data-followall')) { setFollow(['arctic-security', 'ai-governance', 'critical-minerals', 'geo']); haptic(); render(); toast('Pinned the live desks'); return; }
       if (x.hasAttribute('data-followevery')) { setFollow(catalogIds()); haptic(); render(); toast('Pinned all ' + S.follow.length + ' topics'); return; }
     }
-    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],[data-sharesignal],[data-sharego],[data-subtopic],#btnSearch,#sheet');
+    var t = e.target.closest('[data-react],[data-savedview],[data-bm],[data-open],[data-topic],[data-tab],[data-share],[data-back],[data-url],[data-notif],[data-fs],[data-clearsaved],[data-clearsavedok],[data-closesheet],[data-mail],[data-refresh],[data-clearread],[data-clear],[data-textsize],[data-sf],[data-repost],[data-sinfo],[data-tipdone],[data-repin],[data-repundo],[data-repurl],[data-repshare],[data-dossier],[data-forward],[data-privnote],[data-notesave],[data-cm],[data-pdf],[data-pdfbrief],[data-flag],[data-flaggo],[data-watch],[data-ff],[data-sigclear],[data-opensfilters],[data-ffreset],[data-moredesk],[data-trust],[data-backset],[data-dense],[data-saveview],[data-loadview],[data-heatj],[data-sigfb],[data-citepriv],[data-citepub],[data-wradd],[data-wrdel],[data-sharesignal],[data-sharego],[data-subtopic],#btnSearch,#sheet');
     if (!t) return;
     if (t.dataset.cm) { e.stopPropagation(); openArticle(t.dataset.cm); setTimeout(function () { var c = document.querySelector('#rscroll .sx-cm'); if (c) c.scrollIntoView({ block: 'start' }); }, 120); return; }
     if (t.dataset.dossier) { e.stopPropagation(); openArticle(t.dataset.dossier); setTimeout(function () { var fa = document.querySelector('#rscroll .fa') || document.querySelector('#rscroll .pi-exp') || document.querySelector('#rscroll .audit') || document.querySelector('#rscroll .pi-audit'); if (fa) fa.scrollIntoView({ block: 'start' }); }, 80); return; }
     if (t.dataset.pdf) { e.stopPropagation(); exportPdf(t.dataset.pdf); return; }
+    if (t.dataset.pdfbrief) { e.stopPropagation(); exportBrief(); return; }
     if (t.dataset.opensfilters) { e.stopPropagation(); openFiltersSheet(); return; }
     if (t.dataset.ffreset) { e.stopPropagation(); resetAllFilters(); openFiltersSheet(); render(); return; }
     if (t.dataset.moredesk) { e.stopPropagation(); moreDeskSheet(t.dataset.moredesk); return; }
@@ -2344,6 +2518,7 @@
       addWatchRule({ kind: kind, value: val }); return;
     }
     if (t.dataset.wrdel) { e.stopPropagation(); removeWatchRule(t.dataset.wrdel); return; }
+    if (t.dataset.sigclear != null) { e.stopPropagation(); resetAllFilters(); S.sigQuery = ''; render(); return; }
     if (t.dataset.ff) {
       e.stopPropagation();
       S[t.dataset.ff] = t.dataset.fv;
@@ -2356,13 +2531,19 @@
     if (t.dataset.dense) { e.stopPropagation(); S.dense = !S.dense; persistFilters(); if (document.querySelector('#sheet .ff-sheet') && !$('#sheet').hidden) openFiltersSheet(); render(); return; }
     if (t.dataset.saveview) {
       e.stopPropagation();
-      var name = 'View ' + ((S.namedViews || []).length + 1);
-      try { name = window.prompt('Name this view', name) || ''; } catch (err) { name = ''; }
-      name = String(name).replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 40);
-      if (!name) return;
-      S.namedViews = S.namedViews || [];
-      S.namedViews.push({ name: name, fJuris: S.fJuris, fMineral: S.fMineral, fStage: S.fStage, fImpact: S.fImpact, fScore: S.fScore, fHorizon: S.fHorizon, fGeo: S.fGeo, fIndustry: S.fIndustry, dense: S.dense });
-      store.set('vx.namedViews', S.namedViews); toast('Saved view: ' + name); render(); return;
+      needAccount('Sign in or create a free account to save this view. Reading stays free without an account.', function () {
+        var name = 'View ' + ((S.namedViews || []).length + 1);
+        try { name = window.prompt('Name this view', name) || ''; } catch (err) { name = ''; }
+        name = String(name).replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 40);
+        if (!name) return;
+        var filters = { fJuris: S.fJuris, fMineral: S.fMineral, fStage: S.fStage, fImpact: S.fImpact, fScore: S.fScore, fHorizon: S.fHorizon, fGeo: S.fGeo, fIndustry: S.fIndustry, dense: S.dense };
+        S.namedViews = S.namedViews || [];
+        S.namedViews.push({ name: name, fJuris: filters.fJuris, fMineral: filters.fMineral, fStage: filters.fStage, fImpact: filters.fImpact, fScore: filters.fScore, fHorizon: filters.fHorizon, fGeo: filters.fGeo, fIndustry: filters.fIndustry, dense: filters.dense });
+        store.set('vx.namedViews', S.namedViews);
+        if (window.VXSocial && window.VXSocial.onView) window.VXSocial.onView(name, filters);
+        toast('Saved view: ' + name); render();
+      });
+      return;
     }
     if (t.dataset.loadview != null && t.dataset.loadview !== '') {
       e.stopPropagation();
@@ -2436,6 +2617,7 @@
     if (e.target.id === 'topicQ') { S.topicQuery = e.target.value; var tp = S.topicQuery.length; render(); var tq = $('#topicQ'); if (tq) { tq.focus(); try { tq.setSelectionRange(tp, tp); } catch (err) {} } return; }
     // Ask: keep the field editable; results update only on Ask / Enter / suggestion chip (avoids Android keyboard dismiss).
     if (e.target.id === 'askQ') return;
+    if (e.target.id === 'sigQ') { var sv = e.target.value; clearTimeout(qT); qT = setTimeout(function () { S.sigQuery = sv; var pos = sv.length; render(); var q = $('#sigQ'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (err) {} } }, 220); return; }
     if (e.target.id === 'q') { var v = e.target.value; clearTimeout(qT); qT = setTimeout(function () { S.query = v; var pos = v.length; render(); var q = $('#q'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (err) {} } }, 220); }
   });
   document.addEventListener('change', function (e) {
@@ -2580,7 +2762,11 @@
       if (!S.onboarded && S.items.length && !wantContact) startOnboarding(false);
       if (wantContact) { S.tab = 'settings'; S.setView = 'contact'; }
       render();
-      var ss = plugin('SplashScreen'); if (ss) requestAnimationFrame(function () { setTimeout(function () { ss.hide({ fadeOutDuration: 200 }).catch(function () {}); }, 50); });
+      var ss = plugin('SplashScreen'); if (ss) requestAnimationFrame(function () { setTimeout(function () {
+        var hid = ss.hide({ fadeOutDuration: 200 });
+        if (hid && hid.then) hid.then(function () { armWelcome(1100); }, function () { armWelcome(400); });
+        else armWelcome(1100);
+      }, 50); });
       spotlightIndex();
       var nx = plugin('VoxarcNative'); // a quick action or Spotlight result that launched the app
       if (nx && typeof nx.takePendingRoute === 'function') { try { nx.takePendingRoute().then(handleRoute).catch(function () {}); } catch (e) {} }
@@ -2588,6 +2774,40 @@
       refreshRemote(false); scheduleNotif();
     });
   }
-  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, CFG: CFG, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts, openUrl: openUrl, mail: mail };
+  function applyAccount(payload) {
+    payload = payload || {};
+    (payload.saves || []).forEach(function (s) { if (s && s.story_id && S.saved.indexOf(s.story_id) < 0) S.saved.push(s.story_id); });
+    (payload.watches || []).forEach(function (w) {
+      if (!w || !w.story_id || S.watchlist[w.story_id]) return;
+      S.watchlist[w.story_id] = { v: 1, storyId: w.story_id, hs_code: w.hs_code || null, eccn: w.eccn || null, jurisdiction: w.jurisdiction || null, createdAt: w.created_at, synced: true };
+    });
+    if ((payload.views || []).length && !(S.namedViews || []).length) {
+      S.namedViews = payload.views.map(function (v) {
+        var f = v.filters || {};
+        return { name: v.name, fJuris: f.fJuris || 'all', fMineral: f.fMineral || 'all', fStage: f.fStage || 'all', fImpact: f.fImpact || 'all', fScore: f.fScore || 'all', fHorizon: f.fHorizon || 'all', fGeo: f.fGeo || 'all', fIndustry: f.fIndustry || 'all', dense: !!f.dense };
+      });
+    }
+    store.set('vx.saved', S.saved); store.set('vx.watchlist', S.watchlist); store.set('vx.namedViews', S.namedViews || []);
+    if (!S.booting) render();
+  }
+  window.__vx = { openArticle: function (id) { closeSheet(); if (S.tab === 'settings') { S.tab = 'feed'; render(); } openArticle(id); }, byId: byId, S: S, CFG: CFG, render: render, refreshReader: refreshReader, toast: toast, sheet: sheet, closeSheet: closeSheet, saveReposts: saveReposts, openUrl: openUrl, mail: mail, applyAccount: applyAccount, exportPdf: exportPdf, exportBrief: exportBrief };
+  var welcomeArmed = false;
+  function dismissWelcome() {
+    var w = document.getElementById('welcome');
+    if (!w || w.dataset.bye) return;
+    w.dataset.bye = '1'; w.classList.add('out');
+    setTimeout(function () { w.hidden = true; }, reducedMotion() ? 0 : 320);
+  }
+  function armWelcome(delay) {
+    if (welcomeArmed || window.__VX_HOLD_WELCOME) return;
+    welcomeArmed = true;
+    setTimeout(dismissWelcome, delay);
+  }
+  (function scheduleWelcome() {
+    var w = document.getElementById('welcome');
+    if (w && window.__VX_HOLD_WELCOME) { w.classList.add('hold'); return; }
+    if (plugin('SplashScreen')) setTimeout(function () { armWelcome(400); }, 2600);
+    else armWelcome(reducedMotion() ? 160 : 720);
+  })();
   loadAll();
 })();

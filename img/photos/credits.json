@@ -190,6 +190,36 @@
    "license": "Public domain",
    "licenseUrl": "",
    "modified": "resized to 600px, WebP"
+  },
+  "defense-technology": {
+   "file": "img/photos/defense-technology.webp",
+   "title": "USS Gerald R. Ford (CVN-78) underway on 8 April 2017.JPG",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:USS_Gerald_R._Ford_(CVN-78)_underway_on_8_April_2017.JPG",
+   "author": "U.S. Navy photo by Mass Communication Specialist 2nd Class Ridge Leoni",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "cyber-sovereignty": {
+   "file": "img/photos/cyber-sovereignty.webp",
+   "title": "EFTA00002420 - Cluttered server room filled with tangled cables and electronic equipment.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:EFTA00002420_-_Cluttered_server_room_filled_with_tangled_cables_and_electronic_equipment.jpg",
+   "author": "Federal Bureau of Investigation",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
+  },
+  "space-satellites": {
+   "file": "img/photos/space-satellites.webp",
+   "title": "International Space Station after undocking of STS-132.jpg",
+   "source": "Wikimedia Commons",
+   "sourceUrl": "https://commons.wikimedia.org/wiki/File:International_Space_Station_after_undocking_of_STS-132.jpg",
+   "author": "NASA/Crew of STS-132",
+   "license": "Public domain",
+   "licenseUrl": "",
+   "modified": "resized to 600px, WebP"
   }
  }
 }

@@ -34,9 +34,9 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .fa-sub{font-size:11px;font-weight:500;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
 .fa-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r-s)}
 .fa table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;font-variant-numeric:tabular-nums}
-.fa th,.fa td{padding:8px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);background:#141414}
-.fa thead th{color:var(--dim);font-weight:500;font-size:11px;white-space:normal;min-width:84px;vertical-align:bottom;background:#181818}
-.fa th:first-child{position:sticky;left:0;z-index:1;text-align:left;background:#181818;border-right:1px solid var(--line);min-width:72px}
+.fa th,.fa td{padding:8px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);background:#fff}
+.fa thead th{color:var(--dim);font-weight:500;font-size:11px;white-space:normal;min-width:84px;vertical-align:bottom;background:#F7F6F4}
+.fa th:first-child{position:sticky;left:0;z-index:1;text-align:left;background:#F7F6F4;border-right:1px solid var(--line);min-width:72px}
 .fa tbody th{color:var(--text);font-weight:600}
 .fa td.key{color:var(--orange);font-weight:600}
 .fa td.fa-src,.fa thead th:last-child{text-align:left;color:var(--dim);font-size:11px;min-width:140px}.fa-src small{display:block;color:var(--dim)}

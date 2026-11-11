@@ -3,15 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#E0541A">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>html,body,#app{background:#0A0A0A;color:#F8F8F7;margin:0;height:100%}</style>
-<title>Voxarc Signal Desk</title>
+<style>html,body{margin:0;height:100%;background:#120804}#app{background:#F4F5F7;color:#141210;min-height:100%}#welcome{position:fixed;inset:0;z-index:80;background:#120804}</style>
+<title>Voxarc Feed</title>
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/social.css">
+<link rel="stylesheet" href="css/light.css">
 </head>
 <body>
+<div id="welcome" role="status" aria-label="Welcome to Voxarc">
+  <picture class="w-art">
+    <source srcset="img/welcome.avif" type="image/avif">
+    <source srcset="img/welcome.webp" type="image/webp">
+    <img src="img/welcome.jpg" alt="">
+  </picture>
+  <p class="w-sr">Welcome to Voxarc. Structured intelligence for a clearer tomorrow.</p>
+</div>
 <div id="app">
   <div id="statusGap" aria-hidden="true"></div>
   <div id="feedBanner">Voxarc Feed</div>
@@ -25,9 +34,9 @@
     <section id="reader" aria-label="Briefing" aria-hidden="true"></section>
   </div>
   <nav id="tabbar" aria-label="Main">
-    <button data-tab="feed" class="active" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/></svg><span>Desk</span></button>
-    <button data-tab="signals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span>Signals</span></button>
-    <button data-tab="brief"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>Dashboard</span></button>
+    <button data-tab="feed" class="active" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/></svg><span>Voxarc</span></button>
+    <button data-tab="brief"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16a7 7 0 0 1 14 0"/><path d="M12 16 15.2 11.5"/><path d="M5 16h14"/></svg><span>Dashboard</span></button>
+    <button data-tab="signals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-7M21 19H3"/></svg><span>Signals</span></button>
     <button data-tab="saved"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span>Watchlist</span></button>
     <button data-tab="ask"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 17h.01"/></svg><span>Ask</span></button>
   </nav>
@@ -46,6 +55,7 @@
 <script src="js/vendor/splash-screen.js"></script>
 <script src="js/vendor/status-bar.js"></script>
 <script src="js/taxonomy.js"></script>
+<script src="js/pdf.js"></script>
 <script src="js/app.js"></script>
 <script src="js/social-config.js"></script>
 <script src="js/social.js"></script>
