@@ -14,6 +14,12 @@
   var GL_TEXT = 'I agree to the Voxarc Community Guidelines and understand that harassment, defamatory remarks, and abusive content will lead to account termination.';
   var SIG_REASONS = ['Factually wrong', 'Misleading summary or rating', 'Source does not support it', 'Out of date', 'Something else'];
   function glBox(id) { return '<label class="sx-gl-ok"><input type="checkbox" id="' + id + '"> <span>' + esc(GL_TEXT) + ' <a href="#" data-sx="glread">Read the guidelines</a></span></label>'; }
+  function legalBox(id) {
+    var cfg = (X() && X().CFG) || {};
+    var terms = cfg.termsUrl || 'https://voxarclab.io/terms';
+    var priv = cfg.privacyUrl || 'https://voxarclab-byte.github.io/voxarc-feed-web/privacy.html';
+    return '<div class="sx-gl-ok"><input type="checkbox" id="' + id + '" aria-required="true"> <span>By creating an account, you agree to our <a href="' + esc(terms) + '" data-sx="legal" data-url="' + esc(terms) + '">Terms of Service</a> and acknowledge our <a href="' + esc(priv) + '" data-sx="legal" data-url="' + esc(priv) + '">Privacy Policy</a>.</span></div>';
+  }
   var REASONS = ['Spam', 'Harassment or hate', 'Misinformation', 'Sexual or violent content', 'Something else'];
 
   /* ---------- Supabase backend (REST, no SDK) ---------- */
@@ -193,12 +199,12 @@
   /* ---------- screens ---------- */
   function signInSheet(why, email) {
     sheet('<h3>Sign in to Voxarc</h3><p>' + esc(why || 'Reading stays free without an account. Sign in to save signals and views, or to use Public mode.') + '</p>' +
-      (GOOGLE ? '<button class="btn primary sx-g" data-sx="google"><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button><div class="sx-or"><span>or use email</span></div>' : '') +
+      (GOOGLE ? '<button class="btn primary sx-g" data-sx="google" disabled><span class="sx-gl" aria-hidden="true">G</span>Continue with Google</button><div class="sx-or"><span>or use email</span></div>' : '') +
       '<input id="sxName" class="sx-in" placeholder="Name (new accounts)" autocomplete="name" maxlength="60">' +
       '<input id="sxEmail" class="sx-in" type="email" placeholder="Email" autocomplete="email" value="' + esc(email || '') + '">' +
       '<input id="sxPw" class="sx-in" type="password" placeholder="Password (8+ characters)" autocomplete="current-password">' +
-      '<div class="sx-2"><button class="btn primary" data-sx="emailin">Sign in</button><button class="btn ghost" data-sx="emailup">Create account</button></div>' +
-      glBox('sxGl') + '<p class="sx-fine">Required to create an account. New accounts start in Stealth: nothing is public until you turn on Public mode. Reported comments are hidden for everyone while Voxarc Lab reviews them. Forgot your password? Email support@voxarc.io.' + (LIVE ? '' : '<br><b>Offline test mode:</b> accounts stay on this device.') + '</p>' +
+      '<div class="sx-2"><button class="btn primary" data-sx="emailin">Sign in</button><button class="btn ghost" data-sx="emailup" disabled>Create account</button></div>' +
+      legalBox('sxGl') + '<p class="sx-fine">Required to create an account. New accounts start in Stealth: nothing is public until you turn on Public mode. Reported comments are hidden for everyone while Voxarc Lab reviews them. Forgot your password? Email support@voxarc.io.' + (LIVE ? '' : '<br><b>Offline test mode:</b> accounts stay on this device.') + '</p>' +
       '<button class="btn ghost" data-closesheet>Not now</button>');
   }
   /* Public mode: one opt-in switch for public comments, public citations and the Tracked by analyst profile. */
@@ -405,6 +411,11 @@
     if (kind === 'cite' && !quote) return toast('Add the passage you are citing');
     return B.addComment(id, body.slice(0, 500), kind, quote.slice(0, 400)).then(function () { delete cache[id]; ccount[id] = (ccount[id] || 0) + 1; cmKind = 'comment'; closeSheet(); rerender(); toast(kind === 'cite' ? 'Citation posted publicly' : 'Comment posted publicly'); }).catch(function (er) { toast(er.message); });
   }
+  document.addEventListener('change', function (e) {
+    if (!e.target || e.target.id !== 'sxGl') return;
+    var on = !!e.target.checked, nodes = document.querySelectorAll('[data-sx="emailup"],[data-sx="google"]');
+    for (var i = 0; i < nodes.length; i++) nodes[i].disabled = !on;
+  });
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-sx]'); if (!t) return;
     e.stopPropagation(); e.preventDefault();
@@ -412,15 +423,16 @@
     if (a === 'noop') return;
     if (a === 'signin') return signInSheet();
     if (a === 'glread') { var gx = X(); if (gx && gx.openUrl) gx.openUrl(C.guidelinesUrl); else window.open(C.guidelinesUrl, '_blank'); return; }
+    if (a === 'legal') { var lx = X(), lu = t.getAttribute('data-url'); if (lx && lx.openUrl) lx.openUrl(lu); else window.open(lu, '_blank', 'noopener'); return; }
     if (a === 'sigmenu') return sheet('<h3>Signal options</h3><button class="btn ghost" data-sx="sigreport" data-id="' + esc(id) + '">Report inaccurate or misleading signal</button><button class="btn ghost" data-closesheet>Cancel</button>');
     if (a === 'sigreport') return sigReportSheet(id);
     if (a === 'sigreportok') { var sr = document.querySelector('input[name="sxSR"]:checked'), note = noDash(v('sxSRn')).slice(0, 400);
       return B.reportSignal(id, (sr ? sr.value : 'Something else') + (note ? ': ' + note : '')).then(function () { closeSheet(); toast('Thanks. Voxarc Lab will check this signal against its source'); }).catch(function () { closeSheet(); var x = X(); if (x && x.mail) x.mail('Signal report ' + id); else toast('Could not send. Email support@voxarc.io'); }); }
     if (a === 'google' && !GOOGLE) return;
-    if (a === 'google') return B.signInGoogle().then(function () { if (!LIVE) afterAuth('Signed in with Google'); }).catch(function (er) { toast(er.message); });
+    if (a === 'google') { var gg = document.getElementById('sxGl'); if (!(gg && gg.checked)) return toast('Tick the box to agree to the Terms of Service and Privacy Policy'); return B.signInGoogle().then(function () { if (!LIVE) afterAuth('Signed in with Google'); }).catch(function (er) { toast(er.message); }); }
     if (a === 'emailin' || a === 'emailup') {
       var em = v('sxEmail'), pw = v('sxPw'), gl = document.getElementById('sxGl');
-      if (a === 'emailup' && !(gl && gl.checked)) return toast('Tick the box to agree to the Community Guidelines');
+      if (a === 'emailup' && !(gl && gl.checked)) return toast('Tick the box to agree to the Terms of Service and Privacy Policy');
       if (!/^\S+@\S+\.\S+$/.test(em) || pw.length < 8) return toast('Enter an email and a password of 8 or more characters');
       t.disabled = true;
       return (a === 'emailin' ? B.signInEmail(em, pw) : B.signUpEmail(em, pw, noDash(v('sxName')))).then(function () {

@@ -113,6 +113,7 @@ textarea.sx-in{min-height:64px;resize:vertical}
 .sx-gl-ok{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;margin:10px 0;color:var(--fg,inherit)}
 .sx-gl-ok input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:#FF6B35}
 .sx-gl-ok a{color:#FF6B35}
+.sx .btn[disabled]{opacity:.45}
 .bp.ai{background:transparent;border:1px solid currentColor;opacity:.75}
 .act.more{font-size:18px;line-height:1;letter-spacing:1px}
 /* 1.4.0 Public mode: public comments and citations, Tracked by */

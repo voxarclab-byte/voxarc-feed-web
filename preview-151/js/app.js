@@ -2911,7 +2911,7 @@
     var emEl = document.getElementById('wEmail'), box = document.getElementById('wTerms');
     var em = emEl ? emEl.value.trim() : '';
     if (!/^\S+@\S+\.\S+$/.test(em)) { toast('Enter your email to continue'); if (emEl) try { emEl.focus(); } catch (e) {} return; }
-    if (!box || !box.checked) { toast('Tick the box to agree to the Terms and Privacy Policy'); return; }
+    if (!box || !box.checked) { toast('Tick the box to agree to the Terms of Service and Privacy Policy'); return; }
     markWelcome('continue');
     dismissWelcome(true);
     goFeedFromWelcome();
@@ -2937,6 +2937,13 @@
     setTimeout(function () { dismissWelcome(false); }, delay);
   }
   var wForm = document.getElementById('wForm');
+  function syncWelcomeGo() {
+    var box = document.getElementById('wTerms'), go = document.querySelector('#welcome .w-go');
+    if (go) go.disabled = !(box && box.checked);
+  }
+  var wTerms = document.getElementById('wTerms');
+  if (wTerms) wTerms.addEventListener('change', syncWelcomeGo);
+  syncWelcomeGo();
   if (wForm) wForm.addEventListener('submit', function (e) { e.preventDefault(); welcomeContinue(); });
   (function scheduleWelcome() {
     var w = document.getElementById('welcome');
