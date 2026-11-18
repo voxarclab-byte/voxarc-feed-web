@@ -2640,8 +2640,8 @@
     if (t.dataset.repin) { var cm = ($('#repc') || {}).value || ''; cm = cm.replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280);
       // Local-only for now. Shape mirrors a future shared reposts table: one row per user and story.
       S.reposts[t.dataset.repin] = { v: 1, storyId: t.dataset.repin, comment: cm, createdAt: new Date().toISOString(), userId: 'local', synced: false };
-      saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repin, S.reposts[t.dataset.repin]); closeSheet(); haptic(); render(); refreshReader(); toast('Reposted in Voxarc'); return; }
-    if (t.dataset.repundo) { delete S.reposts[t.dataset.repundo]; saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repundo, null); closeSheet(); render(); refreshReader(); toast('Repost removed'); return; }
+      saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repin, S.reposts[t.dataset.repin]); closeSheet(); haptic(); render(); refreshReader(); toast('Signal shared'); return; }
+    if (t.dataset.repundo) { delete S.reposts[t.dataset.repundo]; saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(t.dataset.repundo, null); closeSheet(); render(); refreshReader(); toast('Share removed'); return; }
     if (t.dataset.repost) { e.stopPropagation(); repostSheet(t.dataset.repost); return; }
     if (t.dataset.repurl) { closeSheet(); openUrl(t.dataset.repurl); return; }
     if (t.dataset.repshare) { var rc = (($('#repc') || {}).value || '').replace(/\s*[\u2014\u2013]\s*/g, ', ').trim().slice(0, 280), rid = t.dataset.repshare; closeSheet(); if (!S.reposts[rid]) { S.reposts[rid] = { v: 1, storyId: rid, comment: rc, createdAt: new Date().toISOString(), userId: 'local', synced: false, via: 'share' }; saveReposts(); if (window.VXSocial) window.VXSocial.onRepost(rid, S.reposts[rid]); render(); } shareItem(rid, rc); return; }
