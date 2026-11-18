@@ -1,0 +1,35 @@
+{
+  "note": "Local sample for the Full analysis tables (1.2.0). Merged onto feed items by id when the item has no tables field. Every figure is copied from the cited official source.",
+  "items": {
+    "nrcan-canada-invests-to-unlock-lithium-potential-and-improve-conne": [
+      {
+        "title": "Lithium price and US trade",
+        "subset": "Market",
+        "columns": ["Period", "Battery-grade lithium carbonate price ($/t, real)", "US imports (t Li)", "US exports (t Li)", "US net import reliance", "Source"],
+        "keyCol": 1,
+        "rows": [
+          { "cells": ["2021", "11,700", "2,640", "1,870", ">25%"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["2022", "63,700", "3,260", "2,440", ">25%"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["2023", "39,000", "3,390", "1,960", ">50%"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["2024", "11,800", "3,020", "1,690", ">50%"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["2025 est.", "9,000", "3,800", "2,000", ">50%"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" }
+        ],
+        "value": "The carbonate price is down 86% from its 2022 peak ($63,700 to $9,000 per tonne), so new Quebec supply enters at cycle-low prices.",
+        "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-lithium.pdf"
+      },
+      {
+        "title": "Lithium mine production by country",
+        "subset": "Supply",
+        "columns": ["Period", "Canada (t Li)", "Australia (t Li)", "Chile (t Li)", "China (t Li)", "World excl. US (t Li)", "Source"],
+        "keyCol": 1,
+        "rows": [
+          { "cells": ["2024", "4,820", "82,700", "48,900", "41,400", "222,000"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["2025 est.", "5,600", "92,000", "56,000", "62,000", "290,000"], "source": "USGS MCS 2026, Lithium", "date": "2026-01-30" },
+          { "cells": ["Reserves", "1,600,000", "8,400,000", "9,200,000", "4,600,000", "37,000,000"], "source": "USGS MCS 2026, Lithium (world total incl. US)", "date": "2026-01-30" }
+        ],
+        "value": "Canada holds 4.3% of world reserves but mined 1.9% of 2025 output (5,600 of 290,000 t), up 16% on 2024.",
+        "url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-lithium.pdf"
+      }
+    ]
+  }
+}
