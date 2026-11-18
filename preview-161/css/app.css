@@ -810,7 +810,7 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .top-b{padding-right:28px}
 .pi-tools{display:flex;align-items:center;gap:8px;margin-top:10px}
 .card-share{display:flex;justify-content:flex-start;margin-top:10px}
-.share-signal{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;min-width:0;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);font-weight:650;font-size:13px;width:auto;align-self:flex-start}
+.share-signal{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;min-width:0;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:13px;width:auto;align-self:flex-start}
 .share-signal svg{width:15px;height:15px}
 .pi-tools{margin-top:8px;padding-top:0;border-top:0}
 .bcard.pi.dense{padding:10px 12px}
