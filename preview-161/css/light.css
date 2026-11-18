@@ -29,7 +29,7 @@
 /* Top Signals Today: compact rows from the live feed. */
 .top-h{padding-top:18px}
 .top-list{display:flex;flex-direction:column;gap:10px;padding:0 var(--gutter) 8px}
-.top-row{display:flex;flex-direction:column;gap:8px;align-items:stretch;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--shadow)}
+.top-row{position:relative;display:flex;flex-direction:column;gap:8px;align-items:stretch;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--shadow)}
 .top-main{display:flex;gap:10px;align-items:flex-start;min-width:0}
 .top-thumb{flex:none}
 .top-row .hthumb{width:56px;height:56px;border-radius:12px;object-fit:cover}
