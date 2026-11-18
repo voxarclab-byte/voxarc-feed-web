@@ -545,17 +545,15 @@
   function cardHTML(i, hero, n) {
     var sel = S.current === i.id && wide() ? ' sel' : '';
     var unread = !S.read[i.id];
-    var meta = '<div class="meta">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span>' + esc(fmtDate(i.published)) + ' \u00B7 ' + readMins(i) + ' </span><span class="sp"></span>' +
-      '<span class="acts">' +
-      '<button class="bm' + (isSaved(i.id) || watchOf(i.id) ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + !!(isSaved(i.id) || watchOf(i.id)) + '" aria-label="' + (watchOf(i.id) ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button></span></div>';
+    var meta = '<div class="meta">' + (unread ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span>' + esc(fmtDate(i.published)) + ' \u00B7 ' + readMins(i) + ' </span></div>';
     var style = n != null && n < 12 && !S.rendered ? ' style="--i:' + n + '"' : '';
     var head = '<button class="open" data-open="' + esc(i.id) + '"' + (unread ? ' aria-describedby="unread-l"' : '') + '><span class="kicker">' + esc(kickerOf(i)) + '</span><h3>' + esc(i.title) + '</h3></button>';
     var chips = (dlChipHTML(i) ? '<div class="cchips">' + dlChipHTML(i) + '</div>' : '') + (trustHTML(i) || srcLineHTML(i));
     var extra = soWhatHTML(i, false) + dataCardHTML(i, false) + expertHTML(i);
     if (hero) return '<div class="card hero' + sel + (S.rendered ? '' : ' in') + '" data-open="' + esc(i.id) + '"' + style + '>' + coverHTML(i, S.sigIds && S.sigIds.indexOf(i.id) >= 0) +
-      head + chips + '<p>' + esc(i.summary) + '</p>' + extra + marketHTML(i, false) + meta + '</div>';
+      head + chips + '<p>' + esc(i.summary) + '</p>' + extra + marketHTML(i, false) + meta + cardActsHTML(i) + '</div>';
     return '<div class="card' + sel + (S.rendered ? '' : ' in') + '" data-open="' + esc(i.id) + '"' + style + '><div class="row"><div class="txt">' + head + chips + '<p>' + esc(i.summary) + '</p></div>' +
-      (i.stat && i.stat.value ? '<div class="thumb stat-thumb" aria-hidden="true"><b>' + esc(i.stat.value) + '</b></div>' : '') + '</div>' + extra + marketHTML(i, false) + meta + '</div>';
+      (i.stat && i.stat.value ? '<div class="thumb stat-thumb" aria-hidden="true"><b>' + esc(i.stat.value) + '</b></div>' : '') + '</div>' + extra + marketHTML(i, false) + meta + cardActsHTML(i) + '</div>';
   }
   var HZ_SHORT = { 'Near term': 'Near term \u00B7 <3 mo', 'Medium term': 'Medium \u00B7 3 to 12 mo', 'Long term': 'Long term \u00B7 >1 yr' };
   function lvl(x) { return String(x || '').toLowerCase(); }
@@ -587,9 +585,15 @@
     var on = !!watchOf(i.id) || isSaved(i.id);
     return '<button type="button" class="bm' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Remove from Watchlist' : 'Add to Watchlist') + '">' + ICON.bm + '</button>';
   }
+  function cardActsHTML(i) {
+    var on = !!watchOf(i.id) || isSaved(i.id);
+    return '<div class="card-acts" role="group" aria-label="Save or share signal">' +
+      '<button type="button" class="card-act' + (on ? ' on' : '') + '" data-watch="' + esc(i.id) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Saved' : 'Save') + '">' + ICON.bm + '<span>' + (on ? 'Saved' : 'Save') + '</span></button>' +
+      '<button type="button" class="card-act" data-sharesignal="' + esc(i.id) + '" aria-label="Share Signal">' + ICON.share + '<span>Share Signal</span></button></div>';
+  }
   function actRowHTML(i) {
-    // One Share Signal action. No reaction, comment, repost or social-network row.
-    return '<div class="pi-tools" role="group" aria-label="Signal actions">' + watchBtn(i) + shareSignalBtn(i) + '</div>';
+    // Save and Share Signal. No reaction, comment, or social-network row.
+    return cardActsHTML(i);
   }
   var TOPIC_ART = {
     minerals: '<rect width="120" height="150" fill="#3a2e24"/><path d="M0 70 30 50 55 64 85 40 120 58V150H0z" fill="#5a4636"/><path d="M0 100 40 84 80 98 120 82V150H0z" fill="#2a211a"/><rect x="40" y="88" width="34" height="26" fill="#6b6f73"/><rect x="48" y="70" width="6" height="20" fill="#8a8f94"/><rect x="62" y="76" width="5" height="14" fill="#8a8f94"/><circle cx="96" cy="28" r="10" fill="#FF6B35" opacity=".55"/>',
@@ -1186,7 +1190,7 @@
     // 1.3.8: always render the full card. Dense only tightens spacing (CSS), it never hides detail.
     // 1.5.0: thumbnail and why-it-matters sit above the same summary, price, source check and bookmark.
     return '<article class="bcard pi' + (S.dense ? ' dense' : '') + (variant ? ' pi-' + variant : '') + '" data-open="' + esc(i.id) + '">' +
-      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div>' + watchBtn(i) + '</div>' +
+      '<div class="pi-card-top" role="group" aria-label="Signal badges"><div class="pi-badges">' + impactBadge(i) + tierBadge(i) + confBadge(i) + '<span class="bp ai pi-checked" title="Extraction is checked against linked sources; missing fields stay empty">Checked</span></div></div>' +
       idx +
       '<div class="sig-face"><div class="sig-thumb">' + thumbHTML(i) + '</div><div class="sig-face-b">' +
       '<button class="open" data-open="' + esc(i.id) + '"><h3 class="bwhat">' + esc(mechTitle(i)) + '</h3></button>' +
@@ -1198,7 +1202,7 @@
       '<div class="pi-cues">' + hsCue(i) + (prov ? '<span class="pi-prov">' + esc(prov) + '</span>' : '') + primaryCueHTML(i) + '</div>' +
       statusStripHTML(i) +
       (hasPaidDetail(i) ? '<div class="bfoot"><button class="bunlock" data-dossier="' + esc(i.id) + '" aria-label="Open Full Dossier"><span>Full Dossier</span><small>Regulatory Dossier</small></button></div>' : '') +
-      '<div class="pi-tools">' + shareSignalBtn(i) + '</div>' +
+      cardActsHTML(i) +
       '</article>';
   }
   function critCardHTML(i) { return piCardHTML(i, 'crit'); }
@@ -1358,13 +1362,13 @@
       var topicId = (i.topics || []).map(canonId).filter(Boolean)[0] || category(i);
       var sum = i.summary || g.crux || '';
       return '<article class="top-row" data-open="' + esc(i.id) + '">' +
-        '<div class="top-thumb">' + thumbHTML(i) + '</div><div class="top-b"><h3>' + esc(mechTitle(i)) + '</h3>' +
+        '<div class="top-main"><div class="top-thumb">' + thumbHTML(i) + '</div><div class="top-b"><h3>' + esc(mechTitle(i)) + '</h3>' +
         (sum ? '<p>' + esc(String(sum)) + '</p>' : '') +
         '<div class="top-meta">' +
         (band ? '<span class="top-imp ' + band.toLowerCase() + '">' + esc(band) + '</span>' : '') +
         (region ? '<span class="region-chip">' + jurisFlag(region) + ' ' + esc(region) + '</span>' : '') +
         (topicId ? '<span class="topic-chip">' + esc(topicLabel(topicId)) + '</span>' : '') +
-        '<span class="top-when">' + esc(relWhen(i.published)) + '</span></div></div></article>';
+        '<span class="top-when">' + esc(relWhen(i.published)) + '</span></div></div></div>' + cardActsHTML(i) + '</article>';
     }).join('');
     return '<div class="section-h top-h"><h2>Top Signals Today</h2><button type="button" class="sec-link" data-tab="signals">View All &gt;</button></div><div class="top-list">' + rows + '</div>';
   }

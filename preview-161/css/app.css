@@ -807,6 +807,13 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .pi-tools{display:flex;align-items:center;gap:8px;margin-top:10px}
 .share-signal{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;min-width:0;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:13px;width:auto;align-self:flex-start}
 .share-signal svg{width:15px;height:15px}
+.card-acts{display:flex;align-items:center;gap:8px;margin-top:8px;width:100%}
+.card-act{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);font-weight:650;font-size:12px;line-height:1;white-space:nowrap}
+.card-act svg{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8}
+.card-act.on{color:var(--orange);border-color:var(--orange)}
+.card-act.on svg{fill:var(--orange)}
+.top-row .card-acts{margin-top:0}
+.bcard .card-acts,.card .card-acts{margin-top:10px}
 .pi-tools{margin-top:8px;padding-top:0;border-top:0}
 .bcard.pi.dense{padding:10px 12px}
 .bcard.pi.pi-lead{border-left:3px solid var(--orange)}
